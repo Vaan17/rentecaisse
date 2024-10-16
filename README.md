@@ -1,70 +1,74 @@
-# Getting Started with Create React App
+### `Setup instruction (Linux only)`
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+### `Step1: Install Yarn :`
+>_ npm install -g yarn
 
-## Available Scripts
+ensure installed version using `yarn -v` command
 
-In the project directory, you can run:
+### `Step2: Install Oh-My-Zsh :`
+>_ sudo apt install zsh
+>_ sudo chsh -s $(which zsh)
+>_ sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
-### `npm start`
+close and reopen a new terminal, it will start using oh-my-zsh
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### `Step3: Install Zsh useful plugins (optionnal) :`
+>_ git clone https://github.com/zsh-users/zsh-completions ${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions
+>_ git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+>_ git clone https://github.com/zsh-users/zsh-syntax-highlighting ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+>_ cd
+>_ nano .zshrc
 
-### `npm test`
+Scroll down and replace "plugins=(git)" by :
+plugins=(
+  git
+  last-working-dir
+  zsh-completions
+  zsh-autosuggestions
+  zsh-syntax-highlighting
+)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+save file (ctrl + S) and exit (ctrl + X)
+close and reopen a new terminal
 
-### `npm run build`
+### `Step4: Install Node.js :`
+>_ curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
+>_ nvm install 22.9.0
+>_ nvm alias default 22.9.0
 
-Builds the app for production to the `build` folder.\
+ensure installed version using `node -v` command
+
+### `Step5: Install Ruby :`
+>_ gpg --keyserver keyserver.ubuntu.com --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
+>_ \curl -sSL https://get.rvm.io | bash
+
+close and reopen terminal
+
+>_ rvm install 3.3.5
+
+ensure installed version using `ruby -v` command
+
+### `Step6: Install Postgresql :`
+>_ sudo apt install postgresql
+
+start local database :
+>_ sudo service postgresql start
+
+>_ sudo -u postgres createuser --interactive
+
+enter your username (ex: melvinaime) and then type `y` to be superuser
+
+>_ sudo -u postgres createdb bdd_rentecaisse
+
+### `Step7: Install Rails :`
+>_ gem install rails
+
+### `Step8: Prepare backend structure installation :`
+>_ sudo apt install libpq-dev
+
+### `Others things`
+`npm run build`: Builds the app for production to the `build` folder.\
 It correctly bundles React in production mode and optimizes the build for the best performance.
-
 The build is minified and the filenames include the hashes.\
 Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
