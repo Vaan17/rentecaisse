@@ -57,15 +57,26 @@ start local database :
 
 >_ sudo -u postgres createuser --interactive
 
-enter your username (ex: melvinaime) and then type `y` to be superuser
+enter your UNIX (linux session) username and then type `y` to be superuser
 
->_ sudo -u postgres createdb bdd_rentecaisse
+<!-- [STANDED BY] >_ sudo -u postgres createdb bdd_rentecaisse -->
 
 ### `Step7: Install Rails :`
 >_ gem install rails
 
-### `Step8: Prepare backend structure installation :`
+### `Step8: Prepare and install backend structure :`
 >_ sudo apt install libpq-dev
+>_ rails new backend --api -d postgresql
+
+move backend/ files into project root folder, except :
+.git, README.md, public/, .gitignore
+
+Merge Rails .gitignore file content into your project .gitignore file
+Then, delete backend/ folder
+
+```
+>_ rails db:create
+```
 
 ### `Others things`
 `npm run build`: Builds the app for production to the `build` folder.\
