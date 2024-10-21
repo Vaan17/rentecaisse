@@ -1,10 +1,29 @@
+import React from "react"
 import logo from "./logo.svg";
 import "./App.css";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
+enum VehiculeType {
+	car = "voiture",
+	truck = "camion",
+	motocycle = "moto",
+}
+
+interface IVehicule {
+	id: number
+	type: VehiculeType
+	isElectric: boolean
+	description?: string
+}
+
 const App = () => {
 	const [myText, setMyText] = useState(undefined);
+	const myCar = {
+		id: 1,
+		type: "voiture",
+		isElectric: false
+	} as IVehicule
 
 	useEffect(() => {
 		axios
@@ -23,9 +42,12 @@ const App = () => {
 				<img src={logo} className="App-logo" alt="logo" />
 				<div>Hourra, ReactJs est compilé par Vite :D</div>
 				<div>---</div>
-				<div>Le serveur vous dis : {myText}</div>
+				<div>Le serveur vous dit : {myText}</div>
+				<div>---</div>
+				<div>My vehicule is a "{myCar.type}". {myCar.description ?? "(no description available)"}</div>
+				<div>---</div>
 				<p>
-					Edit <code>src/App.jsx</code> and save to reload.
+					Edit <code>src/App.tsx</code> and save to reload.
 				</p>
 				<a
 					className="App-link"
