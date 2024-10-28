@@ -3,6 +3,7 @@ import logo from "./logo.svg";
 import "./App.css";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import Counter from "./Counter";
 
 enum VehiculeType {
 	car = "voiture",
@@ -49,6 +50,7 @@ const App = () => {
 				<p>
 					Edit <code>src/App.tsx</code> and save to reload.
 				</p>
+				<Counter />
 				<a
 					className="App-link"
 					href="https://reactjs.org"
