@@ -1,13 +1,29 @@
-### `Setup instruction (Linux only)`
+## `Setup instruction (Linux only)`
 
-### `Step 1: Install Yarn :`
+### `Step 1: Install Node.js :`
+```
+curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
+```
+```
+nvm install 22.9.0
+```
+```
+nvm alias default 22.9.0
+```
+
+Ensure installed version using `node -v` command
+
+### `Step 2: Install Yarn :`
 ```
 npm install -g yarn
+```
+```
+yarn set version 4.5.0
 ```
 
 Ensure installed version using `yarn -v` command
 
-### `Step 2: Install Oh-My-Zsh :`
+### `Step 3: Install Oh-My-Zsh :`
 ```
 sudo apt install zsh
 ```
@@ -20,7 +36,7 @@ sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/too
 
 Close and reopen a new terminal, it will start using oh-my-zsh
 
-### `Step 3: Install Zsh useful plugins (optionnal) :`
+### `Step 4: Install Zsh useful plugins (optionnal) :`
 ```
 git clone https://github.com/zsh-users/zsh-completions ${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions
 ```
@@ -31,8 +47,14 @@ git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-m
 git clone https://github.com/zsh-users/zsh-syntax-highlighting ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
 ```
 
-```cd```
-```nano .zshrc```
+Then :
+
+```
+cd
+```
+```
+nano .zshrc
+```
 
 Scroll down and replace "plugins=(git)" by :
 
@@ -48,19 +70,6 @@ plugins=(
 
 Save file (ctrl + S) and exit (ctrl + X)
 Close and reopen a new terminal
-
-### `Step 4: Install Node.js :`
-```
-curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
-```
-```
-nvm install 22.9.0
-```
-```
-nvm alias default 22.9.0
-```
-
-Ensure installed version using `node -v` command
 
 ### `Step 5: Install Ruby :`
 ```
@@ -83,47 +92,79 @@ Ensure installed version using ```ruby -v``` command
 sudo apt install postgresql
 ```
 
-Start local database :
+Start postgres services :
 ```
 sudo service postgresql start
 ```
 
+Create main user :
 ```
 sudo -u postgres createuser --interactive
 ```
 (Enter your UNIX (linux session) username and then type `y` to be superuser).
+(Forgot your UNIX username ? type `echo $USER` from the terminal to see it).
 
-### `Step 7: Install Rails :`
+Stop postgresql service for a while :
 ```
-gem install rails
+sudo service postgresql stop
 ```
 
-### `Step 8: Prepare and install backend structure :`
+### `Step 7: Install future Rails requirement 💎 :`
 ```
 sudo apt install libpq-dev
 ```
+
+### `Step 8: CLONE RENTECAISSE GIT REPOSITORY 😎 :`
+Make sure to clone the repo from the terminal root (type `cd` before continue to ensure it).
 ```
-rails new backend --api -d postgresql
+git clone https://github.com/Vaan17/rentecaisse.git
 ```
 
-Move backend/ files into project root folder, except : [ .git, .gitignore, README.md, public/ ]
-Merge Rails .gitignore file content into your project .gitignore file. Then, delete backend/ folder.
+Move into the project folder :
+```
+cd rentecaisse
+```
 
+### `Step 8: Install all installed packages and gems :`
+```
+yarn install
+```
+```
+bundle install
+```
+
+### `Step 9: Create Rails local database :`
 ```
 rails db:create
 ```
 
-### `Step 9: Install TypeScript :`
+### `Step 10: Launch all services :`
+Postgresql :
 ```
-yarn add typescript @types/node @types/react @types/react-dom @types/jest
-```
-
-### `Step 10: Install Redux :`
-```
-yarn add redux react-redux @reduxjs/toolkit
+sudo service postgresql start
 ```
 
-Follow https://semaphoreci.com/blog/redux-react to setup it.
+Compiler :
+```
+yarn vite
+```
+
+Server :
+```
+rails s
+```
+
+IDE (if already set up, else, it will ask you to choose your IDE from an installed one) :
+(RECOMMENED IDE : 1. Visual Studio Code - 2. Cursor - 3. others... )
+```
+code .
+```
+
+### `Final Step: Open the app :`
+
+Current URL : http://localhost:5173/ (Check terminal running compiler to see it).
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 ### `Others things`
 `npm run build`: Builds the app for production to the `build` folder.\
