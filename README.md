@@ -73,6 +73,12 @@ Merge Rails .gitignore file content into your project .gitignore file. Then, del
 
 ```rails db:create```
 
+### `Step 9: Install TypeScript :`
+```yarn add typescript @types/node @types/react @types/react-dom @types/jest```
+
+### `Step 10: Install Redux :`
+```yarn add redux react-redux```
+
 ### `Others things`
 `npm run build`: Builds the app for production to the `build` folder.\
 It correctly bundles React in production mode and optimizes the build for the best performance.

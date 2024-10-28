@@ -27,7 +27,7 @@ const App = () => {
 
 	useEffect(() => {
 		axios
-			.get("http://localhost:3000/demo")
+			.get("http://localhost:3000/demo2")
 			.then((response) => {
 				setMyText(response.data);
 			})
