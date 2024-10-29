@@ -4,6 +4,7 @@
 ```
 curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
 ```
+Restart bash
 ```
 nvm install 22.9.0
 ```
