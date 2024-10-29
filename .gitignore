@@ -60,6 +60,4 @@ yarn-error.log*
 /config/master.key
 
 # CUSTOM -------------------------------------------------------------------------
-
-/bin/
 .yarn/install-state.gz
