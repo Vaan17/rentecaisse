@@ -60,4 +60,19 @@ yarn-error.log*
 /config/master.key
 
 # CUSTOM -------------------------------------------------------------------------
+.yarn/cache
+.yarn/build-state.yml
 .yarn/install-state.gz
+.yarn/releases/*
+.yarn-integrity
+/yarn-error.log
+yarn-debug.log*
+/node_modules
+node_modules
+.eslintrc.json
+
+# Vite uses dotenv and suggests to ignore local-only env files. See
+# https://vitejs.dev/guide/env-and-mode.html#env-files
+*.local
+.env
+.spacedrive

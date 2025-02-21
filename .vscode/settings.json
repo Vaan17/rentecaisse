@@ -1,7 +1,23 @@
 {
-    "workbench.colorCustomizations": {
-        "activityBar.background": "#1e5ab4",
-        "titleBar.activeBackground": "#0f479b",
-        "titleBar.activeForeground": "#FAFBF9"
-    }
+  "[javascript]": {
+    "editor.defaultFormatter": "biomejs.biome",
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[ruby]": {
+    "editor.defaultFormatter": "testdouble.vscode-standard-ruby",
+  },
+  "editor.formatOnSave": true,
+  "indentRainbow.colors": [
+    "rgba(0, 119, 255, 0.1)",
+    "rgba(84, 144, 255, 0.1)",
+    "rgba(0, 195, 255, 0.1)",
+    "rgba(105, 220, 255, 0.1)"
+  ],
+  "indentRainbow.errorColor": "rgba(128,32,32,0.6)",
+  "indentRainbow.tabmixColor": "rgba(226, 240, 41, 0.6)",
 }
