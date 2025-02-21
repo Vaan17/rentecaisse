@@ -1,3 +1,4 @@
+# ==================== DEFAULT GEMS ====================
 source "https://rubygems.org"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
@@ -40,5 +41,7 @@ group :development, :test do
   gem "rubocop-rails-omakase", require: false
 end
 
+# ==================== CUSTOMS GEMS ====================
 gem "pry-rails"
 gem "pry-byebug"
+gem "standard", ">= 1.43.0"
