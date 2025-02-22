@@ -184,3 +184,35 @@ Current URL : http://localhost:5173/ (Check terminal running compiler to see it)
 It correctly bundles React in production mode and optimizes the build for the best performance.
 The build is minified and the filenames include the hashes.\
 Your app is ready to be deployed!
+
+### `Commandes utiles pour la base de données 🗃️ :`
+
+Voici les commandes disponibles pour gérer la base de données :
+
+```bash
+rails db:reset_structure
+```
+Cette commande permet de :
+- Supprimer la base de données existante
+- Créer une nouvelle base de données vide
+- Créer toutes les tables à partir du fichier `structure.sql`
+
+```bash
+rails db:load_seeds
+```
+Cette commande permet de :
+- Charger toutes les données de test à partir du fichier `seeds.sql`
+- Utile pour remplir la base avec des données d'exemple
+
+```bash
+rails db:reset_all
+```
+Cette commande combine les deux précédentes :
+- Réinitialise complètement la structure (tables)
+- Recharge toutes les données de test
+- Parfait pour repartir d'une base propre
+
+⚠️ **Note importante** : Avant d'exécuter ces commandes, assurez-vous que :
+- Le serveur Rails n'est pas en cours d'exécution
+- DBeaver ou tout autre client SQL est fermé
+- PostgreSQL est bien démarré (`sudo service postgresql start`)
