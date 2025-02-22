@@ -9,6 +9,7 @@ import GlobalStyle from "./app/GlobalStyle.ts"
 import styled from "styled-components"
 import LoginPage from './LoginPage'
 import RegisterPage from './RegisterPage'
+import RegisterSuccessPage from './RegisterSuccessPage'
 import CGVPage from './CGVPage'
 import CGUPage from './CGUPage'
 import MentionsLegalesPage from './MentionsLegalesPage'
@@ -38,6 +39,7 @@ const App = () => {
 					{/* Routes isolées */}
 					<Route path="/login" element={<LoginPage />} />
 					<Route path="/register" element={<RegisterPage />} />
+					<Route path="/register-success" element={<RegisterSuccessPage />} />
 					<Route path="/cgv" element={<CGVPage />} />
 					<Route path="/cgu" element={<CGUPage />} />
 					<Route path="/mentions-legales" element={<MentionsLegalesPage />} />

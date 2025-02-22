@@ -76,4 +76,67 @@ class AuthController < ApplicationController
       }, status: :internal_server_error # 500
     end
   end
+
+  def register
+    Rails.logger.info "Paramètres reçus pour l'inscription: #{params.inspect}"
+    
+    # Récupérer les paramètres
+    user_params = params[:user] || {}
+    email = user_params[:email]
+    hashed_password = user_params[:password]
+
+    # Validation des champs requis
+    if email.blank? || hashed_password.blank?
+      return render json: { 
+        success: false, 
+        message: 'Email et mot de passe requis',
+        error_code: 'MISSING_FIELDS'
+      }, status: :bad_request
+    end
+
+    # Validation du format email
+    unless email =~ /\A[^@\s]+@[^@\s]+\.[^@\s]+\z/
+      return render json: { 
+        success: false, 
+        message: 'Format d\'email invalide',
+        error_code: 'INVALID_EMAIL_FORMAT'
+      }, status: :bad_request
+    end
+
+    # Vérifier si l'email existe déjà
+    check_query = "SELECT COUNT(*) as count FROM UTILISATEUR WHERE email = ?"
+    begin
+      result = ActiveRecord::Base.connection.execute(
+        ActiveRecord::Base.send(:sanitize_sql_array, [check_query, email])
+      )
+      
+      if result.first['count'] > 0
+        return render json: { 
+          success: false, 
+          message: 'Cet email est déjà utilisé',
+          error_code: 'EMAIL_TAKEN'
+        }, status: :conflict
+      end
+
+      # Insérer le nouvel utilisateur
+      insert_query = "INSERT INTO UTILISATEUR (email, password, date_creation_utilisateur, date_modification_utilisateur) VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
+      
+      ActiveRecord::Base.connection.execute(
+        ActiveRecord::Base.send(:sanitize_sql_array, [insert_query, email, hashed_password])
+      )
+
+      render json: {
+        success: true,
+        message: 'Inscription réussie'
+      }
+    rescue => e
+      Rails.logger.error "Erreur lors de l'inscription: #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
+      render json: { 
+        success: false, 
+        message: 'Une erreur est survenue lors de l\'inscription',
+        error_code: 'SERVER_ERROR'
+      }, status: :internal_server_error
+    end
+  end
 end 

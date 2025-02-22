@@ -381,201 +381,261 @@ const SignInLink = styled.div`
 `;
 
 const RegisterPage: React.FC = () => {
-    const [email, setEmail] = useState('');
-    const [emailError, setEmailError] = useState('');
-    const [password, setPassword] = useState('');
-    const [passwordError, setPasswordError] = useState('');
-    const [passwordErrors, setPasswordErrors] = useState({
-        length: false,
-        uppercase: false,
-        lowercase: false,
-        number: false,
-        special: false
-    });
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [confirmPasswordError, setConfirmPasswordError] = useState('');
-    const [acceptTerms, setAcceptTerms] = useState(false);
-    const [error, setError] = useState('');
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordErrors, setPasswordErrors] = useState({
+    length: false,
+    uppercase: false,
+    lowercase: false,
+    number: false,
+    special: false
+  });
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [error, setError] = useState('');
 
-    const validateEmail = (email: string): boolean => {
-        const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        return emailRegex.test(email);
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePassword = (password: string) => {
+    const newPasswordErrors = {
+      length: password.length >= 12,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /[0-9]/.test(password),
+      special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
     };
+    setPasswordErrors(newPasswordErrors);
 
-    const validatePassword = (password: string) => {
-        const newPasswordErrors = {
-            length: password.length >= 12,
-            uppercase: /[A-Z]/.test(password),
-            lowercase: /[a-z]/.test(password),
-            number: /[0-9]/.test(password),
-            special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
-        };
-        setPasswordErrors(newPasswordErrors);
+    if (password && !Object.values(newPasswordErrors).every(value => value === true)) {
+      setPasswordError('Format du mot de passe invalide');
+    } else {
+      setPasswordError('');
+    }
+  };
 
-        if (password && !Object.values(newPasswordErrors).every(value => value === true)) {
-            setPasswordError('Format du mot de passe invalide');
-        } else {
-            setPasswordError('');
-        }
-    };
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newEmail = e.target.value;
+    setEmail(newEmail);
 
-    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newEmail = e.target.value;
-        setEmail(newEmail);
+    if (newEmail && !validateEmail(newEmail)) {
+      setEmailError('Format d\'email invalide');
+    } else {
+      setEmailError('');
+    }
+  };
 
-        if (newEmail && !validateEmail(newEmail)) {
-            setEmailError('Format d\'email invalide');
-        } else {
-            setEmailError('');
-        }
-    };
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+    validatePassword(newPassword);
 
-    const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newPassword = e.target.value;
-        setPassword(newPassword);
-        validatePassword(newPassword);
+    if (confirmPassword) {
+      if (confirmPassword !== newPassword) {
+        setConfirmPasswordError('Les mots de passe ne correspondent pas');
+      } else {
+        setConfirmPasswordError('');
+      }
+    }
+  };
 
-        if (confirmPassword) {
-            if (confirmPassword !== newPassword) {
-                setConfirmPasswordError('Les mots de passe ne correspondent pas');
-            } else {
-                setConfirmPasswordError('');
-            }
-        }
-    };
+  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newConfirmPassword = e.target.value;
+    setConfirmPassword(newConfirmPassword);
 
-    const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newConfirmPassword = e.target.value;
-        setConfirmPassword(newConfirmPassword);
+    if (newConfirmPassword !== password) {
+      setConfirmPasswordError('Les mots de passe ne correspondent pas');
+    } else {
+      setConfirmPasswordError('');
+    }
+  };
 
-        if (newConfirmPassword !== password) {
-            setConfirmPasswordError('Les mots de passe ne correspondent pas');
-        } else {
-            setConfirmPasswordError('');
-        }
-    };
+  const isPasswordValid = () => {
+    return Object.values(passwordErrors).every(value => value === true);
+  };
 
-    const isPasswordValid = () => {
-        return Object.values(passwordErrors).every(value => value === true);
-    };
+  // Fonction pour convertir un ArrayBuffer en chaîne hexadécimale
+  const arrayBufferToHex = (buffer: ArrayBuffer): string => {
+    return Array.from(new Uint8Array(buffer))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+  };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        // La logique d'inscription sera implémentée plus tard
-    };
+  // Fonction pour hasher le mot de passe en SHA-256
+  const hashPassword = async (password: string): Promise<string> => {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    return arrayBufferToHex(hashBuffer);
+  };
 
-    return (
-        <>
-            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-            <BackgroundLayout backgroundImage="/images/backgrounds/parking-background.png">
-                <WhiteContainer width="min(1200px, 90%)">
-                    <Header>
-                        <Logo src="/images/logos/logo.png" alt="RenteCaisse Logo" />
-                        <BrandName>RENTECAISSE</BrandName>
-                    </Header>
-                    <Title>Inscription</Title>
-                    {error && (
-                        <div style={{ color: 'red', textAlign: 'center', marginBottom: '1rem' }}>
-                            {error}
-                        </div>
-                    )}
-                    <FormContainer>
-                        <FormSection>
-                            <Form onSubmit={handleSubmit}>
-                                <FormGroup>
-                                    <Label>Email*</Label>
-                                    <Input
-                                        type="email"
-                                        value={email}
-                                        onChange={handleEmailChange}
-                                        placeholder="marcel.picho@gmail.com"
-                                        required
-                                        className={emailError ? 'error' : ''}
-                                    />
-                                    {emailError && <ErrorText>{emailError}</ErrorText>}
-                                </FormGroup>
-                                <FormGroup>
-                                    <Label>Mot de passe*</Label>
-                                    <Input
-                                        type="password"
-                                        value={password}
-                                        onChange={handlePasswordChange}
-                                        placeholder="**********"
-                                        required
-                                        className={!isPasswordValid() && password ? 'error' : ''}
-                                    />
-                                    {passwordError && <ErrorText>{passwordError}</ErrorText>}
-                                </FormGroup>
-                                <FormGroup>
-                                    <Label>Confirmer le mot de passe*</Label>
-                                    <Input
-                                        type="password"
-                                        value={confirmPassword}
-                                        onChange={handleConfirmPasswordChange}
-                                        placeholder="**********"
-                                        required
-                                        className={confirmPasswordError ? 'error' : ''}
-                                    />
-                                    {confirmPasswordError && <ErrorText>{confirmPasswordError}</ErrorText>}
-                                </FormGroup>
-                                <div className="mobile-requirements">
-                                    <RequirementsSection>
-                                        <RequirementsTitle>
-                                            Exigences du mot de passe
-                                        </RequirementsTitle>
-                                        <RequirementsList>
-                                            <RequirementItem isValid={passwordErrors.length}>12 caractères minimum</RequirementItem>
-                                            <RequirementItem isValid={passwordErrors.uppercase}>Une lettre majuscule</RequirementItem>
-                                            <RequirementItem isValid={passwordErrors.lowercase}>Une lettre minuscule</RequirementItem>
-                                            <RequirementItem isValid={passwordErrors.number}>Un chiffre</RequirementItem>
-                                            <RequirementItem isValid={passwordErrors.special}>Un caractère spécial (!, @, #, $, etc.)</RequirementItem>
-                                        </RequirementsList>
-                                        <WarningText>
-                                            Évitez d'utiliser des mots du dictionnaire, des séquences de caractères (123456) ou des informations personnelles.
-                                        </WarningText>
-                                    </RequirementsSection>
-                                </div>
-                                <CheckboxGroup>
-                                    <input
-                                        type="checkbox"
-                                        id="terms"
-                                        checked={acceptTerms}
-                                        onChange={(e) => setAcceptTerms(e.target.checked)}
-                                        required
-                                    />
-                                    <label htmlFor="terms">
-                                        En cochant cette case, j'atteste avoir lu et accepté les <a href="/cgu">CGU</a>, <a href="/cgv">CGV</a> et <a href="/mentions-legales">mentions légales</a>.
-                                    </label>
-                                </CheckboxGroup>
-                                <Button type="submit" disabled={!acceptTerms}>
-                                    Inscription
-                                </Button>
-                                <SignInLink>
-                                    Vous avez déjà un compte ? <a href="/login">Se connecter</a>
-                                </SignInLink>
-                            </Form>
-                        </FormSection>
-                        <Separator />
-                        <RequirementsSection className="desktop-requirements">
-                            <RequirementsTitle>
-                                Exigences du mot de passe
-                            </RequirementsTitle>
-                            <RequirementsList>
-                                <RequirementItem isValid={passwordErrors.length}>12 caractères minimum</RequirementItem>
-                                <RequirementItem isValid={passwordErrors.uppercase}>Une lettre majuscule</RequirementItem>
-                                <RequirementItem isValid={passwordErrors.lowercase}>Une lettre minuscule</RequirementItem>
-                                <RequirementItem isValid={passwordErrors.number}>Un chiffre</RequirementItem>
-                                <RequirementItem isValid={passwordErrors.special}>Un caractère spécial (!, @, #, $, etc.)</RequirementItem>
-                            </RequirementsList>
-                            <WarningText>
-                                Évitez d'utiliser des mots du dictionnaire, des séquences de caractères (123456) ou des informations personnelles.
-                            </WarningText>
-                        </RequirementsSection>
-                    </FormContainer>
-                </WhiteContainer>
-            </BackgroundLayout>
-        </>
-    );
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    if (!validateEmail(email)) {
+      setError('Format d\'email invalide');
+      return;
+    }
+
+    if (!isPasswordValid()) {
+      setError('Le mot de passe ne respecte pas les critères requis');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Les mots de passe ne correspondent pas');
+      return;
+    }
+
+    try {
+      const hashedPassword = await hashPassword(password);
+
+      const response = await fetch('http://localhost:3000/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          user: {
+            email,
+            password: hashedPassword
+          }
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Redirection vers la page de succès
+        window.location.href = '/register-success';
+      } else {
+        setError(data.message || 'Une erreur est survenue lors de l\'inscription');
+      }
+    } catch (err) {
+      console.error('Erreur lors de l\'inscription:', err);
+      setError('Une erreur est survenue lors de l\'inscription');
+    }
+  };
+
+  return (
+    <>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+      <BackgroundLayout backgroundImage="/images/backgrounds/parking-background.png">
+        <WhiteContainer width="min(1200px, 90%)">
+          <Header>
+            <Logo src="/images/logos/logo.png" alt="RenteCaisse Logo" />
+            <BrandName>RENTECAISSE</BrandName>
+          </Header>
+          <Title>Inscription</Title>
+          {error && (
+            <div style={{ color: 'red', textAlign: 'center', marginBottom: '1rem' }}>
+              {error}
+            </div>
+          )}
+          <FormContainer>
+            <FormSection>
+              <Form onSubmit={handleSubmit}>
+                <FormGroup>
+                  <Label>Email*</Label>
+                  <Input
+                    type="email"
+                    value={email}
+                    onChange={handleEmailChange}
+                    placeholder="marcel.picho@gmail.com"
+                    required
+                    className={emailError ? 'error' : ''}
+                  />
+                  {emailError && <ErrorText>{emailError}</ErrorText>}
+                </FormGroup>
+                <FormGroup>
+                  <Label>Mot de passe*</Label>
+                  <Input
+                    type="password"
+                    value={password}
+                    onChange={handlePasswordChange}
+                    placeholder="**********"
+                    required
+                    className={!isPasswordValid() && password ? 'error' : ''}
+                  />
+                  {passwordError && <ErrorText>{passwordError}</ErrorText>}
+                </FormGroup>
+                <FormGroup>
+                  <Label>Confirmer le mot de passe*</Label>
+                  <Input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={handleConfirmPasswordChange}
+                    placeholder="**********"
+                    required
+                    className={confirmPasswordError ? 'error' : ''}
+                  />
+                  {confirmPasswordError && <ErrorText>{confirmPasswordError}</ErrorText>}
+                </FormGroup>
+                <div className="mobile-requirements">
+                  <RequirementsSection>
+                    <RequirementsTitle>
+                      Exigences du mot de passe
+                    </RequirementsTitle>
+                    <RequirementsList>
+                      <RequirementItem isValid={passwordErrors.length}>12 caractères minimum</RequirementItem>
+                      <RequirementItem isValid={passwordErrors.uppercase}>Une lettre majuscule</RequirementItem>
+                      <RequirementItem isValid={passwordErrors.lowercase}>Une lettre minuscule</RequirementItem>
+                      <RequirementItem isValid={passwordErrors.number}>Un chiffre</RequirementItem>
+                      <RequirementItem isValid={passwordErrors.special}>Un caractère spécial (!, @, #, $, etc.)</RequirementItem>
+                    </RequirementsList>
+                    <WarningText>
+                      Évitez d'utiliser des mots du dictionnaire, des séquences de caractères (123456) ou des informations personnelles.
+                    </WarningText>
+                  </RequirementsSection>
+                </div>
+                <CheckboxGroup>
+                  <input
+                    type="checkbox"
+                    id="terms"
+                    checked={acceptTerms}
+                    onChange={(e) => setAcceptTerms(e.target.checked)}
+                    required
+                  />
+                  <label htmlFor="terms">
+                    En cochant cette case, j'atteste avoir lu et accepté les <a href="/cgu">CGU</a>, <a href="/cgv">CGV</a> et <a href="/mentions-legales">mentions légales</a>.
+                  </label>
+                </CheckboxGroup>
+                <Button type="submit" disabled={!acceptTerms}>
+                  Inscription
+                </Button>
+                <SignInLink>
+                  Vous avez déjà un compte ? <a href="/login">Se connecter</a>
+                </SignInLink>
+              </Form>
+            </FormSection>
+            <Separator />
+            <RequirementsSection className="desktop-requirements">
+              <RequirementsTitle>
+                Exigences du mot de passe
+              </RequirementsTitle>
+              <RequirementsList>
+                <RequirementItem isValid={passwordErrors.length}>12 caractères minimum</RequirementItem>
+                <RequirementItem isValid={passwordErrors.uppercase}>Une lettre majuscule</RequirementItem>
+                <RequirementItem isValid={passwordErrors.lowercase}>Une lettre minuscule</RequirementItem>
+                <RequirementItem isValid={passwordErrors.number}>Un chiffre</RequirementItem>
+                <RequirementItem isValid={passwordErrors.special}>Un caractère spécial (!, @, #, $, etc.)</RequirementItem>
+              </RequirementsList>
+              <WarningText>
+                Évitez d'utiliser des mots du dictionnaire, des séquences de caractères (123456) ou des informations personnelles.
+              </WarningText>
+            </RequirementsSection>
+          </FormContainer>
+        </WhiteContainer>
+      </BackgroundLayout>
+    </>
+  );
 };
 
 export default RegisterPage; 

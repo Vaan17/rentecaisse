@@ -5,4 +5,5 @@ Rails.application.routes.draw do
   get "demo2" => "demo#say_goodbye"
 
   post '/api/auth/login', to: 'auth#login'
+  post '/api/auth/register', to: 'auth#register'
 end
