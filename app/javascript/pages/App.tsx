@@ -8,6 +8,10 @@ import ColorsPage from "./sandbox/ColorsPage.js"
 import GlobalStyle from "./app/GlobalStyle.ts"
 import styled from "styled-components"
 import LoginPage from './LoginPage'
+import RegisterPage from './RegisterPage'
+import CGVPage from './CGVPage'
+import CGUPage from './CGUPage'
+import MentionsLegalesPage from './MentionsLegalesPage'
 
 const AppContainer = styled.div`
 	width: 100vw;
@@ -31,8 +35,12 @@ const App = () => {
 			<GlobalStyle />
 			<BrowserRouter>
 				<Routes>
-					{/* Route de login isolée */}
+					{/* Routes isolées */}
 					<Route path="/login" element={<LoginPage />} />
+					<Route path="/register" element={<RegisterPage />} />
+					<Route path="/cgv" element={<CGVPage />} />
+					<Route path="/cgu" element={<CGUPage />} />
+					<Route path="/mentions-legales" element={<MentionsLegalesPage />} />
 
 					{/* Routes principales avec le layout standard */}
 					<Route path="/*" element={
@@ -43,6 +51,10 @@ const App = () => {
 								<a href="/colors" style={{ color: "#fff", textDecoration: "none" }}>CHARTE GRAPHIQUE</a>
 								<a href="/sandbox" style={{ color: "#fff", textDecoration: "none" }}>SANDBOX</a>
 								<a href="/login" style={{ color: "#fff", textDecoration: "none" }}>CONNEXION</a>
+								<a href="/register" style={{ color: "#fff", textDecoration: "none" }}>INSCRIPTION</a>
+								<a href="/cgv" style={{ color: "#fff", textDecoration: "none" }}>CGV</a>
+								<a href="/cgu" style={{ color: "#fff", textDecoration: "none" }}>CGU</a>
+								<a href="/mentions-legales" style={{ color: "#fff", textDecoration: "none" }}>MENTIONS LÉGALES</a>
 							</div>
 							<ApplicationWrapper>
 								{/* STATIC SIDEBAR */}

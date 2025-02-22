@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import BackgroundLayout from '../components/layout/BackgroundLayout';
 import WhiteContainer from '../components/layout/WhiteContainer';
@@ -129,6 +129,13 @@ const Input = styled.input`
     box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.1);
   }
 
+  &.error {
+    border-color: #ff4d4d;
+    &:focus {
+      box-shadow: 0 0 0 2px rgba(255, 77, 77, 0.1);
+    }
+  }
+
   @media (max-width: 768px) {
     padding: 0.875rem;
     font-size: 1rem;
@@ -140,6 +147,13 @@ const Input = styled.input`
     font-size: 0.9rem;
     border-radius: 8px;
   }
+`;
+
+const ErrorText = styled.span`
+  color: #ff4d4d;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  font-family: 'Inter', sans-serif;
 `;
 
 const Button = styled.button`
@@ -232,45 +246,139 @@ const SignUpLink = styled.div`
 `;
 
 const LoginPage: React.FC = () => {
-    return (
-        <>
-            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-            <BackgroundLayout backgroundImage="/images/backgrounds/parking-background.png">
-                <WhiteContainer width="min(600px, 90%)">
-                    <Header>
-                        <Logo src="/images/logos/logo.png" alt="RenteCaisse Logo" />
-                        <BrandName>RENTECAISSE</BrandName>
-                    </Header>
-                    <Title>Connexion</Title>
-                    <Form>
-                        <FormGroup>
-                            <Label>email*</Label>
-                            <Input
-                                type="email"
-                                name="email"
-                                placeholder="marcel.picho@gmail.com"
-                            />
-                        </FormGroup>
-                        <FormGroup>
-                            <Label>Mot de passe*</Label>
-                            <Input
-                                type="password"
-                                name="password"
-                                placeholder="**********"
-                            />
-                        </FormGroup>
-                        <ForgotPassword href="#">Mot de passe oublié ?</ForgotPassword>
-                        <Button type="submit">
-                            Connexion
-                        </Button>
-                        <SignUpLink>
-                            Vous n'avez pas de compte ? <a href="#">S'inscrire</a>
-                        </SignUpLink>
-                    </Form>
-                </WhiteContainer>
-            </BackgroundLayout>
-        </>
-    );
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newEmail = e.target.value;
+    setEmail(newEmail);
+
+    if (newEmail && !validateEmail(newEmail)) {
+      setEmailError('Format d\'email invalide');
+    } else {
+      setEmailError('');
+    }
+  };
+
+  // Fonction pour convertir un ArrayBuffer en chaîne hexadécimale
+  const arrayBufferToHex = (buffer: ArrayBuffer): string => {
+    return Array.from(new Uint8Array(buffer))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+  };
+
+  // Fonction pour hasher le mot de passe en SHA-256
+  const hashPassword = async (password: string): Promise<string> => {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    return arrayBufferToHex(hashBuffer);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    if (!validateEmail(email)) {
+      setError('Format d\'email invalide');
+      return;
+    }
+
+    try {
+      const hashedPassword = await hashPassword(password);
+
+      const formData = {
+        user: {
+          email,
+          password: hashedPassword
+        }
+      };
+
+      console.log('Tentative de connexion avec:', { email, hashedPassword });
+
+      const response = await fetch('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+
+      console.log('Statut de la réponse:', response.status);
+      const data = await response.json();
+      console.log('Données reçues:', data);
+
+      if (data.success) {
+        window.location.href = '/home';
+      } else {
+        setError(data.message);
+      }
+    } catch (err) {
+      console.error('Erreur lors de la connexion:', err);
+      setError('Une erreur est survenue lors de la connexion');
+    }
+  };
+
+  return (
+    <>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+      <BackgroundLayout backgroundImage="/images/backgrounds/parking-background.png">
+        <WhiteContainer width="min(600px, 90%)">
+          <Header>
+            <Logo src="/images/logos/logo.png" alt="RenteCaisse Logo" />
+            <BrandName>RENTECAISSE</BrandName>
+          </Header>
+          <Title>Connexion</Title>
+          {error && (
+            <div style={{ color: 'red', textAlign: 'center', marginBottom: '1rem' }}>
+              {error}
+            </div>
+          )}
+          <Form onSubmit={handleSubmit}>
+            <FormGroup>
+              <Label>Email*</Label>
+              <Input
+                type="email"
+                name="email"
+                placeholder="marcel.picho@gmail.com"
+                value={email}
+                onChange={handleEmailChange}
+                required
+                className={emailError ? 'error' : ''}
+              />
+              {emailError && <ErrorText>{emailError}</ErrorText>}
+            </FormGroup>
+            <FormGroup>
+              <Label>Mot de passe*</Label>
+              <Input
+                type="password"
+                name="password"
+                placeholder="**********"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </FormGroup>
+            <ForgotPassword href="#">Mot de passe oublié ?</ForgotPassword>
+            <Button type="submit">
+              Connexion
+            </Button>
+            <SignUpLink>
+              Vous n'avez pas de compte ? <a href="/register">S'inscrire</a>
+            </SignUpLink>
+          </Form>
+        </WhiteContainer>
+      </BackgroundLayout>
+    </>
+  );
 };
 
 export default LoginPage; 

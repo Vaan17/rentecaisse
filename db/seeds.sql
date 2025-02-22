@@ -8,8 +8,8 @@ INSERT INTO SITE (nom_site, adresse, code_postal, ville, pays, telephone, email,
 ('Site Marseille', '20 Avenue de l\Ecologie', '13001', 'Marseille', 'France', '0987654321', 'contact@greensolutions.fr', 'https://www.greensolutions.fr', 'https://www.greensolutions.fr/site_marseille.png', 2, '2020-06-15', '2025-01-14');
 
 INSERT INTO UTILISATEUR (email, password, admin_entreprise, admin_rentecaisse, nom, prenom, date_naissance, adresse, code_postal, ville, pays, telephone, categorie_permis, lien_image_utilisateur, id_entreprise, id_site, date_creation_utilisateur, date_modification_utilisateur) VALUES 
-('jean.dupont@techinnov.fr', 'password123', TRUE, FALSE, 'Dupont', 'Jean', '1990-03-15', '15 Rue du Tech', '75002', 'Paris', 'France', '0123456789', 'B', 'https://www.techinnov.fr/jean.png', 1, 1, '2023-01-01', '2025-01-14'),
-('lucie.dupont@greensolutions.fr', 'password456', FALSE, TRUE, 'Dupont', 'Lucie', '1985-07-30', '30 Avenue du Green', '13002', 'Marseille', 'France', '0987654321', 'B', 'https://www.greensolutions.fr/lucie.png', 2, 2, '2020-06-15', '2025-01-14');
+('jean.dupont@techinnov.fr', '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8', TRUE, FALSE, 'Dupont', 'Jean', '1990-03-15', '15 Rue du Tech', '75002', 'Paris', 'France', '0123456789', 'B', 'https://www.techinnov.fr/jean.png', 1, 1, '2023-01-01', '2025-01-14'),
+('lucie.dupont@greensolutions.fr', '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8', FALSE, TRUE, 'Dupont', 'Lucie', '1985-07-30', '30 Avenue du Green', '13002', 'Marseille', 'France', '0987654321', 'B', 'https://www.greensolutions.fr/lucie.png', 2, 2, '2020-06-15', '2025-01-14');
 
 INSERT INTO VOITURES (marque, modele, année_fabrication, immatriculation, carburant, couleur, puissance, nombre_portes, nombre_places, type_boite, statut_voiture, lien_image_voiture, id_entreprise, id_site, date_creation_voiture, date_modification_voiture) VALUES 
 ('Tesla', 'Model 3', 2023, 'AB123CD', 'Electrique', 'Noir', 350, 4, 5, 'Automatique', 'DISPONIBLE', 'https://www.techinnov.fr/tesla_model3.png', 1, 1, '2023-01-01', '2025-01-14'),

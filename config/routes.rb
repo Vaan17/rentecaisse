@@ -3,4 +3,6 @@ Rails.application.routes.draw do
 
   get "demo" => "demo#say_hi"
   get "demo2" => "demo#say_goodbye"
+
+  post '/api/auth/login', to: 'auth#login'
 end
