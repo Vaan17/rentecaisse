@@ -98,16 +98,10 @@ class AuthController < ApplicationController
       Rails.logger.warn "Échec de la confirmation: #{result[:message]}"
       render json: { 
         success: false, 
-        message: result[:message]
-      }, status: :bad_request
+        message: result[:message],
+        error_code: 'TOKEN_ERROR'
+      }, status: :unauthorized
     end
-  rescue AuthenticationService::TokenExpiredError => e
-    Rails.logger.info "Token expiré, nouveau mail envoyé"
-    render json: {
-      success: false,
-      message: e.message,
-      error_code: 'TOKEN_EXPIRED'
-    }, status: :unauthorized
   rescue StandardError => e
     Rails.logger.error "Erreur lors de la confirmation de l'email: #{e.message}"
     Rails.logger.error e.backtrace.join("\n")

@@ -40,7 +40,7 @@ class AuthenticationService
       # Générer un nouveau token et envoyer un nouveau mail
       new_token = generate_auth_token(user)
       UserMailer.confirmation_email(user).deliver_later
-      raise TokenExpiredError, "Le lien de confirmation a expiré. Un nouveau mail de confirmation vous a été envoyé."
+      return { success: false, message: "Le lien de confirmation a expiré. Un nouveau mail de confirmation vous a été envoyé." }
     end
 
     if user.update(email_confirme: true, confirmation_token: nil)
