@@ -190,26 +190,37 @@ Your app is ready to be deployed!
 Voici les commandes disponibles pour gérer la base de données :
 
 ```bash
-rails db:reset_structure
+rails db:drop
 ```
 Cette commande permet de :
-- Supprimer la base de données existante
+- Supprimer complètement la base de données existante
+
+```bash
+rails db:create
+```
+Cette commande permet de :
 - Créer une nouvelle base de données vide
-- Créer toutes les tables à partir du fichier `structure.sql`
 
 ```bash
-rails db:load_seeds
+rails db:migrate
 ```
 Cette commande permet de :
-- Charger toutes les données de test à partir du fichier `seeds.sql`
-- Utile pour remplir la base avec des données d'exemple
+- Exécuter toutes les migrations pour créer la structure de la base de données
 
 ```bash
-rails db:reset_all
+rails db:seed
 ```
-Cette commande combine les deux précédentes :
-- Réinitialise complètement la structure (tables)
-- Recharge toutes les données de test
+Cette commande permet de :
+- Charger les données de test depuis le fichier `seeds.rb`
+
+```bash
+rails db:reset
+```
+Cette commande combine toutes les commandes précédentes :
+- Supprime la base de données
+- Recrée la base de données
+- Exécute les migrations
+- Charge les données de test
 - Parfait pour repartir d'une base propre
 
 ⚠️ **Note importante** : Avant d'exécuter ces commandes, assurez-vous que :

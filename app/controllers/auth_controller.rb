@@ -1,174 +1,126 @@
 class AuthController < ApplicationController
   def login
-    Rails.logger.info "Paramètres reçus: #{params.inspect}"
-    Rails.logger.info "Corps de la requête brut: #{request.raw_post}"
-    Rails.logger.info "Content-Type: #{request.content_type}"
-
-    # Récupérer les paramètres email et password
-    user_params = params[:user] || {}
-    email = user_params[:email]
-    hashed_password = user_params[:password]
-
-    Rails.logger.info "Email extrait: #{email}"
-    Rails.logger.info "Password haché reçu ? #{!hashed_password.nil?}"
-
-    # Validation du format et présence des champs
-    if email.blank? || hashed_password.blank?
-      Rails.logger.warn "Email ou mot de passe manquant"
-      return render json: { 
-        success: false, 
-        message: 'Email et mot de passe requis',
-        error_code: 'MISSING_FIELDS'
-      }, status: :bad_request # 400
-    end
-
-    # Validation du format email
-    unless email =~ /\A[^@\s]+@[^@\s]+\.[^@\s]+\z/
-      Rails.logger.warn "Format d'email invalide"
-      return render json: { 
-        success: false, 
-        message: 'Format d\'email invalide',
-        error_code: 'INVALID_EMAIL_FORMAT'
-      }, status: :bad_request # 400
-    end
-
-    # Rechercher l'utilisateur dans la base de données
-    query = "SELECT * FROM UTILISATEUR WHERE email = ? AND password = ? LIMIT 1"
+    Rails.logger.info "Tentative de connexion avec l'email: #{user_params[:email]}"
     
-    Rails.logger.info "Exécution de la requête SQL..."
-    
-    begin
-      result = ActiveRecord::Base.connection.execute(
-        ActiveRecord::Base.send(:sanitize_sql_array, [query, email, hashed_password])
-      )
-      
-      Rails.logger.info "Résultat de la requête: #{result.inspect}"
+    service = AuthenticationService.new(user_params[:email], user_params[:password])
+    user = service.authenticate
 
-      if result.any?
-        user = result.first
-        Rails.logger.info "Utilisateur trouvé: #{user['email']}"
-        render json: {
-          success: true,
-          user: {
-            id: user['id_user'],
-            email: user['email'],
-            nom: user['nom'],
-            prenom: user['prenom'],
-            admin_entreprise: user['admin_entreprise'],
-            admin_rentecaisse: user['admin_rentecaisse']
-          }
+    if user
+      Rails.logger.info "Connexion réussie pour l'utilisateur: #{user.email}"
+      render json: {
+        success: true,
+        user: {
+          id: user.id,
+          email: user.email,
+          nom: user.nom,
+          prenom: user.prenom,
+          admin_entreprise: user.admin_entreprise,
+          admin_rentecaisse: user.admin_rentecaisse
         }
-      else
-        Rails.logger.warn "Aucun utilisateur trouvé avec ces identifiants"
-        render json: { 
-          success: false, 
-          message: 'Email ou mot de passe incorrect',
-          error_code: 'INVALID_CREDENTIALS'
-        }, status: :unauthorized # 401
-      end
-    rescue => e
-      Rails.logger.error "Erreur lors de l'authentification: #{e.message}"
-      Rails.logger.error e.backtrace.join("\n")
+      }
+    else
+      Rails.logger.warn "Échec de la connexion"
       render json: { 
         success: false, 
-        message: 'Une erreur est survenue lors de la connexion',
-        error_code: 'SERVER_ERROR'
-      }, status: :internal_server_error # 500
+        message: 'Email ou mot de passe incorrect',
+        error_code: 'INVALID_CREDENTIALS'
+      }, status: :unauthorized
     end
+  rescue StandardError => e
+    Rails.logger.error "Erreur lors de l'authentification: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    render json: { 
+      success: false, 
+      message: 'Une erreur est survenue lors de la connexion',
+      error_code: 'SERVER_ERROR'
+    }, status: :internal_server_error
   end
 
   def register
-    Rails.logger.info "Paramètres reçus pour l'inscription: #{params.inspect}"
+    Rails.logger.info "Tentative d'inscription avec l'email: #{user_params[:email]}"
     
-    # Récupérer les paramètres
-    user_params = params[:user] || {}
-    email = user_params[:email]
-    hashed_password = user_params[:password]
+    user = Utilisateur.new(
+      email: user_params[:email],
+      password: user_params[:password],
+      email_confirme: false,
+      admin_entreprise: false,
+      admin_rentecaisse: false,
+      premiere_connexion: true,
+      date_creation_utilisateur: Time.current,
+      date_modification_utilisateur: Time.current
+    )
 
-    # Validation des champs requis
-    if email.blank? || hashed_password.blank?
-      return render json: { 
-        success: false, 
-        message: 'Email et mot de passe requis',
-        error_code: 'MISSING_FIELDS'
-      }, status: :bad_request
-    end
-
-    # Validation du format email
-    unless email =~ /\A[^@\s]+@[^@\s]+\.[^@\s]+\z/
-      return render json: { 
-        success: false, 
-        message: 'Format d\'email invalide',
-        error_code: 'INVALID_EMAIL_FORMAT'
-      }, status: :bad_request
-    end
-
-    # Vérifier si l'email existe déjà
-    check_query = "SELECT COUNT(*) as count FROM UTILISATEUR WHERE email = ?"
-    begin
-      result = ActiveRecord::Base.connection.execute(
-        ActiveRecord::Base.send(:sanitize_sql_array, [check_query, email])
-      )
+    if user.save
+      Rails.logger.info "Inscription réussie pour l'utilisateur: #{user.email}"
       
-      if result.first['count'] > 0
-        return render json: { 
-          success: false, 
-          message: 'Cet email est déjà utilisé',
-          error_code: 'EMAIL_TAKEN'
-        }, status: :conflict
-      end
-
-      # Insérer le nouvel utilisateur
-      insert_query = "INSERT INTO UTILISATEUR (email, password, date_creation_utilisateur, date_modification_utilisateur) VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
-      ActiveRecord::Base.connection.execute(
-        ActiveRecord::Base.send(:sanitize_sql_array, [insert_query, email, hashed_password])
-      )
-
-      user = ActiveRecord::Base.connection.execute(
-        ActiveRecord::Base.send(:sanitize_sql_array, ["SELECT * FROM UTILISATEUR WHERE email = ? LIMIT 1", email])
-      ).first
-      confirmation_token = user['confirmation_token']
-
+      # Génération du token de confirmation
+      service = AuthenticationService.new(user.email, user.password)
+      token = service.generate_auth_token(user)
+      
       # Envoi de l'email de confirmation
-      user = OpenStruct.new(email: email, name: 'Utilisateur', confirmation_token: confirmation_token)
-      UserMailer.confirmation_email(user).deliver_now
+      UserMailer.confirmation_email(user).deliver_later
 
       render json: {
         success: true,
         message: 'Inscription réussie. Veuillez vérifier votre email pour confirmer votre compte.'
       }
-    rescue => e
-      Rails.logger.error "Erreur lors de l'inscription: #{e.message}"
-      Rails.logger.error e.backtrace.join("\n")
+    else
+      Rails.logger.warn "Échec de l'inscription: #{user.errors.full_messages.join(', ')}"
       render json: { 
         success: false, 
-        message: 'Une erreur est survenue lors de l\'inscription',
-        error_code: 'SERVER_ERROR'
-      }, status: :internal_server_error
+        message: user.errors.full_messages.join(', '),
+        error_code: 'VALIDATION_ERROR'
+      }, status: :unprocessable_entity
     end
+  rescue StandardError => e
+    Rails.logger.error "Erreur lors de l'inscription: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    render json: { 
+      success: false, 
+      message: 'Une erreur est survenue lors de l\'inscription',
+      error_code: 'SERVER_ERROR'
+    }, status: :internal_server_error
   end
 
   def confirm_email
-    Rails.logger.info "Début de la méthode confirm_email"
-    token = params[:token]
-    Rails.logger.info "Token reçu: #{token}"
-    user = ActiveRecord::Base.connection.execute(
-      ActiveRecord::Base.send(:sanitize_sql_array, ["SELECT * FROM UTILISATEUR WHERE confirmation_token = ? LIMIT 1", token])
-    ).first
-        if user
-      Rails.logger.info "Utilisateur trouvé: #{user['email']}"
-      ActiveRecord::Base.connection.execute(
-        ActiveRecord::Base.send(:sanitize_sql_array, ["UPDATE UTILISATEUR SET email_confirme = true, confirmation_token = NULL WHERE id_user = ?", user['id_user']])
-      )
-      Rails.logger.info "Email confirmé pour l'utilisateur: #{user['email']}"
-      render json: { success: true, message: 'Votre compte a été confirmé avec succès.' }
+    Rails.logger.info "Tentative de confirmation d'email avec le token: #{params[:token]}"
+    
+    service = AuthenticationService.new(nil, nil)
+    result = service.confirm_email(params[:token])
+    
+    if result[:success]
+      Rails.logger.info "Email confirmé avec succès"
+      render json: { 
+        success: true, 
+        message: result[:message]
+      }
     else
-      Rails.logger.warn "Token de confirmation invalide"
-      render json: { success: false, message: 'Token de confirmation invalide.' }, status: :bad_request
+      Rails.logger.warn "Échec de la confirmation: #{result[:message]}"
+      render json: { 
+        success: false, 
+        message: result[:message]
+      }, status: :bad_request
     end
-  rescue => e
+  rescue AuthenticationService::TokenExpiredError => e
+    Rails.logger.info "Token expiré, nouveau mail envoyé"
+    render json: {
+      success: false,
+      message: e.message,
+      error_code: 'TOKEN_EXPIRED'
+    }, status: :unauthorized
+  rescue StandardError => e
     Rails.logger.error "Erreur lors de la confirmation de l'email: #{e.message}"
     Rails.logger.error e.backtrace.join("\n")
-    render json: { success: false, message: 'Une erreur est survenue lors de la confirmation de l\'email', error_code: 'SERVER_ERROR' }, status: :internal_server_error
+    render json: { 
+      success: false, 
+      message: 'Une erreur est survenue lors de la confirmation de l\'email',
+      error_code: 'SERVER_ERROR'
+    }, status: :internal_server_error
+  end
+
+  private
+
+  def user_params
+    params.require(:user).permit(:email, :password)
   end
 end

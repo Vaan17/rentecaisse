@@ -15,7 +15,7 @@ class UserMailer < ApplicationMailer
     request['content-type'] = 'application/json'
     request.body = {
       sender: { name: ENV['SENDER_NAME'], email: ENV['EMAIL_SENDER'] },
-      to: [{ email: @user.email, name: @user.name }],
+      to: [{ email: @user.email }],
       subject: 'Confirmez votre compte',
       htmlContent: "<html><head></head><body><p>Bonjour,</p><p>Veuillez confirmer votre compte en cliquant sur le lien suivant : <a href='#{@confirmation_url}'>#{@confirmation_url}</a></p></body></html>"
     }.to_json
