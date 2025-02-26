@@ -6,9 +6,17 @@ class AuthController < ApplicationController
     user = service.authenticate
 
     if user
+      # Génère un token de session
+      session_token = SecureRandom.hex(32)
+      user.update(
+        session_token: session_token,
+        session_token_expires_at: 24.hours.from_now
+      )
+
       Rails.logger.info "Connexion réussie pour l'utilisateur: #{user.email}"
       render json: {
         success: true,
+        session_token: session_token,
         user: {
           id: user.id,
           email: user.email,
@@ -34,6 +42,18 @@ class AuthController < ApplicationController
       message: 'Une erreur est survenue lors de la connexion',
       error_code: 'SERVER_ERROR'
     }, status: :internal_server_error
+  end
+
+  def logout
+    token = request.headers['Authorization']&.split(' ')&.last
+    user = Utilisateur.find_by(session_token: token)
+    
+    if user
+      user.update(session_token: nil, session_token_expires_at: nil)
+      render json: { success: true, message: 'Déconnexion réussie' }
+    else
+      render json: { success: false, message: 'Session invalide' }, status: :unauthorized
+    end
   end
 
   def register

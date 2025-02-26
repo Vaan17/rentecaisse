@@ -317,7 +317,9 @@ const LoginPage: React.FC = () => {
       console.log('Données reçues:', data);
 
       if (data.success) {
-        window.location.href = '/home';
+        // Sauvegarde du token de session
+        localStorage.setItem('sessionToken', data.session_token);
+        window.location.href = '/authenticated';
       } else {
         setError(data.message);
       }

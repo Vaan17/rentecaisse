@@ -17,6 +17,7 @@ import ConfirmEmailPage from './ConfirmEmailPage'
 import FirstConnexionPage from './FirstConnexionPage'
 import ForgottenPasswordPage from './ForgottenPasswordPage'
 import ResetPasswordPage from './ResetPasswordPage'
+import AuthenticatedPage from './AuthenticatedPage'
 
 const AppContainer = styled.div`
 	width: 100vw;
@@ -51,6 +52,7 @@ const App = () => {
 					<Route path="/mentions-legales" element={<MentionsLegalesPage />} />
 					<Route path="/confirm_email" element={<ConfirmEmailPage />} />
 					<Route path="/first-connexion" element={<FirstConnexionPage />} />
+					<Route path="/authenticated" element={<AuthenticatedPage />} />
 
 					{/* Routes principales avec le layout standard */}
 					<Route path="/*" element={

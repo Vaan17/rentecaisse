@@ -9,4 +9,7 @@ Rails.application.routes.draw do
   post '/api/auth/confirm_email', to: 'auth#confirm_email'
   post '/api/auth/forgot-password', to: 'auth#forgot_password'
   post '/api/auth/reset-password', to: 'auth#reset_password'
+  post '/api/auth/logout', to: 'auth#logout'
+
+  get '/api/authenticated-page', to: 'authenticated_page#index'
 end
