@@ -1,4 +1,6 @@
 -- Structure de la base de données
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 DROP TABLE IF EXISTS EMPRUNT CASCADE;
 DROP TABLE IF EXISTS CLE CASCADE;
 DROP TABLE IF EXISTS LOCALISATION CASCADE;
@@ -56,6 +58,7 @@ CREATE TABLE UTILISATEUR (
     nom VARCHAR(50) CHECK (LENGTH(nom) >= 3),
     prenom VARCHAR(50) CHECK (LENGTH(prenom) >= 3),
     date_naissance DATE,
+    genre VARCHAR(100),
     adresse VARCHAR(100) CHECK (LENGTH(adresse) >= 10),
     code_postal VARCHAR(5) CHECK (LENGTH(code_postal) = 5),
     ville VARCHAR(50) CHECK (LENGTH(ville) >= 3),
@@ -63,6 +66,9 @@ CREATE TABLE UTILISATEUR (
     telephone VARCHAR(10),
     categorie_permis VARCHAR(20),
     lien_image_utilisateur VARCHAR(200),
+    email_confirme BOOLEAN NOT NULL DEFAULT FALSE,
+    confirmation_token VARCHAR(100) DEFAULT encode(gen_random_bytes(50), 'hex') UNIQUE,
+    premiere_connexion BOOLEAN NOT NULL DEFAULT TRUE,
     id_entreprise INT REFERENCES ENTREPRISE(id_entreprise),
     id_site INT REFERENCES SITE(id_site),
     date_creation_utilisateur DATE NOT NULL,
@@ -136,7 +142,3 @@ CREATE TABLE EMPRUNT (
     date_creation_emprunt DATE NOT NULL,
     date_modification_emprunt DATE NOT NULL
 );
-
- 
-
- 

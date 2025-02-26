@@ -13,6 +13,8 @@ import RegisterSuccessPage from './RegisterSuccessPage'
 import CGVPage from './CGVPage'
 import CGUPage from './CGUPage'
 import MentionsLegalesPage from './MentionsLegalesPage'
+import ConfirmEmailPage from './ConfirmEmailPage'
+import FirstConnexionPage from './FirstConnexionPage'
 
 const AppContainer = styled.div`
 	width: 100vw;
@@ -43,6 +45,8 @@ const App = () => {
 					<Route path="/cgv" element={<CGVPage />} />
 					<Route path="/cgu" element={<CGUPage />} />
 					<Route path="/mentions-legales" element={<MentionsLegalesPage />} />
+					<Route path="/confirm_email" element={<ConfirmEmailPage />} />
+					<Route path="/first-connexion" element={<FirstConnexionPage />} />
 
 					{/* Routes principales avec le layout standard */}
 					<Route path="/*" element={

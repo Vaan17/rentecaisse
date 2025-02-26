@@ -120,14 +120,22 @@ class AuthController < ApplicationController
 
       # Insérer le nouvel utilisateur
       insert_query = "INSERT INTO UTILISATEUR (email, password, date_creation_utilisateur, date_modification_utilisateur) VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
-      
       ActiveRecord::Base.connection.execute(
         ActiveRecord::Base.send(:sanitize_sql_array, [insert_query, email, hashed_password])
       )
 
+      user = ActiveRecord::Base.connection.execute(
+        ActiveRecord::Base.send(:sanitize_sql_array, ["SELECT * FROM UTILISATEUR WHERE email = ? LIMIT 1", email])
+      ).first
+      confirmation_token = user['confirmation_token']
+
+      # Envoi de l'email de confirmation
+      user = OpenStruct.new(email: email, name: 'Utilisateur', confirmation_token: confirmation_token)
+      UserMailer.confirmation_email(user).deliver_now
+
       render json: {
         success: true,
-        message: 'Inscription réussie'
+        message: 'Inscription réussie. Veuillez vérifier votre email pour confirmer votre compte.'
       }
     rescue => e
       Rails.logger.error "Erreur lors de l'inscription: #{e.message}"
@@ -139,4 +147,28 @@ class AuthController < ApplicationController
       }, status: :internal_server_error
     end
   end
-end 
+
+  def confirm_email
+    Rails.logger.info "Début de la méthode confirm_email"
+    token = params[:token]
+    Rails.logger.info "Token reçu: #{token}"
+    user = ActiveRecord::Base.connection.execute(
+      ActiveRecord::Base.send(:sanitize_sql_array, ["SELECT * FROM UTILISATEUR WHERE confirmation_token = ? LIMIT 1", token])
+    ).first
+        if user
+      Rails.logger.info "Utilisateur trouvé: #{user['email']}"
+      ActiveRecord::Base.connection.execute(
+        ActiveRecord::Base.send(:sanitize_sql_array, ["UPDATE UTILISATEUR SET email_confirme = true, confirmation_token = NULL WHERE id_user = ?", user['id_user']])
+      )
+      Rails.logger.info "Email confirmé pour l'utilisateur: #{user['email']}"
+      render json: { success: true, message: 'Votre compte a été confirmé avec succès.' }
+    else
+      Rails.logger.warn "Token de confirmation invalide"
+      render json: { success: false, message: 'Token de confirmation invalide.' }, status: :bad_request
+    end
+  rescue => e
+    Rails.logger.error "Erreur lors de la confirmation de l'email: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    render json: { success: false, message: 'Une erreur est survenue lors de la confirmation de l\'email', error_code: 'SERVER_ERROR' }, status: :internal_server_error
+  end
+end

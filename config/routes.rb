@@ -6,4 +6,5 @@ Rails.application.routes.draw do
 
   post '/api/auth/login', to: 'auth#login'
   post '/api/auth/register', to: 'auth#register'
+  post '/api/auth/confirm_email', to: 'auth#confirm_email'
 end
