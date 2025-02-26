@@ -112,9 +112,70 @@ class AuthController < ApplicationController
     }, status: :internal_server_error
   end
 
+  def forgot_password
+    Rails.logger.info "Tentative de réinitialisation de mot de passe pour l'email: #{user_params[:email]}"
+    
+    service = AuthenticationService.new(user_params[:email], nil)
+    token = service.request_password_reset
+
+    if token
+      Rails.logger.info "Email de réinitialisation envoyé à: #{user_params[:email]}"
+      render json: {
+        success: true,
+        message: 'Si un compte existe avec cette adresse e-mail, vous recevrez un e-mail contenant les instructions pour réinitialiser votre mot de passe.'
+      }
+    else
+      Rails.logger.info "Tentative de réinitialisation pour un email inexistant: #{user_params[:email]}"
+      render json: {
+        success: true,
+        message: 'Si un compte existe avec cette adresse e-mail, vous recevrez un e-mail contenant les instructions pour réinitialiser votre mot de passe.'
+      }
+    end
+  rescue StandardError => e
+    Rails.logger.error "Erreur lors de la demande de réinitialisation: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    render json: { 
+      success: false, 
+      message: 'Une erreur est survenue lors de la demande de réinitialisation',
+      error_code: 'SERVER_ERROR'
+    }, status: :internal_server_error
+  end
+
+  def reset_password
+    Rails.logger.info "Tentative de réinitialisation de mot de passe avec un token"
+    
+    service = AuthenticationService.new(nil, nil)
+    if service.reset_password(reset_password_params[:token], reset_password_params[:password])
+      Rails.logger.info "Mot de passe réinitialisé avec succès"
+      render json: {
+        success: true,
+        message: 'Votre mot de passe a été réinitialisé avec succès.'
+      }
+    else
+      Rails.logger.warn "Échec de la réinitialisation du mot de passe"
+      render json: {
+        success: false,
+        message: 'Le lien de réinitialisation est invalide ou a expiré.',
+        error_code: 'INVALID_TOKEN'
+      }, status: :unauthorized
+    end
+  rescue StandardError => e
+    Rails.logger.error "Erreur lors de la réinitialisation du mot de passe: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    render json: { 
+      success: false, 
+      message: 'Une erreur est survenue lors de la réinitialisation du mot de passe',
+      error_code: 'SERVER_ERROR'
+    }, status: :internal_server_error
+  end
+
   private
 
   def user_params
     params.require(:user).permit(:email, :password)
+  end
+
+  def reset_password_params
+    params.require(:user).permit(:token, :password)
   end
 end

@@ -15,6 +15,8 @@ import CGUPage from './CGUPage'
 import MentionsLegalesPage from './MentionsLegalesPage'
 import ConfirmEmailPage from './ConfirmEmailPage'
 import FirstConnexionPage from './FirstConnexionPage'
+import ForgottenPasswordPage from './ForgottenPasswordPage'
+import ResetPasswordPage from './ResetPasswordPage'
 
 const AppContainer = styled.div`
 	width: 100vw;
@@ -42,6 +44,8 @@ const App = () => {
 					<Route path="/login" element={<LoginPage />} />
 					<Route path="/register" element={<RegisterPage />} />
 					<Route path="/register-success" element={<RegisterSuccessPage />} />
+					<Route path="/forgot-password" element={<ForgottenPasswordPage />} />
+					<Route path="/reset-password" element={<ResetPasswordPage />} />
 					<Route path="/cgv" element={<CGVPage />} />
 					<Route path="/cgu" element={<CGUPage />} />
 					<Route path="/mentions-legales" element={<MentionsLegalesPage />} />

@@ -367,7 +367,7 @@ const LoginPage: React.FC = () => {
                 required
               />
             </FormGroup>
-            <ForgotPassword href="#">Mot de passe oublié ?</ForgotPassword>
+            <ForgotPassword href="/forgot-password">Mot de passe oublié ?</ForgotPassword>
             <Button type="submit">
               Connexion
             </Button>

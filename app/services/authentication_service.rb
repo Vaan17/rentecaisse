@@ -63,9 +63,13 @@ class AuthenticationService
     user = Utilisateur.find_by(reset_password_token: token)
     return false unless user && !self.class.token_expired?(token)
 
+    # Vérifie si le mot de passe est déjà haché
+    hashed_password = is_sha256?(new_password) ? new_password : Digest::SHA256.hexdigest(new_password)
+
     user.update(
-      password: new_password,
-      reset_password_token: nil
+      password: hashed_password,
+      reset_password_token: nil,
+      reset_password_sent_at: nil
     )
   end
 
@@ -134,21 +138,23 @@ class AuthenticationService
   end
 
   def send_reset_password_email
-    # À implémenter avec ActionMailer
-    # UserMailer.reset_password_email(@user).deliver_later
+    UserMailer.reset_password_email(@user).deliver_later
   end
 
   def self.token_expired?(token, expiration_hours = 24)
     return true if token.nil?
 
-    user = Utilisateur.find_by(confirmation_token: token)
+    user = Utilisateur.find_by(reset_password_token: token) || Utilisateur.find_by(confirmation_token: token)
     return true unless user
 
-    if user.respond_to?(:token_created_at)
+    if user.reset_password_token == token
+      return true if user.reset_password_sent_at.nil?
+      user.reset_password_sent_at < expiration_hours.hours.ago
+    elsif user.confirmation_token == token
       return true if user.token_created_at.nil?
       user.token_created_at < expiration_hours.hours.ago
     else
-      false
+      true
     end
   end
 
