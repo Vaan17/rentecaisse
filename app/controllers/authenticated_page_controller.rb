@@ -15,6 +15,24 @@ class AuthenticatedPageController < ApplicationController
       return
     end
 
+    if @current_user.entreprise_id.nil?
+      render json: {
+        success: false,
+        redirect_to: '/affectation-entreprise',
+        message: "Veuillez sélectionner votre entreprise"
+      }
+      return
+    end
+
+    if !@current_user.confirmation_entreprise
+      render json: {
+        success: false,
+        redirect_to: '/statut-affectation',
+        message: "Votre affectation est en attente de validation"
+      }
+      return
+    end
+
     render json: {
       success: true,
       user: {
@@ -40,7 +58,7 @@ class AuthenticatedPageController < ApplicationController
     if result[:success]
       render json: {
         success: true,
-        redirect_to: '/authenticated',
+        redirect_to: '/affectation-entreprise',
         message: "Profil mis à jour avec succès"
       }
     else
@@ -48,6 +66,45 @@ class AuthenticatedPageController < ApplicationController
         success: false,
         errors: result[:errors]
       }, status: :unprocessable_entity
+    end
+  end
+
+  def get_entreprises
+    entreprises = EntrepriseService.get_all_entreprises
+    render json: { success: true, entreprises: entreprises }
+  end
+
+  def get_sites
+    enterprise_id = params[:enterprise_id]
+    result = EntrepriseService.get_entreprise_with_sites(enterprise_id)
+    
+    if result[:success]
+      render json: result
+    else
+      render json: { success: false, message: result[:message] }, status: :not_found
+    end
+  end
+
+  def verify_and_affect_user
+    enterprise_id = params[:enterprise_id]
+    site_id = params[:site_id]
+    code = params[:code]
+
+    verification = EntrepriseService.verify_enterprise_code(enterprise_id, code)
+    
+    if verification[:success]
+      @current_user.update(
+        entreprise_id: enterprise_id,
+        site_id: site_id,
+        confirmation_entreprise: false
+      )
+      render json: { 
+        success: true, 
+        redirect_to: '/statut-affectation',
+        message: "Affectation réussie, en attente de validation" 
+      }
+    else
+      render json: { success: false, message: verification[:message] }, status: :unprocessable_entity
     end
   end
 

@@ -13,4 +13,9 @@ Rails.application.routes.draw do
 
   get '/api/authenticated-page', to: 'authenticated_page#index'
   post '/api/update_profile', to: 'authenticated_page#update_profile'
+
+  # Routes pour les entreprises et sites
+  get '/api/get_entreprises', to: 'authenticated_page#get_entreprises'
+  get '/api/get_sites', to: 'authenticated_page#get_sites'
+  post '/api/verify_and_affect_user', to: 'authenticated_page#verify_and_affect_user'
 end

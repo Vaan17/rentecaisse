@@ -19,6 +19,9 @@ import ForgottenPasswordPage from './ForgottenPasswordPage'
 import ResetPasswordPage from './ResetPasswordPage'
 import AuthenticatedPage from './AuthenticatedPage'
 import CompleteProfil from './CompleteProfil'
+import AffectationEntrepriseSite from './AffectationEntrepriseSite'
+import StatutAffectationEnAttente from './StatutAffectationEnAttente'
+import ProtectedRoute from '../components/ProtectedRoute'
 
 const AppContainer = styled.div`
 	width: 100vw;
@@ -42,7 +45,7 @@ const App = () => {
 			<GlobalStyle />
 			<BrowserRouter>
 				<Routes>
-					{/* Routes isolées */}
+					{/* Routes publiques */}
 					<Route path="/login" element={<LoginPage />} />
 					<Route path="/register" element={<RegisterPage />} />
 					<Route path="/register-success" element={<RegisterSuccessPage />} />
@@ -53,8 +56,28 @@ const App = () => {
 					<Route path="/mentions-legales" element={<MentionsLegalesPage />} />
 					<Route path="/confirm_email" element={<ConfirmEmailPage />} />
 					<Route path="/first-connexion" element={<FirstConnexionPage />} />
-					<Route path="/authenticated" element={<AuthenticatedPage />} />
-					<Route path="/complete-profil" element={<CompleteProfil />} />
+
+					{/* Routes protégées */}
+					<Route path="/authenticated" element={
+						<ProtectedRoute>
+							<AuthenticatedPage />
+						</ProtectedRoute>
+					} />
+					<Route path="/complete-profil" element={
+						<ProtectedRoute>
+							<CompleteProfil />
+						</ProtectedRoute>
+					} />
+					<Route path="/affectation-entreprise" element={
+						<ProtectedRoute>
+							<AffectationEntrepriseSite />
+						</ProtectedRoute>
+					} />
+					<Route path="/statut-affectation" element={
+						<ProtectedRoute>
+							<StatutAffectationEnAttente />
+						</ProtectedRoute>
+					} />
 
 					{/* Routes principales avec le layout standard */}
 					<Route path="/*" element={
