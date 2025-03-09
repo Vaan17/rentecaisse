@@ -77,8 +77,7 @@ class AuthenticationService
     return false unless @user
 
     @user.update(
-      derniere_connexion: Time.current,
-      premiere_connexion: false
+      derniere_connexion: Time.current
     )
   end
 

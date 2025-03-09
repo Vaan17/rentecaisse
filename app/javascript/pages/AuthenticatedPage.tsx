@@ -80,21 +80,27 @@ const AuthenticatedPage: React.FC = () => {
                     }
                 });
 
+                const data = await response.json();
+
                 if (!response.ok) {
-                    const data = await response.json();
                     if (response.status === 401) {
                         localStorage.removeItem('sessionToken');
                         navigate('/login');
                         return;
                     }
-                    if (data.redirect_to) {
-                        navigate(data.redirect_to);
-                    }
                     throw new Error(data.message || 'Erreur d\'authentification');
                 }
 
-                const data = await response.json();
-                setUserData(data.user);
+                if (data.redirect_to) {
+                    navigate(data.redirect_to);
+                    return;
+                }
+
+                if (data.success) {
+                    setUserData(data.user);
+                } else {
+                    throw new Error(data.message || 'Erreur d\'authentification');
+                }
             } catch (err: any) {
                 setError(err.message);
                 localStorage.removeItem('sessionToken');

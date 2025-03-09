@@ -14,18 +14,35 @@ class AuthController < ApplicationController
       )
 
       Rails.logger.info "Connexion réussie pour l'utilisateur: #{user.email}"
-      render json: {
-        success: true,
-        session_token: session_token,
-        user: {
-          id: user.id,
-          email: user.email,
-          nom: user.nom,
-          prenom: user.prenom,
-          admin_entreprise: user.admin_entreprise,
-          admin_rentecaisse: user.admin_rentecaisse
+      
+      if user.premiere_connexion
+        render json: {
+          success: true,
+          session_token: session_token,
+          redirect_to: '/complete-profil',
+          user: {
+            id: user.id,
+            email: user.email,
+            nom: user.nom,
+            prenom: user.prenom,
+            admin_entreprise: user.admin_entreprise,
+            admin_rentecaisse: user.admin_rentecaisse
+          }
         }
-      }
+      else
+        render json: {
+          success: true,
+          session_token: session_token,
+          user: {
+            id: user.id,
+            email: user.email,
+            nom: user.nom,
+            prenom: user.prenom,
+            admin_entreprise: user.admin_entreprise,
+            admin_rentecaisse: user.admin_rentecaisse
+          }
+        }
+      end
     else
       Rails.logger.warn "Échec de la connexion"
       render json: { 

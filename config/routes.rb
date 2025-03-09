@@ -12,4 +12,5 @@ Rails.application.routes.draw do
   post '/api/auth/logout', to: 'auth#logout'
 
   get '/api/authenticated-page', to: 'authenticated_page#index'
+  post '/api/update_profile', to: 'authenticated_page#update_profile'
 end

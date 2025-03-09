@@ -319,7 +319,13 @@ const LoginPage: React.FC = () => {
       if (data.success) {
         // Sauvegarde du token de session
         localStorage.setItem('sessionToken', data.session_token);
-        window.location.href = '/authenticated';
+        
+        // Redirection selon la réponse du serveur
+        if (data.redirect_to) {
+          window.location.href = data.redirect_to;
+        } else {
+          window.location.href = '/authenticated';
+        }
       } else {
         setError(data.message);
       }
