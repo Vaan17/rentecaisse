@@ -21,6 +21,7 @@ import AuthenticatedPage from './AuthenticatedPage'
 import CompleteProfil from './CompleteProfil'
 import AffectationEntrepriseSite from './AffectationEntrepriseSite'
 import StatutAffectationEnAttente from './StatutAffectationEnAttente'
+import HomeAuthenticated from './HomeAuthenticated'
 
 const AppContainer = styled.div`
 	width: 100vw;
@@ -61,6 +62,7 @@ const App = () => {
 					<Route path="/complete-profil" element={<CompleteProfil />} />
 					<Route path="/affectation-entreprise" element={<AffectationEntrepriseSite />} />
 					<Route path="/statut-affectation" element={<StatutAffectationEnAttente />} />
+					<Route path="/main" element={<HomeAuthenticated />} />
 
 					{/* Routes principales avec le layout standard */}
 					<Route path="/*" element={
@@ -72,6 +74,7 @@ const App = () => {
 								<a href="/sandbox" style={{ color: "#fff", textDecoration: "none" }}>SANDBOX</a>
 								<a href="/login" style={{ color: "#fff", textDecoration: "none" }}>CONNEXION</a>
 								<a href="/register" style={{ color: "#fff", textDecoration: "none" }}>INSCRIPTION</a>
+								<a href="/main" style={{ color: "#fff", textDecoration: "none" }}>MAIN</a>
 								<a href="/cgv" style={{ color: "#fff", textDecoration: "none" }}>CGV</a>
 								<a href="/cgu" style={{ color: "#fff", textDecoration: "none" }}>CGU</a>
 								<a href="/mentions-legales" style={{ color: "#fff", textDecoration: "none" }}>MENTIONS LÉGALES</a>
