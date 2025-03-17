@@ -79,6 +79,16 @@ const Button = styled.button`
   }
 `;
 
+const CancelButton = styled(Button)`
+  background-color: #ff4d4d;
+  color: white;
+  margin-top: 1rem;
+
+  &:hover {
+    background-color: #ff3333;
+  }
+`;
+
 const WhiteContainerStyled = styled(WhiteContainer)`
   max-width: 800px;
   width: 95%;
@@ -125,6 +135,35 @@ const StatutAffectationEnAttente: React.FC = () => {
     }
   };
 
+  const handleCancelAffectation = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('sessionToken');
+      const response = await axios.post(
+        'http://localhost:3000/api/cancel_affectation',
+        {},
+        {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }
+      );
+
+      if (response.data.success) {
+        toast.success("Demande d'affectation annulée");
+        navigate('/affectation-entreprise');
+      }
+    } catch (error: any) {
+      const errors = error.response?.data?.errors || ['Une erreur est survenue'];
+      errors.forEach((err: string) => toast.error(err));
+      
+      if (error.response?.status === 401) {
+        localStorage.removeItem('sessionToken');
+        navigate('/login');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <BackgroundLayout backgroundImage="/images/backgrounds/parking-background.png">
       <WhiteContainerStyled>
@@ -142,6 +181,10 @@ const StatutAffectationEnAttente: React.FC = () => {
           <Button onClick={handleRefresh} disabled={loading}>
             {loading ? 'Vérification...' : 'Actualiser le statut'}
           </Button>
+
+          <CancelButton onClick={handleCancelAffectation} disabled={loading}>
+            Annuler la demande d'affectation
+          </CancelButton>
 
           <Button onClick={handleLogout} style={{ backgroundColor: '#f0f0f0', marginTop: '1rem' }}>
             Se déconnecter

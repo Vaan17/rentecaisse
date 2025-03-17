@@ -108,6 +108,23 @@ class AuthenticatedPageController < ApplicationController
     end
   end
 
+  def cancel_affectation
+    result = UserService.cancel_affectation(@current_user)
+    
+    if result[:success]
+      render json: {
+        success: true,
+        redirect_to: '/affectation-entreprise',
+        message: "Demande d'affectation annulée"
+      }
+    else
+      render json: {
+        success: false,
+        errors: result[:errors]
+      }, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def profile_params
