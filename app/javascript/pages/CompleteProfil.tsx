@@ -10,23 +10,29 @@ const Header = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  gap: 1rem;
   margin-bottom: 3rem;
   text-align: center;
   width: 100%;
 `;
 
+const BrandHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+`;
+
 const Logo = styled.img`
-  width: 32px;
-  height: 32px;
-  margin-bottom: 0.5rem;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 0;
 `;
 
 const BrandName = styled.div`
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: #333;
-  margin-bottom: 1.5rem;
   font-family: 'Inter', sans-serif;
   text-transform: uppercase;
 `;
@@ -48,102 +54,131 @@ const Subtitle = styled.p`
   max-width: 600px;
 `;
 
+const WhiteContainerStyled = styled(WhiteContainer)`
+  max-width: 1200px;
+  width: 75%;
+  margin: 2rem auto;
+  padding: 4rem 6rem;
+  border-radius: 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+
+  @media (max-width: 1200px) {
+    width: 85%;
+    max-width: 1200px;
+    padding: 3rem 4rem;
+  }
+
+  @media (max-width: 768px) {
+    width: 95%;
+    max-width: 100%;
+    padding: 2rem;
+  }
+`;
+
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 2rem;
   width: 100%;
-  max-width: 800px;
   margin: 0 auto;
-  padding: 0 1rem;
   font-family: 'Inter', sans-serif;
 `;
 
 const FormGroup = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.5rem;
   width: 100%;
 `;
 
 const Label = styled.label`
-  font-size: 0.8rem;
-  color: #666;
+  font-size: 0.9rem;
+  color: #333;
   font-weight: 500;
+  margin-bottom: 0.25rem;
 `;
 
 const Input = styled.input`
-  padding: 0.5rem 0.75rem;
+  padding: 0.75rem 1rem;
   border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 0.9rem;
+  border-radius: 8px;
+  font-size: 1rem;
   width: 100%;
   font-family: 'Inter', sans-serif;
+  transition: all 0.2s ease;
 
   &:focus {
     outline: none;
     border-color: #FFD700;
     box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.1);
   }
-`;
 
-const Select = styled.select`
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  width: 100%;
-  font-family: 'Inter', sans-serif;
-  background-color: white;
+  &.error {
+    border-color: #ff4d4d;
+    &:focus {
+      box-shadow: 0 0 0 2px rgba(255, 77, 77, 0.1);
+    }
+  }
 
-  &:focus {
-    outline: none;
-    border-color: #FFD700;
-    box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.1);
+  &.valid {
+    border-color: #4CAF50;
+    &:focus {
+      box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+    }
   }
 `;
 
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
+  gap: 2rem 3rem;
+  margin-bottom: 2rem;
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 1.5rem;
   }
 `;
 
 const Grid3 = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
+  gap: 2rem 3rem;
+  margin-bottom: 2rem;
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 1.5rem;
   }
+`;
+
+const LicenseSection = styled.div`
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+`;
+
+const RadioContainer = styled.div`
+  display: flex;
+  gap: 3rem;
+  margin: 1rem 0;
+  padding-left: 2rem;
 `;
 
 const CheckboxContainer = styled.div`
   display: flex;
   align-items: flex-start;
-  gap: 0.75rem;
-  margin: 0.5rem 0;
-`;
-
-const RadioContainer = styled.div`
-  display: flex;
-  gap: 2rem;
-  margin: 0.5rem 0;
-  padding-left: 2.5rem;
+  gap: 1rem;
+  margin: 1rem 0;
 `;
 
 const LicenseText = styled.p`
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: #666;
-  margin-top: 0.25rem;
-  padding-left: 2.5rem;
+  margin-top: 0.5rem;
+  padding-left: 2rem;
+  line-height: 1.4;
 `;
 
 const Button = styled.button`
@@ -151,52 +186,32 @@ const Button = styled.button`
   background-color: #FFD700;
   color: #333;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   width: 100%;
   max-width: 200px;
-  margin: 2rem auto;
+  margin: 3rem auto 1rem;
 
   &:hover {
     background-color: #FFC700;
+    transform: translateY(-1px);
   }
 
   &:disabled {
     background-color: #ddd;
     cursor: not-allowed;
+    transform: none;
   }
 `;
 
-const WhiteContainerStyled = styled(WhiteContainer)`
-  max-width: 1000px;
-  width: 95%;
-  margin: 2rem auto;
-  padding: 2.5rem 2rem;
-  border-radius: 24px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-
-  @media (max-width: 768px) {
-    width: 90%;
-    padding: 1.5rem;
-  }
-`;
-
-const CheckboxLabel = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-  color: #333;
-  cursor: pointer;
-`;
-
-const Checkbox = styled.input`
-  width: 1.2rem;
-  height: 1.2rem;
-  cursor: pointer;
+const ErrorMessage = styled.span`
+  color: #ff4d4d;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  font-family: 'Inter', sans-serif;
 `;
 
 interface ProfileFormData {
@@ -211,6 +226,52 @@ interface ProfileFormData {
   date_naissance: string;
   categorie_permis: 'B Manuel' | 'B Automatique' | '';
 }
+
+interface ValidationState {
+  prenom: { isValid: boolean; error: string };
+  nom: { isValid: boolean; error: string };
+  adresse: { isValid: boolean; error: string };
+  ville: { isValid: boolean; error: string };
+  code_postal: { isValid: boolean; error: string };
+  pays: { isValid: boolean; error: string };
+  telephone: { isValid: boolean; error: string };
+  date_naissance: { isValid: boolean; error: string };
+  permis: { isValid: boolean; error: string };
+}
+
+// Fonctions de validation
+const validateName = (name: string): boolean => {
+  return name.length >= 2 && /^[a-zA-ZÀ-ÿ\s-]+$/.test(name);
+};
+
+const validateAge = (birthDate: string): boolean => {
+  const today = new Date();
+  const birth = new Date(birthDate);
+  const age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    return age - 1 >= 18;
+  }
+  
+  return age >= 18;
+};
+
+const validatePostalCode = (postalCode: string): boolean => {
+  return /^[0-9]{5}$/.test(postalCode);
+};
+
+const validatePhone = (phone: string): boolean => {
+  return /^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$/.test(phone);
+};
+
+const validateAddress = (address: string): boolean => {
+  return address.length >= 5;
+};
+
+const validateCity = (city: string): boolean => {
+  return city.length >= 2 && /^[a-zA-ZÀ-ÿ\s-]+$/.test(city);
+};
 
 const CompleteProfil: React.FC = () => {
   const navigate = useNavigate();
@@ -229,8 +290,109 @@ const CompleteProfil: React.FC = () => {
     categorie_permis: ''
   });
 
+  const [validation, setValidation] = useState<ValidationState>({
+    prenom: { isValid: false, error: '' },
+    nom: { isValid: false, error: '' },
+    adresse: { isValid: false, error: '' },
+    ville: { isValid: false, error: '' },
+    code_postal: { isValid: false, error: '' },
+    pays: { isValid: false, error: '' },
+    telephone: { isValid: false, error: '' },
+    date_naissance: { isValid: false, error: '' },
+    permis: { isValid: true, error: '' }
+  });
+
+  const validateField = (name: string, value: string) => {
+    let isValid = false;
+    let error = '';
+
+    switch (name) {
+      case 'prenom':
+      case 'nom':
+        isValid = validateName(value);
+        error = isValid ? '' : 'Minimum 2 caractères, lettres uniquement';
+        break;
+      case 'date_naissance':
+        isValid = validateAge(value);
+        error = isValid ? '' : 'Vous devez avoir au moins 18 ans';
+        break;
+      case 'adresse':
+        isValid = validateAddress(value);
+        error = isValid ? '' : 'Adresse trop courte (minimum 5 caractères)';
+        break;
+      case 'ville':
+        isValid = validateCity(value);
+        error = isValid ? '' : 'Ville invalide (minimum 2 caractères, lettres uniquement)';
+        break;
+      case 'code_postal':
+        isValid = validatePostalCode(value);
+        error = isValid ? '' : 'Code postal invalide (5 chiffres)';
+        break;
+      case 'telephone':
+        isValid = validatePhone(value);
+        error = isValid ? '' : 'Numéro de téléphone invalide';
+        break;
+      case 'pays':
+        isValid = validateName(value);
+        error = isValid ? '' : 'Pays invalide';
+        break;
+      default:
+        isValid = true;
+    }
+
+    setValidation(prev => ({
+      ...prev,
+      [name]: { isValid, error }
+    }));
+
+    return isValid;
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    validateField(name, value);
+  };
+
+  const isFormValid = (): boolean => {
+    return Object.values(validation).every(field => field.isValid);
+  };
+
+  const handleLicenseChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { checked } = e.target;
+    setHasLicense(checked);
+    if (!checked) {
+      setFormData(prev => ({ ...prev, categorie_permis: '' }));
+    }
+    setValidation(prev => ({
+      ...prev,
+      permis: {
+        isValid: !checked || !!formData.categorie_permis,
+        error: checked && !formData.categorie_permis ? 'Veuillez sélectionner un type de permis' : ''
+      }
+    }));
+  };
+
+  const handlePermisChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    setFormData(prev => ({ ...prev, categorie_permis: value as 'B Manuel' | 'B Automatique' }));
+    setValidation(prev => ({
+      ...prev,
+      permis: { isValid: true, error: '' }
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Valider tous les champs une dernière fois
+    const isValid = Object.keys(formData).every(key => validateField(key, formData[key as keyof ProfileFormData]));
+    
+    if (!isValid) {
+      toast.error('Veuillez corriger les erreurs dans le formulaire');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -276,225 +438,228 @@ const CompleteProfil: React.FC = () => {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
-    }));
-  };
-
-  const handleLicenseChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setHasLicense(e.target.checked);
-    if (!e.target.checked) {
-      setFormData(prev => ({
-        ...prev,
-        categorie_permis: ''
-      }));
-    }
-  };
-
   return (
     <BackgroundLayout backgroundImage="/images/backgrounds/parking-background.png">
       <WhiteContainerStyled>
         <Header>
-          <Logo src="/images/logos/logo.png" alt="RenteCaisse" />
-          <BrandName>RenteCaisse</BrandName>
+          <BrandHeader>
+            <Logo src="/images/logos/logo.png" alt="RenteCaisse Logo" />
+            <BrandName>RenteCaisse</BrandName>
+          </BrandHeader>
           <Title>Nous voulons en savoir un peu plus sur vous !</Title>
           <Subtitle>
-            Il s'agit de votre première connexion à notre application.
-            Pour pouvoir utiliser notre application, veuillez renseigner certaines de vos informations personnelles.
+            Il s&apos;agit de votre première connexion à notre application. Pour pouvoir utiliser notre
+            application, veuillez renseigner certaines de vos informations personnelles.
           </Subtitle>
         </Header>
 
         <Form onSubmit={handleSubmit}>
           <Grid>
             <FormGroup>
-              <Label>Prénom*</Label>
+              <Label htmlFor="prenom">Prénom*</Label>
               <Input
                 type="text"
+                id="prenom"
                 name="prenom"
                 value={formData.prenom}
-                onChange={handleChange}
+                onChange={handleInputChange}
                 required
-                placeholder="Marcel"
+                className={validation.prenom.error ? 'error' : validation.prenom.isValid ? 'valid' : ''}
               />
+              {validation.prenom.error && <ErrorMessage>{validation.prenom.error}</ErrorMessage>}
             </FormGroup>
 
             <FormGroup>
-              <Label>Nom*</Label>
+              <Label htmlFor="nom">Nom*</Label>
               <Input
                 type="text"
+                id="nom"
                 name="nom"
                 value={formData.nom}
-                onChange={handleChange}
+                onChange={handleInputChange}
                 required
-                placeholder="Picho"
+                className={validation.nom.error ? 'error' : validation.nom.isValid ? 'valid' : ''}
               />
+              {validation.nom.error && <ErrorMessage>{validation.nom.error}</ErrorMessage>}
             </FormGroup>
           </Grid>
 
           <FormGroup>
-            <Label>Adresse*</Label>
+            <Label htmlFor="adresse">Adresse*</Label>
             <Input
               type="text"
+              id="adresse"
               name="adresse"
               value={formData.adresse}
-              onChange={handleChange}
+              onChange={handleInputChange}
               required
-              placeholder="23 Rue Saint-Honoré"
+              className={validation.adresse.error ? 'error' : validation.adresse.isValid ? 'valid' : ''}
             />
+            {validation.adresse.error && <ErrorMessage>{validation.adresse.error}</ErrorMessage>}
           </FormGroup>
 
           <Grid3>
             <FormGroup>
-              <Label>Ville*</Label>
+              <Label htmlFor="ville">Ville*</Label>
               <Input
                 type="text"
+                id="ville"
                 name="ville"
                 value={formData.ville}
-                onChange={handleChange}
+                onChange={handleInputChange}
                 required
-                placeholder="Paris"
+                className={validation.ville.error ? 'error' : validation.ville.isValid ? 'valid' : ''}
               />
+              {validation.ville.error && <ErrorMessage>{validation.ville.error}</ErrorMessage>}
             </FormGroup>
 
             <FormGroup>
-              <Label>Code Postal*</Label>
+              <Label htmlFor="code_postal">Code Postal*</Label>
               <Input
                 type="text"
+                id="code_postal"
                 name="code_postal"
                 value={formData.code_postal}
-                onChange={handleChange}
+                onChange={handleInputChange}
                 required
-                placeholder="75000"
+                className={validation.code_postal.error ? 'error' : validation.code_postal.isValid ? 'valid' : ''}
               />
+              {validation.code_postal.error && <ErrorMessage>{validation.code_postal.error}</ErrorMessage>}
             </FormGroup>
 
             <FormGroup>
-              <Label>Pays*</Label>
+              <Label htmlFor="pays">Pays*</Label>
               <Input
                 type="text"
+                id="pays"
                 name="pays"
                 value={formData.pays}
-                onChange={handleChange}
+                onChange={handleInputChange}
                 required
-                placeholder="France"
+                className={validation.pays.error ? 'error' : validation.pays.isValid ? 'valid' : ''}
               />
+              {validation.pays.error && <ErrorMessage>{validation.pays.error}</ErrorMessage>}
             </FormGroup>
           </Grid3>
 
           <Grid>
             <FormGroup>
-              <Label>Numéro de téléphone mobile*</Label>
+              <Label htmlFor="telephone">Numéro de téléphone mobile*</Label>
               <Input
                 type="tel"
+                id="telephone"
                 name="telephone"
                 value={formData.telephone}
-                onChange={handleChange}
+                onChange={handleInputChange}
                 required
-                placeholder="01.02.03.04.05"
+                className={validation.telephone.error ? 'error' : validation.telephone.isValid ? 'valid' : ''}
               />
+              {validation.telephone.error && <ErrorMessage>{validation.telephone.error}</ErrorMessage>}
             </FormGroup>
 
             <FormGroup>
-              <Label>Genre*</Label>
-              <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input
-                    type="radio"
-                    name="genre"
-                    value="masculin"
-                    checked={formData.genre === 'masculin'}
-                    onChange={handleChange}
-                  />
-                  Masculin
-                </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input
-                    type="radio"
-                    name="genre"
-                    value="feminin"
-                    checked={formData.genre === 'feminin'}
-                    onChange={handleChange}
-                  />
-                  Féminin
-                </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input
-                    type="radio"
-                    name="genre"
-                    value="autre"
-                    checked={formData.genre === 'autre'}
-                    onChange={handleChange}
-                  />
-                  Autre
-                </label>
-              </div>
+              <Label htmlFor="date_naissance">Date de naissance*</Label>
+              <Input
+                type="date"
+                id="date_naissance"
+                name="date_naissance"
+                value={formData.date_naissance}
+                onChange={handleInputChange}
+                required
+                className={validation.date_naissance.error ? 'error' : validation.date_naissance.isValid ? 'valid' : ''}
+              />
+              {validation.date_naissance.error && <ErrorMessage>{validation.date_naissance.error}</ErrorMessage>}
             </FormGroup>
           </Grid>
 
           <FormGroup>
-            <Label>Date de naissance*</Label>
-            <Input
-              type="date"
-              name="date_naissance"
-              value={formData.date_naissance}
-              onChange={handleChange}
-              required
-              placeholder="jj/mm/aaaa"
-            />
+            <Label>Genre*</Label>
+            <RadioContainer>
+              <label>
+                <input
+                  type="radio"
+                  name="genre"
+                  value="masculin"
+                  checked={formData.genre === 'masculin'}
+                  onChange={(e) => setFormData({ ...formData, genre: e.target.value as 'masculin' })}
+                />
+                Masculin
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="genre"
+                  value="feminin"
+                  checked={formData.genre === 'feminin'}
+                  onChange={(e) => setFormData({ ...formData, genre: e.target.value as 'feminin' })}
+                />
+                Féminin
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="genre"
+                  value="autre"
+                  checked={formData.genre === 'autre'}
+                  onChange={(e) => setFormData({ ...formData, genre: e.target.value as 'autre' })}
+                />
+                Autre
+              </label>
+            </RadioContainer>
           </FormGroup>
 
-          <FormGroup>
-            <CheckboxLabel>
-              <Checkbox
+          <LicenseSection>
+            <CheckboxContainer>
+              <input
                 type="checkbox"
+                id="hasLicense"
                 checked={hasLicense}
                 onChange={handleLicenseChange}
               />
-              Je suis titulaire d'un permis de conduire de catégorie B en cours de validité
-            </CheckboxLabel>
+              <Label htmlFor="hasLicense">
+                Je suis titulaire d&apos;un permis de conduire de catégorie B en cours de validité
+              </Label>
+            </CheckboxContainer>
+
             <LicenseText>
-              En cochant cette case, je certifie sur l'honneur être titulaire d'un permis de conduire de
-              catégorie B en cours de validité me permettant de conduire le véhicule emprunté. Je suis
-              conscient(e) que toute fausse déclaration pourra entraîner ma responsabilité civile et
-              pénale.
+              En cochant cette case, je certifie sur l&apos;honneur être titulaire d&apos;un permis de conduire de
+              catégorie B en cours de validité me permettant de conduire le véhicule emprunté. Je suis conscient(e)
+              que toute fausse déclaration pourra entraîner ma responsabilité civile et pénale.
             </LicenseText>
-          </FormGroup>
 
-          {hasLicense && (
-            <FormGroup>
-              <Label>Type de permis</Label>
-              <RadioContainer style={{ paddingLeft: 0 }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input
-                    type="radio"
-                    name="categorie_permis"
-                    value="B Manuel"
-                    checked={formData.categorie_permis === 'B Manuel'}
-                    onChange={handleChange}
-                    required
-                  />
-                  B Manuel
-                </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input
-                    type="radio"
-                    name="categorie_permis"
-                    value="B Automatique"
-                    checked={formData.categorie_permis === 'B Automatique'}
-                    onChange={handleChange}
-                    required
-                  />
-                  B Automatique
-                </label>
-              </RadioContainer>
-            </FormGroup>
-          )}
+            {hasLicense && (
+              <>
+                <RadioContainer>
+                  <label>
+                    <input
+                      type="radio"
+                      name="categorie_permis"
+                      value="B Manuel"
+                      checked={formData.categorie_permis === 'B Manuel'}
+                      onChange={handlePermisChange}
+                      required
+                    />
+                    Permis B Manuel
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name="categorie_permis"
+                      value="B Automatique"
+                      checked={formData.categorie_permis === 'B Automatique'}
+                      onChange={handlePermisChange}
+                      required
+                    />
+                    Permis B Automatique
+                  </label>
+                </RadioContainer>
+                {validation.permis.error && <ErrorMessage>{validation.permis.error}</ErrorMessage>}
+              </>
+            )}
+          </LicenseSection>
 
-          <Button type="submit" disabled={loading || !hasLicense || !formData.categorie_permis}>
-            {loading ? 'Chargement...' : 'Valider'}
+          <Button type="submit" disabled={loading || !isFormValid()}>
+            {loading ? 'Chargement...' : 'Continuer'}
           </Button>
         </Form>
       </WhiteContainerStyled>

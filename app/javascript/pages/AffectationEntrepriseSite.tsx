@@ -121,6 +121,20 @@ const Input = styled.input`
     border-color: #FFD700;
     box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.1);
   }
+
+  &.error {
+    border-color: #ff4d4d;
+    &:focus {
+      box-shadow: 0 0 0 2px rgba(255, 77, 77, 0.1);
+    }
+  }
+`;
+
+const ErrorMessage = styled.span`
+  color: #ff4d4d;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  font-family: 'Inter', sans-serif;
 `;
 
 const Button = styled.button`
@@ -185,6 +199,7 @@ const AffectationEntrepriseSite: React.FC = () => {
   const [showEntrepriseList, setShowEntrepriseList] = useState(false);
   const [showSiteList, setShowSiteList] = useState(false);
   const [code, setCode] = useState('');
+  const [codeError, setCodeError] = useState('');
 
   useEffect(() => {
     fetchEntreprises();
@@ -253,6 +268,8 @@ const AffectationEntrepriseSite: React.FC = () => {
     if (!selectedEntreprise || !selectedSite) return;
 
     setLoading(true);
+    setCodeError('');
+
     try {
       const token = localStorage.getItem('sessionToken');
       const response = await axios.post(
@@ -272,7 +289,9 @@ const AffectationEntrepriseSite: React.FC = () => {
         navigate('/authenticated');
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Erreur lors de l\'affectation');
+      const errorMessage = error.response?.data?.message || 'Erreur lors de l\'affectation';
+      setCodeError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -358,10 +377,15 @@ const AffectationEntrepriseSite: React.FC = () => {
               <Input
                 type="text"
                 value={code}
-                onChange={(e) => setCode(e.target.value)}
+                onChange={(e) => {
+                  setCode(e.target.value);
+                  setCodeError('');
+                }}
                 placeholder="Entrez le code entreprise..."
                 required
+                className={codeError ? 'error' : ''}
               />
+              {codeError && <ErrorMessage>{codeError}</ErrorMessage>}
             </FormGroup>
           )}
 
