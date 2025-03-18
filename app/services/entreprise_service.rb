@@ -35,4 +35,17 @@ class EntrepriseService
       }
     }
   end
+
+  def self.get_entreprise_details(enterprise_id)
+    entreprise = Entreprise.find_by(id: enterprise_id)
+    return nil unless entreprise
+
+    {
+      nom: entreprise.nom_entreprise,
+      adresse: entreprise.adresse,
+      ville: entreprise.ville,
+      code_postal: entreprise.code_postal,
+      pays: entreprise.pays
+    }
+  end
 end 

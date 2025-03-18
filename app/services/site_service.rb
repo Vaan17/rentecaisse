@@ -11,16 +11,14 @@ class SiteService
 
   def self.get_site_details(site_id)
     site = Site.find_by(id: site_id)
-    return { success: false, message: "Site non trouvé" } unless site
+    return nil unless site
 
     {
-      success: true,
-      site: {
-        id: site.id,
-        nom: site.nom_site,
-        adresse: site.adresse,
-        entreprise_id: site.entreprise_id
-      }
+      nom: site.nom_site,
+      adresse: site.adresse,
+      ville: site.ville,
+      code_postal: site.code_postal,
+      pays: site.pays
     }
   end
 end 

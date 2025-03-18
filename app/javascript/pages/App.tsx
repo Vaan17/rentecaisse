@@ -22,6 +22,7 @@ import CompleteProfil from './CompleteProfil'
 import AffectationEntrepriseSite from './AffectationEntrepriseSite'
 import StatutAffectationEnAttente from './StatutAffectationEnAttente'
 import HomeAuthenticated from './HomeAuthenticated'
+import Profile from './Profile'
 
 const AppContainer = styled.div`
 	width: 100vw;
@@ -63,6 +64,7 @@ const App = () => {
 					<Route path="/affectation-entreprise" element={<AffectationEntrepriseSite />} />
 					<Route path="/statut-affectation" element={<StatutAffectationEnAttente />} />
 					<Route path="/main" element={<HomeAuthenticated />} />
+					<Route path="/profile" element={<Profile />} />
 
 					{/* Routes principales avec le layout standard */}
 					<Route path="/*" element={

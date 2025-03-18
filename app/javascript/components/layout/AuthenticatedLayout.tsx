@@ -47,6 +47,14 @@ const UserSection = styled.div`
   display: flex;
   align-items: center;
   gap: 20px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
 `;
 
 const Avatar = styled.div`
@@ -169,7 +177,7 @@ const menuItems: MenuItemType[] = [
   {
     title: 'Accueil',
     icon: '🏠',
-    path: '/home',
+    path: '/main',
   },
   {
     title: 'Véhicules',
@@ -291,6 +299,10 @@ export const AuthenticatedLayout = ({ children }: LayoutProps): JSX.Element => {
     window.location.href = '/login';
   };
 
+  const handleUserSectionClick = () => {
+    navigate('/profile');
+  };
+
   return (
     <Root>
       <TopBar>
@@ -300,7 +312,7 @@ export const AuthenticatedLayout = ({ children }: LayoutProps): JSX.Element => {
           <AppTitle>RENTECAISSE</AppTitle>
         </LogoContainer>
         <div style={{ flex: 1 }} />
-        <UserSection>
+        <UserSection onClick={handleUserSectionClick}>
           {userImageUrl && !imageError ? (
             <ProfileImage
               src={userImageUrl}
@@ -315,7 +327,10 @@ export const AuthenticatedLayout = ({ children }: LayoutProps): JSX.Element => {
           <UserName>
             {userInfo ? `${userInfo.prenom} ${userInfo.nom}` : ''}
           </UserName>
-          <LogoutButton onClick={handleLogout}>Se déconnecter</LogoutButton>
+          <LogoutButton onClick={(e) => {
+            e.stopPropagation();
+            handleLogout();
+          }}>Se déconnecter</LogoutButton>
         </UserSection>
       </TopBar>
 

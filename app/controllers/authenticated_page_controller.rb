@@ -128,17 +128,84 @@ class AuthenticatedPageController < ApplicationController
   def get_profile_image
     result = UserService.get_user_profile_image(@current_user)
     
-    if result[:success]
-      render json: {
-        success: true,
-        image_data: Base64.encode64(result[:content]),
-        content_type: result[:content_type]
-      }
+    if result
+      # Lire le contenu du fichier
+      user_folder = Rails.root.join('storage', 'users', "user_#{@current_user.id}", 'profile')
+      photo_path = Dir.glob("#{user_folder}/*").first
+      
+      if photo_path && File.exist?(photo_path)
+        content = File.read(photo_path)
+        content_type = case File.extname(photo_path).downcase
+                      when '.jpg', '.jpeg'
+                        'image/jpeg'
+                      when '.png'
+                        'image/png'
+                      else
+                        'application/octet-stream'
+                      end
+
+        render json: {
+          success: true,
+          image_data: Base64.encode64(content),
+          content_type: content_type
+        }
+      else
+        render json: {
+          success: false,
+          error: 'Image non trouvée'
+        }, status: :not_found
+      end
     else
       render json: {
         success: false,
-        error: result[:error]
+        error: 'Aucune image associée'
       }, status: :not_found
+    end
+  end
+
+  def get_user_profile
+    render json: {
+      personal_info: {
+        id: @current_user.id,
+        email: @current_user.email,
+        prenom: @current_user.prenom,
+        nom: @current_user.nom,
+        adresse: @current_user.adresse,
+        ville: @current_user.ville,
+        code_postal: @current_user.code_postal,
+        pays: @current_user.pays,
+        telephone: @current_user.telephone,
+        genre: @current_user.genre,
+        date_naissance: @current_user.date_naissance,
+        categorie_permis: @current_user.categorie_permis
+      },
+      entreprise_info: EntrepriseService.get_entreprise_details(@current_user.entreprise_id),
+      site_info: SiteService.get_site_details(@current_user.site_id),
+      photo: UserService.get_user_profile_image(@current_user)
+    }
+  end
+
+  def update_user_profile
+    if UserService.update_user_profile(@current_user, user_params)
+      render json: { success: true, personal_info: @current_user.reload.attributes }
+    else
+      render json: { success: false, message: "Erreur lors de la mise à jour" }, status: :unprocessable_entity
+    end
+  end
+
+  def update_profile_photo
+    if params[:photo] && UserService.update_user_photo(@current_user, params[:photo])
+      # Récupérer l'URL de l'image mise à jour
+      render json: { 
+        success: true, 
+        message: "Photo de profil mise à jour avec succès",
+        photo: UserService.get_user_profile_image(@current_user)
+      }
+    else
+      render json: { 
+        success: false, 
+        message: "Erreur lors de la mise à jour de la photo" 
+      }, status: :unprocessable_entity
     end
   end
 
@@ -146,6 +213,22 @@ class AuthenticatedPageController < ApplicationController
 
   def profile_params
     params.require(:profile).permit(
+      :prenom,
+      :nom,
+      :adresse,
+      :ville,
+      :code_postal,
+      :pays,
+      :telephone,
+      :genre,
+      :date_naissance,
+      :categorie_permis
+    )
+  end
+
+  def user_params
+    params.require(:user).permit(
+      :email,
       :prenom,
       :nom,
       :adresse,

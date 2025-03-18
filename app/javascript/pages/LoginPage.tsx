@@ -319,7 +319,7 @@ const LoginPage: React.FC = () => {
       if (loginData.success) {
         // Stocker le token de session au lieu du token simple
         localStorage.setItem('token', loginData.session_token);
-        
+
         // Vérifier l'état de l'utilisateur
         const statusResponse = await fetch('http://localhost:3000/api/authenticated-page', {
           headers: {
@@ -331,10 +331,10 @@ const LoginPage: React.FC = () => {
         if (!statusResponse.ok) {
           throw new Error(`HTTP error! status: ${statusResponse.status}`);
         }
-        
+
         const statusData = await statusResponse.json();
         console.log('Status response:', statusData);
-        
+
         if (statusData.success) {
           window.location.href = statusData.redirect_to || '/main';
         } else {

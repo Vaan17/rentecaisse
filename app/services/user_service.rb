@@ -36,37 +36,43 @@ def self.cancel_affectation(user)
   end
 end
 
+def self.update_user_profile(user, params)
+  user.update(params)
+end
+
+def self.update_user_photo(user, photo)
+  return false unless photo.content_type.start_with?('image/')
+
+  # Créer le dossier pour l'utilisateur s'il n'existe pas
+  user_folder = Rails.root.join('storage', 'users', "user_#{user.id}", 'profile')
+  FileUtils.mkdir_p(user_folder)
+
+  # Supprimer l'ancienne photo si elle existe
+  old_photo = Dir.glob("#{user_folder}/*").first
+  File.delete(old_photo) if old_photo
+
+  # Générer un nom unique pour la nouvelle photo
+  extension = File.extname(photo.original_filename)
+  filename = "profile_#{Time.now.to_i}#{extension}"
+  filepath = user_folder.join(filename)
+
+  # Sauvegarder la nouvelle photo
+  File.binwrite(filepath, photo.read)
+
+  # Mettre à jour le champ lien_image_utilisateur
+  user.update(lien_image_utilisateur: filename)
+
+  true
+end
+
 def self.get_user_profile_image(user)
-  begin
-    # Vérifier si l'utilisateur a un lien d'image
-    return { success: false, error: 'Aucune image associée' } unless user&.lien_image_utilisateur
-
-    # Construire le chemin complet en utilisant le lien stocké en base
-    image_path = Rails.root.join(user.lien_image_utilisateur)
-    
-    # Vérifier si le fichier existe
-    return { success: false, error: 'Image non trouvée' } unless File.exist?(image_path)
-
-    # Lire le contenu du fichier
-    content = File.read(image_path)
-    
-    # Déterminer le type MIME
-    content_type = case File.extname(image_path).downcase
-                  when '.jpg', '.jpeg'
-                    'image/jpeg'
-                  when '.png'
-                    'image/png'
-                  else
-                    'application/octet-stream'
-                  end
-
-    { 
-      success: true,
-      content: content,
-      content_type: content_type
-    }
-  rescue StandardError => e
-    { success: false, error: e.message }
+  user_folder = Rails.root.join('storage', 'users', "user_#{user.id}", 'profile')
+  photo_path = Dir.glob("#{user_folder}/*").first
+  
+  if photo_path
+    "http://localhost:3000/api/users/profile-image?user_id=#{user.id}&t=#{File.mtime(photo_path).to_i}"
+  else
+    nil
   end
 end
 end

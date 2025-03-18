@@ -20,4 +20,9 @@ Rails.application.routes.draw do
   post '/api/verify_and_affect_user', to: 'authenticated_page#verify_and_affect_user'
   post '/api/cancel_affectation', to: 'authenticated_page#cancel_affectation'
   get '/api/users/profile-image', to: 'authenticated_page#get_profile_image'
+
+  # Routes pour le profil utilisateur
+  get '/api/user/profile', to: 'authenticated_page#get_user_profile'
+  patch '/api/user/profile', to: 'authenticated_page#update_user_profile'
+  post '/api/user/profile/photo', to: 'authenticated_page#update_profile_photo'
 end
