@@ -35,4 +35,38 @@ def self.cancel_affectation(user)
     { success: false, errors: [e.message] }
   end
 end
+
+def self.get_user_profile_image(user)
+  begin
+    # Vérifier si l'utilisateur a un lien d'image
+    return { success: false, error: 'Aucune image associée' } unless user&.lien_image_utilisateur
+
+    # Construire le chemin complet en utilisant le lien stocké en base
+    image_path = Rails.root.join(user.lien_image_utilisateur)
+    
+    # Vérifier si le fichier existe
+    return { success: false, error: 'Image non trouvée' } unless File.exist?(image_path)
+
+    # Lire le contenu du fichier
+    content = File.read(image_path)
+    
+    # Déterminer le type MIME
+    content_type = case File.extname(image_path).downcase
+                  when '.jpg', '.jpeg'
+                    'image/jpeg'
+                  when '.png'
+                    'image/png'
+                  else
+                    'application/octet-stream'
+                  end
+
+    { 
+      success: true,
+      content: content,
+      content_type: content_type
+    }
+  rescue StandardError => e
+    { success: false, error: e.message }
+  end
+end
 end

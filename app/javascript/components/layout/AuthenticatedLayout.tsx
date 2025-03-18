@@ -14,7 +14,7 @@ const TopBar = styled.header`
   left: 0;
   right: 0;
   height: 72px;
-  background-color: #1b1b1b;
+  background-color: #272727;
   color: white;
   display: flex;
   align-items: center;
@@ -204,11 +204,14 @@ interface LayoutProps {
 export const AuthenticatedLayout = ({ children }: LayoutProps): JSX.Element => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openSubMenu, setOpenSubMenu] = useState<string | null>(null);
+  const [userImageUrl, setUserImageUrl] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchUserInfo();
+    fetchUserImage();
   }, []);
 
   const fetchUserInfo = async () => {
@@ -228,6 +231,40 @@ export const AuthenticatedLayout = ({ children }: LayoutProps): JSX.Element => {
       }
     } catch (error) {
       console.error('Erreur lors du chargement des informations utilisateur:', error);
+    }
+  };
+
+  const fetchUserImage = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:3000/api/users/profile-image', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          // Créer un Blob à partir des données Base64
+          const binaryData = atob(data.image_data);
+          const bytes = new Uint8Array(binaryData.length);
+          for (let i = 0; i < binaryData.length; i++) {
+            bytes[i] = binaryData.charCodeAt(i);
+          }
+          const blob = new Blob([bytes], { type: data.content_type });
+          const imageUrl = URL.createObjectURL(blob);
+          setUserImageUrl(imageUrl);
+        } else {
+          setImageError(true);
+        }
+      } else {
+        setImageError(true);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement de l\'image:', error);
+      setImageError(true);
     }
   };
 
@@ -264,9 +301,17 @@ export const AuthenticatedLayout = ({ children }: LayoutProps): JSX.Element => {
         </LogoContainer>
         <div style={{ flex: 1 }} />
         <UserSection>
-          <Avatar>
-            {userInfo ? `${userInfo.prenom[0]}${userInfo.nom[0]}` : ''}
-          </Avatar>
+          {userImageUrl && !imageError ? (
+            <ProfileImage
+              src={userImageUrl}
+              onError={() => setImageError(true)}
+              alt="Photo de profil"
+            />
+          ) : (
+            <Avatar>
+              {userInfo ? `${userInfo.prenom[0]}${userInfo.nom[0]}` : ''}
+            </Avatar>
+          )}
           <UserName>
             {userInfo ? `${userInfo.prenom} ${userInfo.nom}` : ''}
           </UserName>

@@ -125,6 +125,23 @@ class AuthenticatedPageController < ApplicationController
     end
   end
 
+  def get_profile_image
+    result = UserService.get_user_profile_image(@current_user)
+    
+    if result[:success]
+      render json: {
+        success: true,
+        image_data: Base64.encode64(result[:content]),
+        content_type: result[:content_type]
+      }
+    else
+      render json: {
+        success: false,
+        error: result[:error]
+      }, status: :not_found
+    end
+  end
+
   private
 
   def profile_params

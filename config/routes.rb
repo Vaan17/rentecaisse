@@ -19,4 +19,5 @@ Rails.application.routes.draw do
   get '/api/get_sites', to: 'authenticated_page#get_sites'
   post '/api/verify_and_affect_user', to: 'authenticated_page#verify_and_affect_user'
   post '/api/cancel_affectation', to: 'authenticated_page#cancel_affectation'
+  get '/api/users/profile-image', to: 'authenticated_page#get_profile_image'
 end
