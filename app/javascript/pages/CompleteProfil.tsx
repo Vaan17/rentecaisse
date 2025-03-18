@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { toast } from 'react-toastify';
 import styled from 'styled-components';
 import BackgroundLayout from '../components/layout/BackgroundLayout';
@@ -385,10 +384,7 @@ const CompleteProfil: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Valider tous les champs une dernière fois
-    const isValid = Object.keys(formData).every(key => validateField(key, formData[key as keyof ProfileFormData]));
-    
-    if (!isValid) {
+    if (!isFormValid()) {
       toast.error('Veuillez corriger les erreurs dans le formulaire');
       return;
     }
@@ -396,7 +392,7 @@ const CompleteProfil: React.FC = () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('sessionToken');
+      const token = localStorage.getItem('token');
       
       if (!token) {
         toast.error('Session expirée, veuillez vous reconnecter');
@@ -404,33 +400,55 @@ const CompleteProfil: React.FC = () => {
         return;
       }
 
-      const response = await axios.post('http://localhost:3000/api/update_profile', {
-        profile: formData
-      }, {
+      const response = await fetch('http://localhost:3000/api/update_profile', {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
           'Accept': 'application/json'
-        }
+        },
+        body: JSON.stringify({ profile: formData })
       });
 
-      if (response.data.success) {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Update profile response:', data);
+
+      if (data.success) {
         toast.success('Profil mis à jour avec succès');
-        if (response.data.redirect_to) {
-          navigate(response.data.redirect_to);
-        } else {
-          navigate('/authenticated');
+        
+        // Vérifier l'état de l'utilisateur
+        const statusResponse = await fetch('http://localhost:3000/api/authenticated-page', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+
+        if (!statusResponse.ok) {
+          throw new Error(`HTTP error! status: ${statusResponse.status}`);
         }
+        
+        const statusData = await statusResponse.json();
+        console.log('Status response:', statusData);
+        
+        navigate(statusData.redirect_to);
       } else {
-        toast.error(response.data.message || 'Une erreur est survenue');
+        toast.error(data.message || 'Une erreur est survenue');
       }
     } catch (error: any) {
       console.error('Erreur lors de la mise à jour du profil:', error);
-      const errors = error.response?.data?.errors || ['Une erreur est survenue'];
-      errors.forEach((err: string) => toast.error(err));
+      if (error.response?.data?.errors) {
+        error.response.data.errors.forEach((err: string) => toast.error(err));
+      } else {
+        toast.error('Une erreur est survenue lors de la mise à jour du profil');
+      }
       
       if (error.response?.status === 401) {
-        localStorage.removeItem('sessionToken');
+        localStorage.removeItem('token');
         navigate('/login');
       }
     } finally {

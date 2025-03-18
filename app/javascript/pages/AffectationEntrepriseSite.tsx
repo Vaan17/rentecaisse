@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { toast } from 'react-toastify';
 import styled from 'styled-components';
 import BackgroundLayout from '../components/layout/BackgroundLayout';
@@ -215,28 +214,52 @@ const AffectationEntrepriseSite: React.FC = () => {
 
   const fetchEntreprises = async () => {
     try {
-      const token = localStorage.getItem('sessionToken');
-      const response = await axios.get('http://localhost:3000/api/get_entreprises', {
-        headers: { 'Authorization': `Bearer ${token}` }
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:3000/api/get_entreprises', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
       });
-      if (response.data.success) {
-        setEntreprises(response.data.entreprises);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Entreprises response:', data);
+      
+      if (data.success) {
+        setEntreprises(data.entreprises);
       }
     } catch (error) {
+      console.error('Erreur lors du chargement des entreprises:', error);
       toast.error('Erreur lors du chargement des entreprises');
     }
   };
 
   const fetchSites = async (enterpriseId: number) => {
     try {
-      const token = localStorage.getItem('sessionToken');
-      const response = await axios.get(`http://localhost:3000/api/get_sites?enterprise_id=${enterpriseId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:3000/api/get_sites?enterprise_id=${enterpriseId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
       });
-      if (response.data.success) {
-        setSites(response.data.entreprise.sites);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Sites response:', data);
+      
+      if (data.success) {
+        setSites(data.entreprise.sites);
       }
     } catch (error) {
+      console.error('Erreur lors du chargement des sites:', error);
       toast.error('Erreur lors du chargement des sites');
     }
   };
@@ -271,27 +294,46 @@ const AffectationEntrepriseSite: React.FC = () => {
     setCodeError('');
 
     try {
-      const token = localStorage.getItem('sessionToken');
-      const response = await axios.post(
-        'http://localhost:3000/api/verify_and_affect_user',
-        {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:3000/api/verify_and_affect_user', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
           enterprise_id: selectedEntreprise.id,
           site_id: selectedSite.id,
           code: code
-        },
-        {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }
-      );
+        })
+      });
 
-      if (response.data.success) {
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Verification response:', data);
+
+      if (data.success) {
         toast.success('Affectation réussie');
-        navigate('/authenticated');
+        navigate(data.redirect_to);
+      } else {
+        setCodeError(data.message || 'Une erreur est survenue');
+        toast.error(data.message || 'Une erreur est survenue');
       }
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Erreur lors de l\'affectation';
+      console.error('Erreur lors de l\'affectation:', error);
+      const errorMessage = error.message || 'Erreur lors de l\'affectation';
       setCodeError(errorMessage);
       toast.error(errorMessage);
+      
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/login');
+      }
     } finally {
       setLoading(false);
     }

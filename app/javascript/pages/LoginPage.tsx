@@ -293,7 +293,6 @@ const LoginPage: React.FC = () => {
 
     try {
       const hashedPassword = await hashPassword(password);
-
       const formData = {
         user: {
           email,
@@ -301,9 +300,7 @@ const LoginPage: React.FC = () => {
         }
       };
 
-      console.log('Tentative de connexion avec:', { email, hashedPassword });
-
-      const response = await fetch('http://localhost:3000/api/auth/login', {
+      const loginResponse = await fetch('http://localhost:3000/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -312,25 +309,42 @@ const LoginPage: React.FC = () => {
         body: JSON.stringify(formData)
       });
 
-      console.log('Statut de la réponse:', response.status);
-      const data = await response.json();
-      console.log('Données reçues:', data);
+      if (!loginResponse.ok) {
+        throw new Error(`HTTP error! status: ${loginResponse.status}`);
+      }
 
-      if (data.success) {
-        // Sauvegarde du token de session
-        localStorage.setItem('sessionToken', data.session_token);
+      const loginData = await loginResponse.json();
+      console.log('Login response:', loginData);
+
+      if (loginData.success) {
+        // Stocker le token de session au lieu du token simple
+        localStorage.setItem('token', loginData.session_token);
         
-        // Redirection selon la réponse du serveur
-        if (data.redirect_to) {
-          window.location.href = data.redirect_to;
+        // Vérifier l'état de l'utilisateur
+        const statusResponse = await fetch('http://localhost:3000/api/authenticated-page', {
+          headers: {
+            'Authorization': `Bearer ${loginData.session_token}`,
+            'Accept': 'application/json'
+          }
+        });
+
+        if (!statusResponse.ok) {
+          throw new Error(`HTTP error! status: ${statusResponse.status}`);
+        }
+        
+        const statusData = await statusResponse.json();
+        console.log('Status response:', statusData);
+        
+        if (statusData.success) {
+          window.location.href = statusData.redirect_to || '/main';
         } else {
-          window.location.href = '/authenticated';
+          window.location.href = statusData.redirect_to || '/login';
         }
       } else {
-        setError(data.message);
+        setError(loginData.message || 'Une erreur est survenue');
       }
     } catch (err) {
-      console.error('Erreur lors de la connexion:', err);
+      console.error('Erreur détaillée:', err);
       setError('Une erreur est survenue lors de la connexion');
     }
   };

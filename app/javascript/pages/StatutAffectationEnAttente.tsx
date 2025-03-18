@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import BackgroundLayout from '../components/layout/BackgroundLayout';
@@ -108,26 +107,33 @@ const StatutAffectationEnAttente: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   const handleLogout = () => {
-    localStorage.removeItem('sessionToken');
+    localStorage.removeItem('token');
     window.location.href = '/login';
   };
 
   const handleRefresh = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('sessionToken');
-      const response = await axios.get('http://localhost:3000/api/authenticated-page', {
-        headers: { 'Authorization': `Bearer ${token}` }
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:3000/api/authenticated-page', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
       });
-
-      if (response.data.success) {
-        navigate('/authenticated');
-      } else if (response.data.redirect_to && response.data.redirect_to !== '/statut-affectation') {
-        navigate(response.data.redirect_to);
+      
+      const data = await response.json();
+      if (data.success) {
+        navigate(data.redirect_to);
+      } else if (data.redirect_to && data.redirect_to !== '/statut-affectation') {
+        navigate(data.redirect_to);
       }
-    } catch (error: any) {
+    } catch (error) {
+      console.error('Erreur lors de la vérification du statut:', error);
       toast.error('Erreur lors de la vérification du statut');
+      
       if (error.response?.status === 401) {
+        localStorage.removeItem('token');
         navigate('/login');
       }
     } finally {
@@ -138,25 +144,36 @@ const StatutAffectationEnAttente: React.FC = () => {
   const handleCancelAffectation = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('sessionToken');
-      const response = await axios.post(
-        'http://localhost:3000/api/cancel_affectation',
-        {},
-        {
-          headers: { 'Authorization': `Bearer ${token}` }
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:3000/api/cancel_affectation', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
         }
-      );
+      });
 
-      if (response.data.success) {
+      const data = await response.json();
+      if (data.success) {
         toast.success("Demande d'affectation annulée");
-        navigate('/affectation-entreprise');
+        
+        // Vérifier l'état après l'annulation
+        const statusResponse = await fetch('http://localhost:3000/api/authenticated-page', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+        
+        const statusData = await statusResponse.json();
+        navigate(statusData.redirect_to);
       }
-    } catch (error: any) {
-      const errors = error.response?.data?.errors || ['Une erreur est survenue'];
-      errors.forEach((err: string) => toast.error(err));
+    } catch (error) {
+      console.error('Erreur lors de l\'annulation:', error);
+      toast.error('Erreur lors de l\'annulation de la demande');
       
       if (error.response?.status === 401) {
-        localStorage.removeItem('sessionToken');
+        localStorage.removeItem('token');
         navigate('/login');
       }
     } finally {

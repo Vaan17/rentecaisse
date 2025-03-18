@@ -66,30 +66,26 @@ const AuthenticatedPage: React.FC = () => {
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                const token = localStorage.getItem('sessionToken');
+                const token = localStorage.getItem('token');
                 if (!token) {
                     navigate('/login');
                     return;
                 }
 
-                const response = await fetch('http://localhost:3000/api/authenticated-page', {
+                const response = await fetch('/api/authenticated-page', {
                     headers: {
                         'Authorization': `Bearer ${token}`,
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
+                        'Accept': 'application/json'
                     }
                 });
 
-                const data = await response.json();
-
                 if (!response.ok) {
-                    if (response.status === 401) {
-                        localStorage.removeItem('sessionToken');
-                        navigate('/login');
-                        return;
-                    }
-                    throw new Error(data.message || 'Erreur d\'authentification');
+                    localStorage.removeItem('token');
+                    navigate('/login');
+                    return;
                 }
+
+                const data = await response.json();
 
                 if (data.redirect_to) {
                     navigate(data.redirect_to);
@@ -99,11 +95,12 @@ const AuthenticatedPage: React.FC = () => {
                 if (data.success) {
                     setUserData(data.user);
                 } else {
-                    throw new Error(data.message || 'Erreur d\'authentification');
+                    localStorage.removeItem('token');
+                    navigate('/login');
                 }
             } catch (err: any) {
                 setError(err.message);
-                localStorage.removeItem('sessionToken');
+                localStorage.removeItem('token');
             }
         };
 
@@ -112,15 +109,15 @@ const AuthenticatedPage: React.FC = () => {
 
     const handleLogout = async () => {
         try {
-            const token = localStorage.getItem('sessionToken');
-            await fetch('http://localhost:3000/api/auth/logout', {
+            const token = localStorage.getItem('token');
+            await fetch('/api/auth/logout', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
             });
 
-            localStorage.removeItem('sessionToken');
+            localStorage.removeItem('token');
             navigate('/login');
         } catch (err) {
             console.error('Erreur lors de la déconnexion:', err);

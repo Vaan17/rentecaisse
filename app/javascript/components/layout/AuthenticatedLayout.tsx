@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 
@@ -62,6 +62,14 @@ const Avatar = styled.div`
   font-weight: bold;
   color: #1a237e;
   font-size: 1.2rem;
+`;
+
+const ProfileImage = styled.img`
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid white;
+  object-fit: cover;
 `;
 
 const UserName = styled.span`
@@ -183,6 +191,12 @@ const menuItems: MenuItemType[] = [
   },
 ];
 
+interface UserInfo {
+  prenom: string;
+  nom: string;
+  email: string;
+}
+
 interface LayoutProps {
   children: React.ReactNode;
 }
@@ -190,7 +204,32 @@ interface LayoutProps {
 export const AuthenticatedLayout = ({ children }: LayoutProps): JSX.Element => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openSubMenu, setOpenSubMenu] = useState<string | null>(null);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchUserInfo();
+  }, []);
+
+  const fetchUserInfo = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:3000/api/authenticated-page', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setUserInfo(data.user);
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des informations utilisateur:', error);
+    }
+  };
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -210,6 +249,11 @@ export const AuthenticatedLayout = ({ children }: LayoutProps): JSX.Element => {
     setIsMobileMenuOpen(false);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    window.location.href = '/login';
+  };
+
   return (
     <Root>
       <TopBar>
@@ -220,9 +264,13 @@ export const AuthenticatedLayout = ({ children }: LayoutProps): JSX.Element => {
         </LogoContainer>
         <div style={{ flex: 1 }} />
         <UserSection>
-          <Avatar>MP</Avatar>
-          <UserName>Marcel Picho</UserName>
-          <LogoutButton>Se déconnecter</LogoutButton>
+          <Avatar>
+            {userInfo ? `${userInfo.prenom[0]}${userInfo.nom[0]}` : ''}
+          </Avatar>
+          <UserName>
+            {userInfo ? `${userInfo.prenom} ${userInfo.nom}` : ''}
+          </UserName>
+          <LogoutButton onClick={handleLogout}>Se déconnecter</LogoutButton>
         </UserSection>
       </TopBar>
 
