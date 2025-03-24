@@ -1,3 +1,5 @@
+require 'digest'
+
 class AuthenticationService
   class AuthenticationError < StandardError; end
   class InvalidEmailError < AuthenticationError; end
@@ -88,6 +90,48 @@ class AuthenticationService
       token_created_at: Time.current
     )
     token
+  end
+
+  def self.hash_password(password)
+    Digest::SHA256.hexdigest(password)
+  end
+
+  def self.verify_password(password, hashed_password)
+    Digest::SHA256.hexdigest(password) == hashed_password
+  end
+
+  def self.register_user(email, password)
+    # Hasher le mot de passe
+    hashed_password = hash_password(password)
+    
+    # Créer l'utilisateur avec le mot de passe hashé
+    user = Utilisateur.new(
+      email: email,
+      password: hashed_password,
+      email_confirme: false,
+      admin_entreprise: false,
+      admin_rentecaisse: false,
+      premiere_connexion: true,
+      date_creation_utilisateur: Time.current,
+      date_modification_utilisateur: Time.current
+    )
+
+    if user.save
+      { success: true, user: user }
+    else
+      { success: false, errors: user.errors.full_messages }
+    end
+  end
+
+  def self.authenticate(email, password)
+    user = Utilisateur.find_by(email: email)
+    return nil unless user
+
+    if verify_password(password, user.password)
+      user
+    else
+      nil
+    end
   end
 
   private

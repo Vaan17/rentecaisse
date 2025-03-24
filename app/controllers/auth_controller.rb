@@ -76,36 +76,31 @@ class AuthController < ApplicationController
   def register
     Rails.logger.info "Tentative d'inscription avec l'email: #{user_params[:email]}"
     
-    user = Utilisateur.new(
-      email: user_params[:email],
-      password: user_params[:password],
-      email_confirme: false,
-      admin_entreprise: false,
-      admin_rentecaisse: false,
-      premiere_connexion: true,
-      date_creation_utilisateur: Time.current,
-      date_modification_utilisateur: Time.current
+    # Utiliser le service d'authentification pour l'inscription
+    result = AuthenticationService.register_user(
+      user_params[:email],
+      user_params[:password]
     )
 
-    if user.save
-      Rails.logger.info "Inscription réussie pour l'utilisateur: #{user.email}"
+    if result[:success]
+      Rails.logger.info "Inscription réussie pour l'utilisateur: #{result[:user].email}"
       
       # Génération du token de confirmation
-      service = AuthenticationService.new(user.email, user.password)
-      token = service.generate_auth_token(user)
+      service = AuthenticationService.new(result[:user].email, result[:user].password)
+      token = service.generate_auth_token(result[:user])
       
       # Envoi de l'email de confirmation
-      UserMailer.confirmation_email(user).deliver_later
+      UserMailer.confirmation_email(result[:user]).deliver_later
 
       render json: {
         success: true,
         message: 'Inscription réussie. Veuillez vérifier votre email pour confirmer votre compte.'
       }
     else
-      Rails.logger.warn "Échec de l'inscription: #{user.errors.full_messages.join(', ')}"
+      Rails.logger.warn "Échec de l'inscription: #{result[:errors].join(', ')}"
       render json: { 
         success: false, 
-        message: user.errors.full_messages.join(', '),
+        message: result[:errors].join(', '),
         error_code: 'VALIDATION_ERROR'
       }, status: :unprocessable_entity
     end

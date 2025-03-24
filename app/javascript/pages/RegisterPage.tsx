@@ -459,21 +459,6 @@ const RegisterPage: React.FC = () => {
     return Object.values(passwordErrors).every(value => value === true);
   };
 
-  // Fonction pour convertir un ArrayBuffer en chaîne hexadécimale
-  const arrayBufferToHex = (buffer: ArrayBuffer): string => {
-    return Array.from(new Uint8Array(buffer))
-      .map(b => b.toString(16).padStart(2, '0'))
-      .join('');
-  };
-
-  // Fonction pour hasher le mot de passe en SHA-256
-  const hashPassword = async (password: string): Promise<string> => {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(password);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    return arrayBufferToHex(hashBuffer);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -494,8 +479,6 @@ const RegisterPage: React.FC = () => {
     }
 
     try {
-      const hashedPassword = await hashPassword(password);
-
       const response = await fetch('http://localhost:3000/api/auth/register', {
         method: 'POST',
         headers: {
@@ -505,7 +488,7 @@ const RegisterPage: React.FC = () => {
         body: JSON.stringify({
           user: {
             email,
-            password: hashedPassword
+            password // Envoi du mot de passe non hashé
           }
         })
       });
@@ -513,7 +496,6 @@ const RegisterPage: React.FC = () => {
       const data = await response.json();
 
       if (data.success) {
-        // Redirection vers la page de succès
         window.location.href = '/register-success';
       } else {
         setError(data.message || 'Une erreur est survenue lors de l\'inscription');
