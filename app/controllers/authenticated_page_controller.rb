@@ -206,17 +206,25 @@ class AuthenticatedPageController < ApplicationController
   end
 
   def update_profile_photo
-    if params[:photo] && UserService.update_user_photo(@current_user, params[:photo])
-      # Récupérer l'URL de l'image mise à jour
-      render json: { 
-        success: true, 
-        message: "Photo de profil mise à jour avec succès",
-        photo: UserService.get_user_profile_image(@current_user)
-      }
+    if params[:photo]
+      result = UserService.update_user_photo(@current_user, params[:photo])
+      
+      if result[:success]
+        render json: { 
+          success: true, 
+          message: result[:message],
+          photo: UserService.get_user_profile_image(@current_user)
+        }
+      else
+        render json: { 
+          success: false, 
+          message: result[:message]
+        }, status: :unprocessable_entity
+      end
     else
       render json: { 
         success: false, 
-        message: "Erreur lors de la mise à jour de la photo" 
+        message: "Aucune photo fournie" 
       }, status: :unprocessable_entity
     end
   end

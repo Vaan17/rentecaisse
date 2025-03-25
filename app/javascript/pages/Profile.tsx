@@ -202,6 +202,20 @@ const Select = styled.select`
   }
 `;
 
+const ErrorMessage = styled.span`
+  color: #ff4d4d;
+  font-size: 0.85rem;
+  position: absolute;
+  bottom: 5px;
+  left: calc(100% + 10px);
+  background-color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+  z-index: 1;
+`;
+
 interface UserProfileData {
   personal_info: {
     id: number;
@@ -233,11 +247,42 @@ interface UserProfileData {
   };
 }
 
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
+const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif'];
+
+const validateImage = (file: File) => {
+  console.log("Validation de l'image:", {
+    name: file.name,
+    type: file.type,
+    size: file.size
+  });
+
+  // Vérification de la taille
+  if (file.size > MAX_SIZE) {
+    return { isValid: false, error: "L'image ne doit pas dépasser 5MB" };
+  }
+
+  // Vérification du type MIME
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    return { isValid: false, error: "Format non supporté. Utilisez JPG, JPEG, PNG ou GIF" };
+  }
+
+  // Vérification de l'extension
+  const extension = file.name.split('.').pop()?.toLowerCase();
+  if (!extension || !ALLOWED_EXTENSIONS.includes(extension)) {
+    return { isValid: false, error: "L'extension du fichier n'est pas valide" };
+  }
+
+  return { isValid: true, error: null };
+};
+
 const Profile: React.FC = () => {
   const [userData, setUserData] = useState<UserProfileData | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<UserProfileData['personal_info']>>({});
   const [userImage, setUserImage] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -324,20 +369,36 @@ const Profile: React.FC = () => {
   };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("Début de handleImageUpload");
+    setUploadError(null);
     const file = event.target.files?.[0];
-    if (!file) return;
-
-    // Vérifier si le fichier est une image
-    if (!file.type.startsWith('image/')) {
-      toast.error('Veuillez sélectionner une image');
+    
+    if (!file) {
+      console.log("Aucun fichier sélectionné");
       return;
     }
 
+    console.log("Fichier sélectionné:", {
+      name: file.name,
+      size: file.size,
+      type: file.type
+    });
+
+    // Validation de l'image
+    const validationResult = validateImage(file);
+    if (!validationResult.isValid) {
+      console.log("Validation échouée:", validationResult.error);
+      setUploadError(validationResult.error || "Erreur de validation du fichier");
+      return;
+    }
+
+    console.log("Validation du fichier réussie, préparation de l'upload");
     const formData = new FormData();
     formData.append('photo', file);
 
     try {
       const token = localStorage.getItem('token');
+      console.log("Début de l'upload...");
       const response = await fetch('http://localhost:3000/api/user/profile/photo', {
         method: 'POST',
         headers: {
@@ -347,15 +408,20 @@ const Profile: React.FC = () => {
       });
 
       const data = await response.json();
+      console.log("Réponse du serveur:", data);
+      
       if (data.success) {
-        toast.success('Photo de profil mise à jour avec succès');
-        fetchUserImage(); // Recharger l'image
+        console.log("Upload réussi");
+        setUploadError(null);
+        toast.success(data.message);
+        fetchUserImage();
       } else {
-        toast.error(data.message || 'Erreur lors de la mise à jour de la photo');
+        console.log("Échec de l'upload:", data.message);
+        setUploadError(data.message || 'Erreur lors de la mise à jour de la photo');
       }
     } catch (error) {
-      console.error('Erreur lors de l\'upload:', error);
-      toast.error('Erreur lors de l\'upload de l\'image');
+      console.error('Erreur détaillée lors de l\'upload:', error);
+      setUploadError('Erreur lors de l\'upload de l\'image');
     }
   };
 
@@ -426,6 +492,7 @@ const Profile: React.FC = () => {
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
             </svg>
           </UploadButton>
+          {uploadError && <ErrorMessage>{uploadError}</ErrorMessage>}
           <HiddenFileInput
             ref={fileInputRef}
             type="file"
