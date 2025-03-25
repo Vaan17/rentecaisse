@@ -1,9 +1,12 @@
 import * as React from 'react';
-import AuthenticatedLayout from '../components/layout/AuthenticatedLayout';
 import styled from 'styled-components';
+import TopBar from '../components/TopBar';
+import SideBar from '../components/SideBar';
 
 const Container = styled.div`
   padding: 24px;
+  margin-left: 350px;
+  margin-top: 72px;
 `;
 
 const Card = styled.div`
@@ -23,9 +26,18 @@ const Text = styled.p`
   line-height: 1.5;
 `;
 
+const AppContainer = styled.div`
+  width: 100vw;
+  height: 100vh;
+`;
+
 export const HomeAuthenticated = (): JSX.Element => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+
   return (
-    <AuthenticatedLayout>
+    <AppContainer>
+      <TopBar onMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)} />
+      <SideBar />
       <Container>
         <Card>
           <Title>Tableau de bord</Title>
@@ -34,7 +46,7 @@ export const HomeAuthenticated = (): JSX.Element => {
           </Text>
         </Card>
       </Container>
-    </AuthenticatedLayout>
+    </AppContainer>
   );
 };
 
