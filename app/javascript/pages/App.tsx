@@ -23,6 +23,7 @@ import AffectationEntrepriseSite from './AffectationEntrepriseSite'
 import StatutAffectationEnAttente from './StatutAffectationEnAttente'
 import HomeAuthenticated from './HomeAuthenticated'
 import Profile from './Profile'
+import LesSites from "./sites/Sites.tsx"
 
 const AppContainer = styled.div`
 	width: 100vw;
@@ -89,6 +90,7 @@ const App = () => {
 										<Route path="/home" element={<div style={{ width: "100%", height: "100%" }}>Home page is comming soon...</div>} />
 										<Route path="/sandbox" element={<Sandbox />} />
 										<Route path="/colors" element={<ColorsPage />} />
+										<Route path="/sites" element={<LesSites />} />
 										<Route path="*" element={<Navigate to="/home" replace />} />
 									</Routes>
 								</AppSubContainer>
