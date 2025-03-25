@@ -42,7 +42,17 @@ class UserService
   end
 
   def self.update_user_profile(user, params)
-    user.update(params)
+    # Validation des champs modifiés
+    params.each do |field, value|
+      validation_result = validate_field(field, value)
+      return { success: false, message: validation_result[:error] } unless validation_result[:valid]
+    end
+
+    if user.update(params)
+      { success: true, personal_info: user.attributes }
+    else
+      { success: false, message: "Erreur lors de la mise à jour" }
+    end
   end
 
   def self.validate_image(file)
@@ -121,5 +131,90 @@ class UserService
     else
       nil
     end
+  end
+
+  private
+
+  def self.validate_field(field, value)
+    case field.to_s
+    when 'prenom', 'nom'
+      return validate_name(field, value)
+    when 'adresse'
+      return validate_address(value)
+    when 'ville'
+      return validate_city(value)
+    when 'code_postal'
+      return validate_postal_code(value)
+    when 'telephone'
+      return validate_phone(value)
+    when 'date_naissance'
+      return validate_age(value)
+    when 'pays'
+      return validate_name('pays', value)
+    when 'email'
+      return validate_email(value)
+    when 'genre'
+      return validate_genre(value)
+    else
+      { valid: true, error: nil }
+    end
+  end
+
+  def self.validate_name(field, name)
+    return { valid: false, error: "Le #{field} est requis" } if name.blank?
+    return { valid: false, error: "Le #{field} doit contenir au moins 2 caractères" } if name.length < 2
+    return { valid: false, error: "Le #{field} ne doit contenir que des lettres" } unless name.match?(/^[a-zA-ZÀ-ÿ\s-]+$/)
+    { valid: true, error: nil }
+  end
+
+  def self.validate_address(address)
+    return { valid: false, error: "L'adresse est requise" } if address.blank?
+    return { valid: false, error: "L'adresse doit contenir au moins 5 caractères" } if address.length < 5
+    { valid: true, error: nil }
+  end
+
+  def self.validate_city(city)
+    return { valid: false, error: "La ville est requise" } if city.blank?
+    return { valid: false, error: "La ville doit contenir au moins 2 caractères" } if city.length < 2
+    return { valid: false, error: "La ville ne doit contenir que des lettres" } unless city.match?(/^[a-zA-ZÀ-ÿ\s-]+$/)
+    { valid: true, error: nil }
+  end
+
+  def self.validate_postal_code(code)
+    return { valid: false, error: "Le code postal est requis" } if code.blank?
+    return { valid: false, error: "Le code postal doit contenir 5 chiffres" } unless code.match?(/^[0-9]{5}$/)
+    { valid: true, error: nil }
+  end
+
+  def self.validate_phone(phone)
+    return { valid: false, error: "Le numéro de téléphone est requis" } if phone.blank?
+    return { valid: false, error: "Format de numéro de téléphone invalide" } unless phone.match?(/^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$/)
+    { valid: true, error: nil }
+  end
+
+  def self.validate_age(birth_date)
+    return { valid: false, error: "La date de naissance est requise" } if birth_date.blank?
+    
+    begin
+      birth = Date.parse(birth_date.to_s)
+      age = ((Time.current - birth.to_time) / 1.year.seconds).floor
+      return { valid: false, error: "Vous devez avoir au moins 18 ans" } if age < 18
+      { valid: true, error: nil }
+    rescue ArgumentError
+      { valid: false, error: "Format de date invalide" }
+    end
+  end
+
+  def self.validate_email(email)
+    return { valid: false, error: "L'email est requis" } if email.blank?
+    return { valid: false, error: "Format d'email invalide" } unless email.match?(/\A[^@\s]+@[^@\s]+\.[^@\s]+\z/)
+    { valid: true, error: nil }
+  end
+
+  def self.validate_genre(genre)
+    valid_genres = ['masculin', 'feminin', 'autre']
+    return { valid: false, error: "Le genre est requis" } if genre.blank?
+    return { valid: false, error: "Genre invalide" } unless valid_genres.include?(genre.downcase)
+    { valid: true, error: nil }
   end
 end

@@ -205,16 +205,241 @@ const Select = styled.select`
 const ErrorMessage = styled.span`
   color: #ff4d4d;
   font-size: 0.85rem;
-  position: absolute;
-  bottom: 5px;
-  left: calc(100% + 10px);
-  background-color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  white-space: nowrap;
-  z-index: 1;
+  margin-top: 0.25rem;
+  font-family: 'Inter', sans-serif;
 `;
+
+const EditIcon = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  margin-left: 8px;
+  color: #666;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+
+  &:hover {
+    color: #FFD700;
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+`;
+
+const SaveCancelButtons = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+`;
+
+const ActionButton = styled.button<{ variant: 'save' | 'cancel' }>`
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  background-color: ${props => props.variant === 'save' ? '#FFD700' : '#f0f0f0'};
+  color: ${props => props.variant === 'save' ? '#272727' : '#666'};
+
+  &:hover {
+    background-color: ${props => props.variant === 'save' ? '#FFC700' : '#e0e0e0'};
+  }
+`;
+
+// Fonctions de validation
+const validateName = (name: string): boolean => {
+  return name.length >= 2 && /^[a-zA-ZÀ-ÿ\s-]+$/.test(name);
+};
+
+const validateAge = (birthDate: string): boolean => {
+  const today = new Date();
+  const birth = new Date(birthDate);
+  const age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    return age - 1 >= 18;
+  }
+  
+  return age >= 18;
+};
+
+const validatePostalCode = (postalCode: string): boolean => {
+  return /^[0-9]{5}$/.test(postalCode);
+};
+
+const validatePhone = (phone: string): boolean => {
+  return /^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$/.test(phone);
+};
+
+const validateAddress = (address: string): boolean => {
+  return address.length >= 5;
+};
+
+const validateCity = (city: string): boolean => {
+  return city.length >= 2 && /^[a-zA-ZÀ-ÿ\s-]+$/.test(city);
+};
+
+const validateEmail = (email: string): boolean => {
+  return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+};
+
+interface ValidationResult {
+  isValid: boolean;
+  error: string;
+}
+
+const validateField = (name: string, value: string): ValidationResult => {
+  let isValid = false;
+  let error = '';
+
+  switch (name) {
+    case 'prenom':
+    case 'nom':
+      isValid = validateName(value);
+      error = isValid ? '' : 'Minimum 2 caractères, lettres uniquement';
+      break;
+    case 'date_naissance':
+      isValid = validateAge(value);
+      error = isValid ? '' : 'Vous devez avoir au moins 18 ans';
+      break;
+    case 'adresse':
+      isValid = validateAddress(value);
+      error = isValid ? '' : 'Adresse trop courte (minimum 5 caractères)';
+      break;
+    case 'ville':
+      isValid = validateCity(value);
+      error = isValid ? '' : 'Ville invalide (minimum 2 caractères, lettres uniquement)';
+      break;
+    case 'code_postal':
+      isValid = validatePostalCode(value);
+      error = isValid ? '' : 'Code postal invalide (5 chiffres)';
+      break;
+    case 'telephone':
+      isValid = validatePhone(value);
+      error = isValid ? '' : 'Numéro de téléphone invalide';
+      break;
+    case 'pays':
+      isValid = validateName(value);
+      error = isValid ? '' : 'Pays invalide';
+      break;
+    case 'email':
+      isValid = validateEmail(value);
+      error = isValid ? '' : 'Format d\'email invalide';
+      break;
+    default:
+      isValid = true;
+  }
+
+  return { isValid, error };
+};
+
+interface EditableInfoItemProps {
+  label: string;
+  value: string | null;
+  name: string;
+  isEditing: boolean;
+  onEdit: () => void;
+  onSave: (name: string, value: string) => void;
+  onCancel: () => void;
+  type?: string;
+  options?: Array<{value: string, label: string}>;
+}
+
+const EditableInfoItem: React.FC<EditableInfoItemProps> = ({
+  label,
+  value,
+  name,
+  isEditing,
+  onEdit,
+  onSave,
+  onCancel,
+  type = 'text',
+  options
+}) => {
+  const [editValue, setEditValue] = useState(value || '');
+  const [error, setError] = useState<string>('');
+
+  const handleSave = () => {
+    const validationResult = validateField(name, editValue);
+    if (!validationResult.isValid) {
+      setError(validationResult.error);
+      return;
+    }
+    setError('');
+    onSave(name, editValue);
+  };
+
+  const handleCancel = () => {
+    setEditValue(value || '');
+    setError('');
+    onCancel();
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const newValue = e.target.value;
+    setEditValue(newValue);
+    const validationResult = validateField(name, newValue);
+    setError(validationResult.error);
+  };
+
+  return (
+    <InfoItem>
+      <InfoLabel>{label}</InfoLabel>
+      {isEditing ? (
+        <div>
+          {options ? (
+            <Select
+              value={editValue}
+              onChange={handleChange}
+              className={error ? 'error' : ''}
+            >
+              <option value="">Sélectionnez une option</option>
+              {options.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
+          ) : (
+            <Input
+              type={type}
+              value={editValue}
+              onChange={handleChange}
+              className={error ? 'error' : ''}
+            />
+          )}
+          {error && <ErrorMessage>{error}</ErrorMessage>}
+          <SaveCancelButtons>
+            <ActionButton variant="save" onClick={handleSave} disabled={!!error}>
+              Enregistrer
+            </ActionButton>
+            <ActionButton variant="cancel" onClick={handleCancel}>
+              Annuler
+            </ActionButton>
+          </SaveCancelButtons>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <InfoValue>
+            {value || 'Non renseigné'}
+          </InfoValue>
+          <EditIcon onClick={onEdit}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </EditIcon>
+        </div>
+      )}
+    </InfoItem>
+  );
+};
 
 interface UserProfileData {
   personal_info: {
@@ -279,8 +504,7 @@ const validateImage = (file: File) => {
 
 const Profile: React.FC = () => {
   const [userData, setUserData] = useState<UserProfileData | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState<Partial<UserProfileData['personal_info']>>({});
+  const [editingFields, setEditingFields] = useState<{[key: string]: boolean}>({});
   const [userImage, setUserImage] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -327,7 +551,6 @@ const Profile: React.FC = () => {
       console.log('Données reçues:', data);
       
       setUserData(data);
-      setFormData(data.personal_info);
       console.log('État userData mis à jour');
     } catch (error) {
       console.error('Erreur détaillée:', error);
@@ -425,11 +648,13 @@ const Profile: React.FC = () => {
     }
   };
 
-  const handleUpdateProfile = async () => {
+  const handleFieldEdit = (fieldName: string) => {
+    setEditingFields(prev => ({ ...prev, [fieldName]: true }));
+  };
+
+  const handleFieldSave = async (fieldName: string, value: string) => {
     try {
       const token = localStorage.getItem('token');
-      console.log('Mise à jour du profil avec les données:', formData);
-
       const response = await fetch('http://localhost:3000/api/user/profile', {
         method: 'PATCH',
         headers: {
@@ -437,33 +662,40 @@ const Profile: React.FC = () => {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify({ user: formData })
+        body: JSON.stringify({
+          user: {
+            [fieldName]: value
+          }
+        })
       });
 
-      console.log('Statut de la réponse de mise à jour:', response.status);
-
-      if (!response.ok) {
-        throw new Error('Erreur lors de la mise à jour du profil');
-      }
-
       const data = await response.json();
-      console.log('Données mises à jour reçues:', data);
-
-      setUserData(prev => prev ? { ...prev, personal_info: data.personal_info } : null);
-      setIsEditing(false);
+      
+      if (data.success) {
+        setUserData(prev => prev ? {
+          ...prev,
+          personal_info: {
+            ...prev.personal_info,
+            [fieldName]: value
+          }
+        } : null);
+        setEditingFields(prev => ({ ...prev, [fieldName]: false }));
+        toast.success('Champ mis à jour avec succès');
+      } else {
+        toast.error(data.message || 'Erreur lors de la mise à jour du champ');
+      }
     } catch (error) {
       console.error('Erreur lors de la mise à jour:', error);
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error('Erreur lors de la mise à jour du champ');
+      }
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  const handleFieldCancel = (fieldName: string) => {
+    setEditingFields(prev => ({ ...prev, [fieldName]: false }));
   };
 
   if (!userData) {
@@ -508,153 +740,106 @@ const Profile: React.FC = () => {
             {userData.entreprise_info.nom} - {userData.site_info.nom}
           </ProfileRole>
         </ProfileInfo>
-        <EditButton onClick={() => setIsEditing(!isEditing)}>
-          {isEditing ? 'Annuler' : 'Modifier'}
+        <EditButton onClick={() => setEditingFields({})}>
+          Modifier
         </EditButton>
-        {isEditing && (
-          <EditButton onClick={handleUpdateProfile}>
-            Enregistrer
-          </EditButton>
-        )}
       </ProfileHeader>
 
       <ProfileSection>
         <SectionTitle>Informations personnelles</SectionTitle>
         <InfoGrid>
-          {isEditing ? (
-            <>
-              <InfoItem>
-                <InfoLabel>Email</InfoLabel>
-                <Input
-                  name="email"
-                  value={formData.email || ''}
-                  onChange={handleInputChange}
-                  type="email"
-                />
-              </InfoItem>
-              <InfoItem>
-                <InfoLabel>Téléphone</InfoLabel>
-                <Input
-                  name="telephone"
-                  value={formData.telephone || ''}
-                  onChange={handleInputChange}
-                />
-              </InfoItem>
-              <InfoItem>
-                <InfoLabel>Date de naissance</InfoLabel>
-                <Input
-                  name="date_naissance"
-                  value={formData.date_naissance || ''}
-                  onChange={handleInputChange}
-                  type="date"
-                />
-              </InfoItem>
-              <InfoItem>
-                <InfoLabel>Genre</InfoLabel>
-                <Select
-                  name="genre"
-                  value={formData.genre || ''}
-                  onChange={handleSelectChange}
-                >
-                  <option value="">Sélectionnez un genre</option>
-                  <option value="masculin">Masculin</option>
-                  <option value="feminin">Féminin</option>
-                  <option value="autre">Autre</option>
-                </Select>
-              </InfoItem>
-              <InfoItem>
-                <InfoLabel>Catégorie de permis</InfoLabel>
-                <Select
-                  name="categorie_permis"
-                  value={formData.categorie_permis || ''}
-                  onChange={handleSelectChange}
-                >
-                  <option value="">Sélectionnez une catégorie</option>
-                  <option value="B Manuel">Permis B Manuel</option>
-                  <option value="B Automatique">Permis B Automatique</option>
-                </Select>
-              </InfoItem>
-              <InfoItem>
-                <InfoLabel>Adresse</InfoLabel>
-                <Input
-                  name="adresse"
-                  value={formData.adresse || ''}
-                  onChange={handleInputChange}
-                />
-              </InfoItem>
-              <InfoItem>
-                <InfoLabel>Ville</InfoLabel>
-                <Input
-                  name="ville"
-                  value={formData.ville || ''}
-                  onChange={handleInputChange}
-                />
-              </InfoItem>
-              <InfoItem>
-                <InfoLabel>Code postal</InfoLabel>
-                <Input
-                  name="code_postal"
-                  value={formData.code_postal || ''}
-                  onChange={handleInputChange}
-                />
-              </InfoItem>
-              <InfoItem>
-                <InfoLabel>Pays</InfoLabel>
-                <Input
-                  name="pays"
-                  value={formData.pays || ''}
-                  onChange={handleInputChange}
-                />
-              </InfoItem>
-            </>
-          ) : (
-            <>
-              <InfoItem>
-                <InfoLabel>Email</InfoLabel>
-                <InfoValue>{userData.personal_info.email}</InfoValue>
-              </InfoItem>
-              <InfoItem>
-                <InfoLabel>Téléphone</InfoLabel>
-                <InfoValue>{userData.personal_info.telephone}</InfoValue>
-              </InfoItem>
-              <InfoItem>
-                <InfoLabel>Date de naissance</InfoLabel>
-                <InfoValue>
-                  {userData.personal_info.date_naissance ? 
-                    new Date(userData.personal_info.date_naissance).toLocaleDateString('fr-FR') : 
-                    'Non renseigné'}
-                </InfoValue>
-              </InfoItem>
-              <InfoItem>
-                <InfoLabel>Genre</InfoLabel>
-                <InfoValue>
-                  {userData.personal_info.genre ? 
-                    userData.personal_info.genre.charAt(0).toUpperCase() + userData.personal_info.genre.slice(1) : 
-                    'Non renseigné'}
-                </InfoValue>
-              </InfoItem>
-              <InfoItem>
-                <InfoLabel>Catégorie de permis</InfoLabel>
-                <InfoValue>{userData.personal_info.categorie_permis || 'Non renseigné'}</InfoValue>
-              </InfoItem>
-              <InfoItem>
-                <InfoLabel>Adresse</InfoLabel>
-                <InfoValue>{userData.personal_info.adresse}</InfoValue>
-              </InfoItem>
-              <InfoItem>
-                <InfoLabel>Ville</InfoLabel>
-                <InfoValue>{userData.personal_info.ville}</InfoValue>
-              </InfoItem>
-              <InfoItem>
-                <InfoLabel>Code postal</InfoLabel>
-                <InfoValue>{userData.personal_info.code_postal}</InfoValue>
-              </InfoItem>
-              <InfoItem>
-                <InfoLabel>Pays</InfoLabel>
-                <InfoValue>{userData.personal_info.pays}</InfoValue>
-              </InfoItem>
-            </>
-          )}
+          <EditableInfoItem
+            label="Email"
+            value={userData.personal_info.email}
+            name="email"
+            type="email"
+            isEditing={editingFields.email}
+            onEdit={() => handleFieldEdit('email')}
+            onSave={handleFieldSave}
+            onCancel={() => handleFieldCancel('email')}
+          />
+          <EditableInfoItem
+            label="Téléphone"
+            value={userData.personal_info.telephone}
+            name="telephone"
+            isEditing={editingFields.telephone}
+            onEdit={() => handleFieldEdit('telephone')}
+            onSave={handleFieldSave}
+            onCancel={() => handleFieldCancel('telephone')}
+          />
+          <EditableInfoItem
+            label="Date de naissance"
+            value={userData.personal_info.date_naissance}
+            name="date_naissance"
+            type="date"
+            isEditing={editingFields.date_naissance}
+            onEdit={() => handleFieldEdit('date_naissance')}
+            onSave={handleFieldSave}
+            onCancel={() => handleFieldCancel('date_naissance')}
+          />
+          <EditableInfoItem
+            label="Genre"
+            value={userData.personal_info.genre}
+            name="genre"
+            isEditing={editingFields.genre}
+            onEdit={() => handleFieldEdit('genre')}
+            onSave={handleFieldSave}
+            onCancel={() => handleFieldCancel('genre')}
+            options={[
+              { value: 'masculin', label: 'Masculin' },
+              { value: 'feminin', label: 'Féminin' },
+              { value: 'autre', label: 'Autre' }
+            ]}
+          />
+          <EditableInfoItem
+            label="Catégorie de permis"
+            value={userData.personal_info.categorie_permis}
+            name="categorie_permis"
+            isEditing={editingFields.categorie_permis}
+            onEdit={() => handleFieldEdit('categorie_permis')}
+            onSave={handleFieldSave}
+            onCancel={() => handleFieldCancel('categorie_permis')}
+            options={[
+              { value: 'B Manuel', label: 'Permis B Manuel' },
+              { value: 'B Automatique', label: 'Permis B Automatique' }
+            ]}
+          />
+          <EditableInfoItem
+            label="Adresse"
+            value={userData.personal_info.adresse}
+            name="adresse"
+            isEditing={editingFields.adresse}
+            onEdit={() => handleFieldEdit('adresse')}
+            onSave={handleFieldSave}
+            onCancel={() => handleFieldCancel('adresse')}
+          />
+          <EditableInfoItem
+            label="Ville"
+            value={userData.personal_info.ville}
+            name="ville"
+            isEditing={editingFields.ville}
+            onEdit={() => handleFieldEdit('ville')}
+            onSave={handleFieldSave}
+            onCancel={() => handleFieldCancel('ville')}
+          />
+          <EditableInfoItem
+            label="Code postal"
+            value={userData.personal_info.code_postal}
+            name="code_postal"
+            isEditing={editingFields.code_postal}
+            onEdit={() => handleFieldEdit('code_postal')}
+            onSave={handleFieldSave}
+            onCancel={() => handleFieldCancel('code_postal')}
+          />
+          <EditableInfoItem
+            label="Pays"
+            value={userData.personal_info.pays}
+            name="pays"
+            isEditing={editingFields.pays}
+            onEdit={() => handleFieldEdit('pays')}
+            onSave={handleFieldSave}
+            onCancel={() => handleFieldCancel('pays')}
+          />
         </InfoGrid>
       </ProfileSection>
 
