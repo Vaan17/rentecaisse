@@ -35,6 +35,7 @@ class AuthenticatedPageController < ApplicationController
 
     render json: {
       success: true,
+      redirect_to: '/home',
       user: {
         id: @current_user.id,
         email: @current_user.email,

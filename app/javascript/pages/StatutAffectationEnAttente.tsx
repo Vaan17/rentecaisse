@@ -114,7 +114,11 @@ const StatutAffectationEnAttente: React.FC = () => {
   const handleRefresh = async () => {
     setLoading(true);
     try {
+      console.log('Début de la vérification du statut...');
       const token = localStorage.getItem('token');
+      console.log('Token récupéré:', token ? 'Présent' : 'Absent');
+
+      console.log('Envoi de la requête à /api/authenticated-page...');
       const response = await fetch('http://localhost:3000/api/authenticated-page', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -122,21 +126,49 @@ const StatutAffectationEnAttente: React.FC = () => {
         }
       });
       
+      console.log('Réponse reçue:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok
+      });
+      
       const data = await response.json();
+      console.log('Données reçues:', {
+        success: data.success,
+        redirect_to: data.redirect_to,
+        user: data.user,
+        completeData: data
+      });
+
+      console.log('Vérification des conditions de redirection...');
       if (data.success) {
+        console.log('Condition data.success vérifiée, redirection vers:', data.redirect_to);
         navigate(data.redirect_to);
       } else if (data.redirect_to && data.redirect_to !== '/statut-affectation') {
+        console.log('Condition else-if vérifiée, redirection vers:', data.redirect_to);
         navigate(data.redirect_to);
+      } else {
+        console.log('Aucune condition de redirection remplie. État actuel:', {
+          success: data.success,
+          redirect_to: data.redirect_to
+        });
       }
     } catch (error) {
-      console.error('Erreur lors de la vérification du statut:', error);
+      console.error('Erreur détaillée lors de la vérification du statut:', {
+        error,
+        message: error.message,
+        stack: error.stack,
+        response: error.response
+      });
       toast.error('Erreur lors de la vérification du statut');
       
       if (error.response?.status === 401) {
+        console.log('Erreur 401 détectée, redirection vers login');
         localStorage.removeItem('token');
         navigate('/login');
       }
     } finally {
+      console.log('Fin de la vérification du statut');
       setLoading(false);
     }
   };
