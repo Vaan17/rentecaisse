@@ -4,6 +4,7 @@ import { Button, CardActions, CardContent, CardHeader } from "@mui/material"
 import styled from "styled-components"
 import FilterAltIcon from '@mui/icons-material/FilterAlt'
 import CustomFilter from "../../components/CustomFilter"
+import { useNavigate } from "react-router-dom"
 
 const CardContainer = styled.div`
     display: flex;
@@ -13,7 +14,8 @@ const CardContainer = styled.div`
     padding: 0 3em;
 `
 
-const LesSites = () => {
+const Sites = () => {
+    const navigate = useNavigate()
     const [filterProperties, setFilterProperties] = useState({ filterBy: undefined, searchValue: "" })
 
     const filterOptions = [
@@ -113,7 +115,13 @@ const LesSites = () => {
                                 </div>
                             </CardContent>
                             <CardActions>
-                                <Button variant="outlined" size="small">Consulter détails</Button>
+                                <Button
+                                    variant="outlined"
+                                    size="small"
+                                    onClick={() => navigate(`/sites/${site.id}`)}
+                                >
+                                    Consulter détails
+                                </Button>
                             </CardActions>
                         </Card>
                     )
@@ -123,4 +131,4 @@ const LesSites = () => {
     )
 }
 
-export default LesSites
+export default Sites
