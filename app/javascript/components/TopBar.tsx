@@ -68,9 +68,10 @@ const ItemSubtitle = styled.div`
 `
 
 interface UserInfo {
-	prenom: string;
-	nom: string;
-	email: string;
+  id: number;
+  prenom: string;
+  nom: string;
+  email: string;
 }
 
 const TopBar = () => {
@@ -89,10 +90,15 @@ const TopBar = () => {
 		setAnchorEl(null);
 	};
 
-	useEffect(() => {
-		fetchUserInfo();
-		fetchUserImage();
-	}, []);
+  useEffect(() => {
+    fetchUserInfo();
+  }, []);
+
+  useEffect(() => {
+    if (userInfo) {
+      fetchUserImage();
+    }
+  }, [userInfo]);
 
 	const fetchUserInfo = async () => {
 		try {
@@ -120,18 +126,15 @@ const TopBar = () => {
 		}
 	};
 
-	const fetchUserImage = async () => {
-		try {
-			const token = localStorage.getItem("token");
-			const response = await fetch(
-				"http://localhost:3000/api/users/profile-image",
-				{
-					headers: {
-						Authorization: `Bearer ${token}`,
-						Accept: "application/json",
-					},
-				},
-			);
+  const fetchUserImage = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:3000/api/users/profile-image?user_id=${userInfo?.id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
 
 			if (response.ok) {
 				const data = await response.json();

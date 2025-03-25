@@ -127,6 +127,17 @@ class AuthenticatedPageController < ApplicationController
   end
 
   def get_profile_image
+    # Vérification de sécurité : l'utilisateur ne peut accéder qu'à sa propre image
+    requested_user_id = params[:user_id]&.to_i
+    
+    unless requested_user_id == @current_user.id
+      render json: { 
+        success: false, 
+        error: 'Accès non autorisé' 
+      }, status: :forbidden
+      return
+    end
+
     result = UserService.get_user_profile_image(@current_user)
     
     if result

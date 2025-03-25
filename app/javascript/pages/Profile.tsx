@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const ProfileContainer = styled.div`
   max-width: 1200px;
@@ -35,6 +36,45 @@ const PhotoPlaceholder = styled.div`
   align-items: center;
   justify-content: center;
   font-size: 48px;
+`;
+
+const ProfileImage = styled.img`
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+`;
+
+const UploadButton = styled.button`
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #FFD700;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #FFC700;
+    transform: scale(1.05);
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+    color: #272727;
+  }
+`;
+
+const HiddenFileInput = styled.input`
+  display: none;
 `;
 
 const ProfileInfo = styled.div`
@@ -197,12 +237,20 @@ const Profile: React.FC = () => {
   const [userData, setUserData] = useState<UserProfileData | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<UserProfileData['personal_info']>>({});
+  const [userImage, setUserImage] = useState<string | null>(null);
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     console.log('Profile component mounted, fetching user profile...');
     fetchUserProfile();
   }, []);
+
+  useEffect(() => {
+    if (userData) {
+      fetchUserImage();
+    }
+  }, [userData]);
 
   const fetchUserProfile = async () => {
     try {
@@ -242,6 +290,72 @@ const Profile: React.FC = () => {
         console.error('Message d\'erreur:', error.message);
         console.error('Stack trace:', error.stack);
       }
+    }
+  };
+
+  const fetchUserImage = async () => {
+    if (!userData) return; // Protection TypeScript
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:3000/api/users/profile-image?user_id=${userData.personal_info.id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          const binaryData = atob(data.image_data);
+          const bytes = new Uint8Array(binaryData.length);
+          for (let i = 0; i < binaryData.length; i++) {
+            bytes[i] = binaryData.charCodeAt(i);
+          }
+          const blob = new Blob([bytes], { type: data.content_type });
+          const imageUrl = URL.createObjectURL(blob);
+          setUserImage(imageUrl);
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement de l\'image:', error);
+    }
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Vérifier si le fichier est une image
+    if (!file.type.startsWith('image/')) {
+      toast.error('Veuillez sélectionner une image');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('photo', file);
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:3000/api/user/profile/photo', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        toast.success('Photo de profil mise à jour avec succès');
+        fetchUserImage(); // Recharger l'image
+      } else {
+        toast.error(data.message || 'Erreur lors de la mise à jour de la photo');
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'upload:', error);
+      toast.error('Erreur lors de l\'upload de l\'image');
     }
   };
 
@@ -300,9 +414,24 @@ const Profile: React.FC = () => {
     <ProfileContainer>
       <ProfileHeader>
         <ProfilePhotoContainer>
-          <PhotoPlaceholder>
-            {userData ? `${userData.personal_info.prenom[0]}${userData.personal_info.nom[0]}` : ''}
-          </PhotoPlaceholder>
+          {userImage ? (
+            <ProfileImage src={userImage} alt="Photo de profil" />
+          ) : (
+            <PhotoPlaceholder>
+              {userData ? `${userData.personal_info.prenom[0]}${userData.personal_info.nom[0]}` : ''}
+            </PhotoPlaceholder>
+          )}
+          <UploadButton onClick={() => fileInputRef.current?.click()}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+            </svg>
+          </UploadButton>
+          <HiddenFileInput
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+          />
         </ProfilePhotoContainer>
         <ProfileInfo>
           <ProfileName>
