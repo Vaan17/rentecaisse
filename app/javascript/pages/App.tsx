@@ -65,7 +65,6 @@ const App = () => {
 					<Route path="/complete-profil" element={<CompleteProfil />} />
 					<Route path="/affectation-entreprise" element={<AffectationEntrepriseSite />} />
 					<Route path="/statut-affectation" element={<StatutAffectationEnAttente />} />
-					<Route path="/main" element={<HomeAuthenticated />} />
 
 					{/* Routes principales avec le layout standard */}
 					<Route path="/*" element={
@@ -87,7 +86,7 @@ const App = () => {
 								<SideBar></SideBar>
 								<AppSubContainer>
 									<Routes>
-										<Route path="/home" element={<div style={{ width: "100%", height: "100%" }}>Home page is comming soon...</div>} />
+										<Route path="/home" element={<HomeAuthenticated/>} />
 										<Route path="/sandbox" element={<Sandbox />} />
 										<Route path="/colors" element={<ColorsPage />} />
 										<Route path="*" element={<Navigate to="/home" replace />} />

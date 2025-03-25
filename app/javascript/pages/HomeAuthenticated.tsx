@@ -1,7 +1,5 @@
 import * as React from 'react';
 import styled from 'styled-components';
-import TopBar from '../components/TopBar';
-import SideBar from '../components/SideBar';
 
 const Container = styled.div`
   padding: 24px;
@@ -26,27 +24,17 @@ const Text = styled.p`
   line-height: 1.5;
 `;
 
-const AppContainer = styled.div`
-  width: 100vw;
-  height: 100vh;
-`;
 
 export const HomeAuthenticated = (): JSX.Element => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   return (
-    <AppContainer>
-      <TopBar onMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)} />
-      <SideBar />
-      <Container>
-        <Card>
+      <div>
           <Title>Tableau de bord</Title>
           <Text>
             Bienvenue sur votre espace RENTECAISSE. Cette zone contiendra bientôt le contenu principal.
           </Text>
-        </Card>
-      </Container>
-    </AppContainer>
+      </div>
   );
 };
 
