@@ -17,9 +17,15 @@ const TopBarContainer = styled(Flex)`
 	padding: 0 16px;
 `;
 const LogoContainer = styled.div`
-	display: flex;
-	align-items: center;
-	gap: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.9;
+  }
 `;
 const Title = styled.div`
 	font-size: ${isDesktop ? '20px' : '14px'};
@@ -195,80 +201,36 @@ const TopBar = () => {
 		},
 	]
 
-	return (
-		<TopBarContainer spaceBetween>
-			<LogoContainer>
-				<img src="/images/logos/logo.png" alt="Rentecaisse Logo" width="32px" height="32px" />
-				<Title>RENTECAISSE</Title>
-			</LogoContainer>
-			<Flex gap="16px">
-				<div>
-					<UserSection onClick={handleClick} gap="8px">
-						<Avatar
-							src={userImageUrl}
-							alt="Img Profil"
-							sx={{ width: 32, height: 32 }}
-						>
-							{userInfo ? `${userInfo.prenom[0]}${userInfo.nom[0]}` : ''}
-						</Avatar>
-						{isDesktop && (
-							<UserName>
-								{userInfo ? `${userInfo.prenom} ${userInfo.nom}` : ''}
-							</UserName>
-						)}
-					</UserSection>
-					<Popover
-						open={isOpen}
-						anchorEl={anchorEl}
-						onClose={handleClose}
-						anchorOrigin={{
-							vertical: 'bottom',
-							horizontal: 'right',
-						}}
-						transformOrigin={{
-							vertical: 'top',
-							horizontal: 'right',
-						}}
-					>
-						<FlexContainer directionColumn gap="8px" padding="1em">
-							{mainOptions.map((option) =>
-								<FlexItem
-									key={option.title}
-									fullWidth
-									gap
-									onClick={() => {
-										if (option.actionCallback) option.actionCallback()
-										navigate(option.path)
-									}}
-								>
-									{option.icon}
-									<Flex fullWidth directionColumn alignItemsStart gap="4px">
-										<ItemTitle>{option.title}</ItemTitle>
-										<ItemSubtitle>{option.subtitle}</ItemSubtitle>
-									</Flex>
-								</FlexItem>
-							)}
-							<Divider />
-							{legalOptions.map((option) =>
-								<FlexItem
-									key={option.title}
-									fullWidth
-									gap
-									onClick={() => navigate(option.path)}
-								>
-									{option.icon}
-									<Flex fullWidth directionColumn alignItemsStart gap="4px">
-										<ItemTitle>{option.title}</ItemTitle>
-										<ItemSubtitle>{option.subtitle}</ItemSubtitle>
-									</Flex>
-								</FlexItem>
-							)}
-						</FlexContainer>
-					</Popover>
-				</div>
-			</Flex>
-		</TopBarContainer>
-	);
+  return (
+    <TopBarContainer>
+      <MenuButton onClick={onMenuToggle}>☰</MenuButton>
+      <LogoContainer onClick={() => navigate('/home')}>
+        <LogoImage src="/images/logos/logo.png" alt="Rentecaisse Logo" />
+        <AppTitle>RENTECAISSE</AppTitle>
+      </LogoContainer>
+      <div style={{ flex: 1 }} />
+      <UserSection onClick={() => navigate('/profile')}>
+        {userImageUrl && !imageError ? (
+          <ProfileImage
+            src={userImageUrl}
+            onError={() => setImageError(true)}
+            alt="Photo de profil"
+          />
+        ) : (
+          <Avatar>
+            {userInfo ? `${userInfo.prenom[0]}${userInfo.nom[0]}` : ''}
+          </Avatar>
+        )}
+        <UserName>
+          {userInfo ? `${userInfo.prenom} ${userInfo.nom}` : ''}
+        </UserName>
+        <LogoutButton onClick={(e) => {
+          e.stopPropagation();
+          handleLogout();
+        }}>Se déconnecter</LogoutButton>
+      </UserSection>
+    </TopBarContainer>
+  );
 };
 
 export default TopBar;

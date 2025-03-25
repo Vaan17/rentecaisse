@@ -87,6 +87,29 @@ const ProfileName = styled.h1`
   color: #272727;
 `;
 
+const EditableProfileInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const EditableField = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+const EditableFieldLabel = styled.label`
+  font-size: 0.9rem;
+  color: #666;
+`;
+
+const EditableFieldError = styled.span`
+  color: #ff4d4d;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+`;
+
 const ProfileRole = styled.p`
   margin: 5px 0;
   color: #666;
@@ -160,8 +183,8 @@ const InfoValue = styled.div`
 `;
 
 const EditButton = styled.button`
-  background: #272727;
-  color: white;
+  background: #FFD700;
+  color: #272727;
   border: none;
   padding: 10px 20px;
   border-radius: 6px;
@@ -170,7 +193,7 @@ const EditButton = styled.button`
   transition: background-color 0.2s;
 
   &:hover {
-    background-color: #383838;
+    background-color: #FFC700;
   }
 `;
 
@@ -249,6 +272,28 @@ const ActionButton = styled.button<{ variant: 'save' | 'cancel' }>`
   &:hover {
     background-color: ${props => props.variant === 'save' ? '#FFC700' : '#e0e0e0'};
   }
+`;
+
+const DeleteAccountButton = styled.button`
+  background: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.2s;
+  margin-top: 10px;
+
+  &:hover {
+    background-color: #ff3333;
+  }
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 `;
 
 // Fonctions de validation
@@ -733,16 +778,133 @@ const Profile: React.FC = () => {
           />
         </ProfilePhotoContainer>
         <ProfileInfo>
-          <ProfileName>
-            {userData.personal_info.prenom} {userData.personal_info.nom}
-          </ProfileName>
+          {editingFields.nom || editingFields.prenom ? (
+            <EditableProfileInfo>
+              <EditableField>
+                <EditableFieldLabel>Prénom</EditableFieldLabel>
+                <Input
+                  type="text"
+                  value={userData.personal_info.prenom}
+                  onChange={(e) => {
+                    const newValue = e.target.value;
+                    setUserData(prev => prev ? {
+                      ...prev,
+                      personal_info: {
+                        ...prev.personal_info,
+                        prenom: newValue
+                      }
+                    } : null);
+                  }}
+                  className={!validateName(userData.personal_info.prenom) ? 'error' : ''}
+                />
+                {!validateName(userData.personal_info.prenom) && (
+                  <EditableFieldError>
+                    Le prénom doit contenir au moins 2 caractères et uniquement des lettres
+                  </EditableFieldError>
+                )}
+              </EditableField>
+              <EditableField>
+                <EditableFieldLabel>Nom</EditableFieldLabel>
+                <Input
+                  type="text"
+                  value={userData.personal_info.nom}
+                  onChange={(e) => {
+                    const newValue = e.target.value;
+                    setUserData(prev => prev ? {
+                      ...prev,
+                      personal_info: {
+                        ...prev.personal_info,
+                        nom: newValue
+                      }
+                    } : null);
+                  }}
+                  className={!validateName(userData.personal_info.nom) ? 'error' : ''}
+                />
+                {!validateName(userData.personal_info.nom) && (
+                  <EditableFieldError>
+                    Le nom doit contenir au moins 2 caractères et uniquement des lettres
+                  </EditableFieldError>
+                )}
+              </EditableField>
+              <SaveCancelButtons>
+                <ActionButton 
+                  variant="save" 
+                  onClick={async () => {
+                    const nomValid = validateField('nom', userData.personal_info.nom);
+                    const prenomValid = validateField('prenom', userData.personal_info.prenom);
+                    
+                    if (!nomValid.isValid || !prenomValid.isValid) {
+                      toast.error(nomValid.error || prenomValid.error);
+                      return;
+                    }
+
+                    try {
+                      const token = localStorage.getItem('token');
+                      const response = await fetch('http://localhost:3000/api/user/profile', {
+                        method: 'PATCH',
+                        headers: {
+                          'Authorization': `Bearer ${token}`,
+                          'Content-Type': 'application/json',
+                          'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                          user: {
+                            nom: userData.personal_info.nom,
+                            prenom: userData.personal_info.prenom
+                          }
+                        })
+                      });
+
+                      const data = await response.json();
+                      if (data.success) {
+                        setEditingFields({});
+                        toast.success('Nom et prénom mis à jour avec succès');
+                      } else {
+                        toast.error(data.message || 'Erreur lors de la mise à jour');
+                      }
+                    } catch (error) {
+                      console.error('Erreur lors de la mise à jour:', error);
+                      toast.error('Erreur lors de la mise à jour');
+                    }
+                  }}
+                  disabled={!validateName(userData.personal_info.nom) || !validateName(userData.personal_info.prenom)}
+                >
+                  Enregistrer
+                </ActionButton>
+                <ActionButton 
+                  variant="cancel" 
+                  onClick={() => {
+                    setEditingFields({});
+                    fetchUserProfile(); // Recharger les données originales
+                  }}
+                >
+                  Annuler
+                </ActionButton>
+              </SaveCancelButtons>
+            </EditableProfileInfo>
+          ) : (
+            <ProfileName>
+              {userData.personal_info.prenom} {userData.personal_info.nom}
+            </ProfileName>
+          )}
           <ProfileRole>
             {userData.entreprise_info.nom} - {userData.site_info.nom}
           </ProfileRole>
         </ProfileInfo>
-        <EditButton onClick={() => setEditingFields({})}>
-          Modifier
-        </EditButton>
+        <ButtonContainer>
+          <EditButton onClick={() => {
+            if (editingFields.nom || editingFields.prenom) {
+              setEditingFields({});
+            } else {
+              setEditingFields({ nom: true, prenom: true });
+            }
+          }}>
+            {editingFields.nom || editingFields.prenom ? 'Annuler' : 'Modifier'}
+          </EditButton>
+          <DeleteAccountButton>
+            Faire une demande de suppression de compte
+          </DeleteAccountButton>
+        </ButtonContainer>
       </ProfileHeader>
 
       <ProfileSection>
