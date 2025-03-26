@@ -182,7 +182,7 @@ const MainMenu = () => {
 	const empruntsEnAttente: Emprunt[] = [
 		{
 			numero: "418",
-			dateDebut: "01/06/2025 08h00",
+			dateDebut: "01/06/2025 08lh00",
 			dateFin: "02/06/2025 17h00",
 			vehicule: "GOLF 3 GTI VD-142-XZ",
 			passagers: 0,
