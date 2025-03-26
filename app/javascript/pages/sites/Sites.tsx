@@ -1,10 +1,10 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import Card from "@mui/material/Card"
 import { Button, CardActions, CardContent, CardHeader } from "@mui/material"
 import styled from "styled-components"
-import FilterAltIcon from '@mui/icons-material/FilterAlt'
 import CustomFilter from "../../components/CustomFilter"
 import { useNavigate } from "react-router-dom"
+import axios from "axios"
 
 const CardContainer = styled.div`
     display: flex;
@@ -13,74 +13,51 @@ const CardContainer = styled.div`
     gap: 1em;
     padding: 0 3em;
 `
+export interface ISite {
+    id: number
+    nom_site: string
+    adresse: string
+    code_postal: string
+    ville: string
+    pays: string
+    telephone: string
+    email: string
+    site_web: string
+    lien_image_site: string
+    entreprise_id: number
+    date_creation_site: Date
+    date_modification_site: Date
+}
 
 const Sites = () => {
     const navigate = useNavigate()
     const [filterProperties, setFilterProperties] = useState({ filterBy: undefined, searchValue: "" })
+    const [sites, setSites] = useState<ISite[]>([])
+
+    useEffect(() => {
+        const fetchSites = async () => {
+            const res = await axios.get("http://localhost:3000/api/sites")
+            setSites(res.data)
+        }
+        fetchSites()
+    }, [])
 
     const filterOptions = [
         {
-            value: "name",
+            value: "nom_site",
             label: "Nom",
         },
         {
-            value: "adress",
+            value: "adresse",
             label: "Adresse",
         },
         {
-            value: "postalCode",
+            value: "code_postal",
             label: "Code postal",
         },
         {
-            value: "city",
+            value: "ville",
             label: "Ville",
-        },
-    ]
-
-    const sites = [
-        {
-            id: 1,
-            name: "Site 1",
-            imgUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvKi8vKHtlgCwE0PT6mVFD7cCBKgseg3rNgw&s",
-            adress: "1 rue de la paix",
-            postalCode: "75000",
-            city: "Paris",
-            nbAttachedCars: 10,
-            phone: "01 02 03 04 05",
-            email: "site1@gmail.com"
-        },
-        {
-            id: 2,
-            name: "Site 2",
-            imgUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEnhw81g2vGA9JbCbewrEu_v1l_z9uabkZUQ&s",
-            adress: "2 rue de la paix",
-            postalCode: "75000",
-            city: "Paris",
-            nbAttachedCars: 20,
-            phone: "01 02 03 04 06",
-            email: "site2@gmail.com"
-        },
-        {
-            id: 3,
-            name: "Site 3",
-            imgUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRIHL9XU5ouM887kxOxLAAzuIFiq2D2GXwvNg&s",
-            adress: "3 rue de la paix",
-            postalCode: "75000",
-            city: "Paris",
-            nbAttachedCars: 30,
-            phone: "01 02 03 04 07",
-            email: "site3@gmail.com"
-        },
-        {
-            id: 4,
-            name: "Site 4",
-            imgUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1mOWzcLSm7CujTWFEand927q5o_9_6cu0mA&s",
-            adress: "4 rue de la paix",
-            postalCode: "75000",
-            city: "Paris",
-            nbAttachedCars: 40,
-            phone: "01 02 03 04 08",
-            email: "site1@gmail.com"
         },
     ]
 
@@ -96,21 +73,25 @@ const Sites = () => {
             } />
             <CardContainer>
                 {filteredSites.map(site => {
+                    const SiteImage = site.lien_image_site
+                        ? <img src={site.lien_image_site} alt="site" style={{ width: "100%", height: "150px", objectFit: "cover" }} />
+                        : <div style={{ width: "100%", height: "150px", backgroundColor: "lightgray", display: "flex", justifyContent: "center", alignItems: "center" }}>Image indisponible</div>
+
                     return (
                         <Card key={site.id} sx={{ width: 300 }}>
                             <CardHeader
-                                title={site.name}
+                                title={site.nom_site}
                             />
-                            <img src={site.imgUrl} alt="site" style={{ width: "100%", height: "150px", objectFit: "cover" }} />
+                            {SiteImage}
                             <CardContent>
                                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
-                                    <div>{site.name}</div>
-                                    <div>{site.adress}</div>
-                                    <div>{site.postalCode} {site.city}</div>
-                                    <div>{site.nbAttachedCars} véhicules rattachés</div>
+                                    <div>{site.nom_site}</div>
+                                    <div>{site.adresse}</div>
+                                    <div>{site.code_postal} {site.ville}</div>
+                                    <div>UNDEFINED véhicules rattachés</div>
                                 </div>
                                 <div>
-                                    <div>{site.phone}</div>
+                                    <div>{site.telephone}</div>
                                     <div>{site.email}</div>
                                 </div>
                             </CardContent>
