@@ -1,5 +1,5 @@
-import * as React from 'react';
-import styled from 'styled-components';
+import * as React from "react";
+import styled from "styled-components";
 
 interface SidebarContainerProps {
 	isOpen?: boolean;
@@ -133,7 +133,7 @@ const Dropdown: React.FC<DropdownProps> = ({ title, items, onItemClick }) => {
 			const rect = buttonRef.current.getBoundingClientRect();
 			setTopPosition(rect.top);
 		}
-	}, [isOpen]);
+	}, []);
 
 	return (
 		<DropdownButton
@@ -144,7 +144,7 @@ const Dropdown: React.FC<DropdownProps> = ({ title, items, onItemClick }) => {
 			{title}
 			<DropdownContent isOpen={isOpen} top={topPosition}>
 				{items.map((item: string) => (
-					<DropdownItem 
+					<DropdownItem
 						key={item}
 						onClick={() => onItemClick && onItemClick(item)}
 					>
@@ -199,9 +199,9 @@ const SideBar: React.FC = () => {
 			<MenuSection>
 				<MenuTitle>Menu Principal</MenuTitle>
 				{regularMenuItems.map((menu) => (
-					<Dropdown 
-						key={menu.title} 
-						title={menu.title} 
+					<Dropdown
+						key={menu.title}
+						title={menu.title}
 						items={menu.items}
 						onItemClick={handleMenuItemClick}
 					/>
@@ -212,9 +212,9 @@ const SideBar: React.FC = () => {
 				<AdminMenuSection>
 					<AdminMenuTitle>Menu Administration</AdminMenuTitle>
 					{adminMenuItems.map((menu) => (
-						<Dropdown 
-							key={menu.title} 
-							title={menu.title} 
+						<Dropdown
+							key={menu.title}
+							title={menu.title}
 							items={menu.items}
 							onItemClick={handleMenuItemClick}
 						/>

@@ -1,7 +1,7 @@
-import * as React from 'react';
-import { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import { useState, useEffect } from "react";
+import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 
 const TopBarContainer = styled.header`
   position: fixed;
@@ -115,115 +115,127 @@ const MenuButton = styled.button`
 `;
 
 interface UserInfo {
-  prenom: string;
-  nom: string;
-  email: string;
+	prenom: string;
+	nom: string;
+	email: string;
 }
 
 interface TopBarProps {
-  onMenuToggle: () => void;
+	onMenuToggle?: () => void;
 }
 
-const TopBar: React.FC<TopBarProps> = ({ onMenuToggle }) => {
-  const [userImageUrl, setUserImageUrl] = useState<string | null>(null);
-  const [imageError, setImageError] = useState(false);
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-  const navigate = useNavigate();
+const TopBar = ({ onMenuToggle = () => null }: TopBarProps) => {
+	const [userImageUrl, setUserImageUrl] = useState<string | null>(null);
+	const [imageError, setImageError] = useState(false);
+	const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+	const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchUserInfo();
-    fetchUserImage();
-  }, []);
+	useEffect(() => {
+		fetchUserInfo();
+		fetchUserImage();
+	}, []);
 
-  const fetchUserInfo = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/authenticated-page', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          setUserInfo(data.user);
-        }
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des informations utilisateur:', error);
-    }
-  };
+	const fetchUserInfo = async () => {
+		try {
+			const token = localStorage.getItem("token");
+			const response = await fetch(
+				"http://localhost:3000/api/authenticated-page",
+				{
+					headers: {
+						Authorization: `Bearer ${token}`,
+						Accept: "application/json",
+					},
+				},
+			);
+			if (response.ok) {
+				const data = await response.json();
+				if (data.success) {
+					setUserInfo(data.user);
+				}
+			}
+		} catch (error) {
+			console.error(
+				"Erreur lors du chargement des informations utilisateur:",
+				error,
+			);
+		}
+	};
 
-  const fetchUserImage = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/users/profile-image', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
-        }
-      });
+	const fetchUserImage = async () => {
+		try {
+			const token = localStorage.getItem("token");
+			const response = await fetch(
+				"http://localhost:3000/api/users/profile-image",
+				{
+					headers: {
+						Authorization: `Bearer ${token}`,
+						Accept: "application/json",
+					},
+				},
+			);
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          const binaryData = atob(data.image_data);
-          const bytes = new Uint8Array(binaryData.length);
-          for (let i = 0; i < binaryData.length; i++) {
-            bytes[i] = binaryData.charCodeAt(i);
-          }
-          const blob = new Blob([bytes], { type: data.content_type });
-          const imageUrl = URL.createObjectURL(blob);
-          setUserImageUrl(imageUrl);
-        } else {
-          setImageError(true);
-        }
-      } else {
-        setImageError(true);
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement de l\'image:', error);
-      setImageError(true);
-    }
-  };
+			if (response.ok) {
+				const data = await response.json();
+				if (data.success) {
+					const binaryData = atob(data.image_data);
+					const bytes = new Uint8Array(binaryData.length);
+					for (let i = 0; i < binaryData.length; i++) {
+						bytes[i] = binaryData.charCodeAt(i);
+					}
+					const blob = new Blob([bytes], { type: data.content_type });
+					const imageUrl = URL.createObjectURL(blob);
+					setUserImageUrl(imageUrl);
+				} else {
+					setImageError(true);
+				}
+			} else {
+				setImageError(true);
+			}
+		} catch (error) {
+			console.error("Erreur lors du chargement de l'image:", error);
+			setImageError(true);
+		}
+	};
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    window.location.href = '/login';
-  };
+	const handleLogout = () => {
+		localStorage.removeItem("token");
+		window.location.href = "/login";
+	};
 
-  return (
-    <TopBarContainer>
-      <MenuButton onClick={onMenuToggle}>☰</MenuButton>
-      <LogoContainer>
-        <LogoImage src="/images/logos/logo.png" alt="Rentecaisse Logo" />
-        <AppTitle>RENTECAISSE</AppTitle>
-      </LogoContainer>
-      <div style={{ flex: 1 }} />
-      <UserSection onClick={() => navigate('/profile')}>
-        {userImageUrl && !imageError ? (
-          <ProfileImage
-            src={userImageUrl}
-            onError={() => setImageError(true)}
-            alt="Photo de profil"
-          />
-        ) : (
-          <Avatar>
-            {userInfo ? `${userInfo.prenom[0]}${userInfo.nom[0]}` : ''}
-          </Avatar>
-        )}
-        <UserName>
-          {userInfo ? `${userInfo.prenom} ${userInfo.nom}` : ''}
-        </UserName>
-        <LogoutButton onClick={(e) => {
-          e.stopPropagation();
-          handleLogout();
-        }}>Se déconnecter</LogoutButton>
-      </UserSection>
-    </TopBarContainer>
-  );
+	return (
+		<TopBarContainer>
+			<MenuButton onClick={onMenuToggle}>☰</MenuButton>
+			<LogoContainer>
+				<LogoImage src="/images/logos/logo.png" alt="Rentecaisse Logo" />
+				<AppTitle>RENTECAISSE</AppTitle>
+			</LogoContainer>
+			<div style={{ flex: 1 }} />
+			<UserSection onClick={() => navigate("/profile")}>
+				{userImageUrl && !imageError ? (
+					<ProfileImage
+						src={userImageUrl}
+						onError={() => setImageError(true)}
+						alt="Photo de profil"
+					/>
+				) : (
+					<Avatar>
+						{userInfo ? `${userInfo.prenom[0]}${userInfo.nom[0]}` : ""}
+					</Avatar>
+				)}
+				<UserName>
+					{userInfo ? `${userInfo.prenom} ${userInfo.nom}` : ""}
+				</UserName>
+				<LogoutButton
+					onClick={(e) => {
+						e.stopPropagation();
+						handleLogout();
+					}}
+				>
+					Se déconnecter
+				</LogoutButton>
+			</UserSection>
+		</TopBarContainer>
+	);
 };
 
 export default TopBar;
-

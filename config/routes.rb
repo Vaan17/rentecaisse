@@ -25,4 +25,8 @@ Rails.application.routes.draw do
   get '/api/user/profile', to: 'authenticated_page#get_user_profile'
   patch '/api/user/profile', to: 'authenticated_page#update_user_profile'
   post '/api/user/profile/photo', to: 'authenticated_page#update_profile_photo'
+
+  # Routes pour les emprunts
+  get '/api/emprunts', to: 'emprunts_user#get_emprunts_users'
+  get '/api/emprunts/:id', to: 'emprunts_user#get_emprunts_user_by_id'
 end
