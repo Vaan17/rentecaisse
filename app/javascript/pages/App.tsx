@@ -25,6 +25,8 @@ import HomeAuthenticated from './HomeAuthenticated'
 import Profile from './Profile'
 import Sites from "./sites/Sites.tsx"
 import SiteDetails from "./sites/SiteDetails.tsx"
+import SideBar from '../components/SideBar'
+import TopBar from "../components/TopBar.tsx"
 
 const AppContainer = styled.div`
 	width: 100vw;
@@ -65,12 +67,11 @@ const App = () => {
 					<Route path="/complete-profil" element={<CompleteProfil />} />
 					<Route path="/affectation-entreprise" element={<AffectationEntrepriseSite />} />
 					<Route path="/statut-affectation" element={<StatutAffectationEnAttente />} />
-					<Route path="/main" element={<HomeAuthenticated />} />
-					<Route path="/profile" element={<Profile />} />
 
 					{/* Routes principales avec le layout standard */}
 					<Route path="/*" element={
 						<AppContainer>
+							<TopBar></TopBar>
 							{/* STATIC TOPBAR */}
 							<div style={{ width: "100%", height: "64px", backgroundColor: "#1b1b1b", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", gap: "5em" }}>
 								<a href="/home" style={{ color: "#fff", textDecoration: "none" }}>HOME</a>
@@ -84,16 +85,16 @@ const App = () => {
 								<a href="/mentions-legales" style={{ color: "#fff", textDecoration: "none" }}>MENTIONS LÉGALES</a>
 							</div>
 							<ApplicationWrapper>
-								{/* STATIC SIDEBAR */}
-								<div style={{ width: "350px", height: "100%", backgroundColor: "#616161", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }} />
+								<SideBar></SideBar>
 								<AppSubContainer>
 									<Routes>
-										<Route path="/home" element={<div style={{ width: "100%", height: "100%" }}>Home page is comming soon...</div>} />
+										<Route path="/home" element={<HomeAuthenticated />} />
 										<Route path="/sandbox" element={<Sandbox />} />
 										<Route path="/colors" element={<ColorsPage />} />
 										<Route path="/sites" element={<Sites />} />
 										<Route path="/sites/:id" element={<SiteDetails />} />
 										<Route path="*" element={<Navigate to="/home" replace />} />
+										<Route path="/profile" element={<Profile />} />
 									</Routes>
 								</AppSubContainer>
 							</ApplicationWrapper>

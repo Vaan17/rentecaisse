@@ -1,9 +1,10 @@
 import * as React from 'react';
-import AuthenticatedLayout from '../components/layout/AuthenticatedLayout';
 import styled from 'styled-components';
 
 const Container = styled.div`
   padding: 24px;
+  margin-left: 350px;
+  margin-top: 72px;
 `;
 
 const Card = styled.div`
@@ -23,18 +24,17 @@ const Text = styled.p`
   line-height: 1.5;
 `;
 
+
 export const HomeAuthenticated = (): JSX.Element => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+
   return (
-    <AuthenticatedLayout>
-      <Container>
-        <Card>
+      <div>
           <Title>Tableau de bord</Title>
           <Text>
             Bienvenue sur votre espace RENTECAISSE. Cette zone contiendra bientôt le contenu principal.
           </Text>
-        </Card>
-      </Container>
-    </AuthenticatedLayout>
+      </div>
   );
 };
 

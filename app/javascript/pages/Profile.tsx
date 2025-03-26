@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import AuthenticatedLayout from '../components/layout/AuthenticatedLayout';
 import { useNavigate } from 'react-router-dom';
 
-// Styled Components
 const ProfileContainer = styled.div`
   max-width: 1200px;
   margin: 40px auto;
@@ -27,13 +25,6 @@ const ProfilePhotoContainer = styled.div`
   height: 150px;
 `;
 
-const ProfilePhoto = styled.img`
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-`;
-
 const PhotoPlaceholder = styled.div`
   width: 100%;
   height: 100%;
@@ -44,27 +35,6 @@ const PhotoPlaceholder = styled.div`
   align-items: center;
   justify-content: center;
   font-size: 48px;
-`;
-
-const PhotoUploadButton = styled.button`
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  background: #272727;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: #383838;
-  }
 `;
 
 const ProfileInfo = styled.div`
@@ -89,6 +59,37 @@ const ProfileSection = styled.div`
   padding: 30px;
   margin-bottom: 30px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+`;
+
+const SectionWithImage = styled(ProfileSection)`
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 2rem;
+  align-items: start;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const RectangularImageContainer = styled.div`
+  width: 300px;
+  height: 200px;
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #f0f0f0;
+`;
+
+const ImagePlaceholder = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f0f0;
+  color: #666;
+  font-size: 3rem;
 `;
 
 const SectionTitle = styled.h2`
@@ -190,25 +191,25 @@ interface UserProfileData {
     code_postal: string;
     pays: string;
   };
-  photo: string | null;
 }
 
 const Profile: React.FC = () => {
   const [userData, setUserData] = useState<UserProfileData | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<UserProfileData['personal_info']>>({});
-  const [imageError, setImageError] = useState(false);
-  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log('Profile component mounted, fetching user profile...');
     fetchUserProfile();
-    fetchProfileImage();
   }, []);
 
   const fetchUserProfile = async () => {
     try {
       const token = localStorage.getItem('token');
+      console.log('Token récupéré:', token ? 'Présent' : 'Absent');
+
+      console.log('Envoi de la requête au profil...');
       const response = await fetch('http://localhost:3000/api/user/profile', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -216,7 +217,11 @@ const Profile: React.FC = () => {
         }
       });
 
+      console.log('Statut de la réponse:', response.status);
+      console.log('Headers de la réponse:', Object.fromEntries(response.headers.entries()));
+
       if (response.status === 401) {
+        console.log('Non autorisé, redirection vers login');
         navigate('/login');
         return;
       }
@@ -226,51 +231,25 @@ const Profile: React.FC = () => {
       }
 
       const data = await response.json();
+      console.log('Données reçues:', data);
+      
       setUserData(data);
       setFormData(data.personal_info);
+      console.log('État userData mis à jour');
     } catch (error) {
-      console.error('Erreur:', error);
-    }
-  };
-
-  const fetchProfileImage = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/users/profile-image', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          // Créer un Blob à partir des données Base64
-          const binaryData = atob(data.image_data);
-          const bytes = new Uint8Array(binaryData.length);
-          for (let i = 0; i < binaryData.length; i++) {
-            bytes[i] = binaryData.charCodeAt(i);
-          }
-          const blob = new Blob([bytes], { type: data.content_type });
-          const imageUrl = URL.createObjectURL(blob);
-          setProfileImageUrl(imageUrl);
-          setImageError(false);
-        } else {
-          setImageError(true);
-        }
-      } else {
-        setImageError(true);
+      console.error('Erreur détaillée:', error);
+      if (error instanceof Error) {
+        console.error('Message d\'erreur:', error.message);
+        console.error('Stack trace:', error.stack);
       }
-    } catch (error) {
-      console.error('Erreur lors du chargement de l\'image:', error);
-      setImageError(true);
     }
   };
 
   const handleUpdateProfile = async () => {
     try {
       const token = localStorage.getItem('token');
+      console.log('Mise à jour du profil avec les données:', formData);
+
       const response = await fetch('http://localhost:3000/api/user/profile', {
         method: 'PATCH',
         headers: {
@@ -281,43 +260,19 @@ const Profile: React.FC = () => {
         body: JSON.stringify({ user: formData })
       });
 
+      console.log('Statut de la réponse de mise à jour:', response.status);
+
       if (!response.ok) {
         throw new Error('Erreur lors de la mise à jour du profil');
       }
 
       const data = await response.json();
+      console.log('Données mises à jour reçues:', data);
+
       setUserData(prev => prev ? { ...prev, personal_info: data.personal_info } : null);
       setIsEditing(false);
     } catch (error) {
-      console.error('Erreur:', error);
-    }
-  };
-
-  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append('photo', file);
-
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/user/profile/photo', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        body: formData
-      });
-
-      if (!response.ok) {
-        throw new Error('Erreur lors du téléchargement de la photo');
-      }
-
-      // Après le téléchargement réussi, recharger l'image
-      fetchProfileImage();
-    } catch (error) {
-      console.error('Erreur:', error);
+      console.error('Erreur lors de la mise à jour:', error);
     }
   };
 
@@ -332,203 +287,186 @@ const Profile: React.FC = () => {
   };
 
   if (!userData) {
+    console.log('userData est null, affichage du loader');
     return (
-      <AuthenticatedLayout>
-        <ProfileContainer>
-          <div>Chargement...</div>
-        </ProfileContainer>
-      </AuthenticatedLayout>
+      <ProfileContainer>
+        <div>Chargement...</div>
+      </ProfileContainer>
     );
   }
 
+  console.log('Rendu du profil avec les données:', userData);
   return (
-    <AuthenticatedLayout>
-      <ProfileContainer>
-        <ProfileHeader>
-          <ProfilePhotoContainer>
-            {profileImageUrl && !imageError ? (
-              <ProfilePhoto
-                src={profileImageUrl}
-                onError={() => setImageError(true)}
-                alt="Photo de profil"
-              />
-            ) : (
-              <PhotoPlaceholder>
-                {userData ? `${userData.personal_info.prenom[0]}${userData.personal_info.nom[0]}` : ''}
-              </PhotoPlaceholder>
-            )}
-            <label htmlFor="photo-upload">
-              <PhotoUploadButton as="div">
-                <span>📷</span>
-              </PhotoUploadButton>
-            </label>
-            <input
-              id="photo-upload"
-              type="file"
-              accept="image/*"
-              onChange={handlePhotoUpload}
-              style={{ display: 'none' }}
-            />
-          </ProfilePhotoContainer>
-          <ProfileInfo>
-            <ProfileName>
-              {userData.personal_info.prenom} {userData.personal_info.nom}
-            </ProfileName>
-            <ProfileRole>
-              {userData.entreprise_info.nom} - {userData.site_info.nom}
-            </ProfileRole>
-          </ProfileInfo>
-          <EditButton onClick={() => setIsEditing(!isEditing)}>
-            {isEditing ? 'Annuler' : 'Modifier'}
+    <ProfileContainer>
+      <ProfileHeader>
+        <ProfilePhotoContainer>
+          <PhotoPlaceholder>
+            {userData ? `${userData.personal_info.prenom[0]}${userData.personal_info.nom[0]}` : ''}
+          </PhotoPlaceholder>
+        </ProfilePhotoContainer>
+        <ProfileInfo>
+          <ProfileName>
+            {userData.personal_info.prenom} {userData.personal_info.nom}
+          </ProfileName>
+          <ProfileRole>
+            {userData.entreprise_info.nom} - {userData.site_info.nom}
+          </ProfileRole>
+        </ProfileInfo>
+        <EditButton onClick={() => setIsEditing(!isEditing)}>
+          {isEditing ? 'Annuler' : 'Modifier'}
+        </EditButton>
+        {isEditing && (
+          <EditButton onClick={handleUpdateProfile}>
+            Enregistrer
           </EditButton>
-          {isEditing && (
-            <EditButton onClick={handleUpdateProfile}>
-              Enregistrer
-            </EditButton>
+        )}
+      </ProfileHeader>
+
+      <ProfileSection>
+        <SectionTitle>Informations personnelles</SectionTitle>
+        <InfoGrid>
+          {isEditing ? (
+            <>
+              <InfoItem>
+                <InfoLabel>Email</InfoLabel>
+                <Input
+                  name="email"
+                  value={formData.email || ''}
+                  onChange={handleInputChange}
+                  type="email"
+                />
+              </InfoItem>
+              <InfoItem>
+                <InfoLabel>Téléphone</InfoLabel>
+                <Input
+                  name="telephone"
+                  value={formData.telephone || ''}
+                  onChange={handleInputChange}
+                />
+              </InfoItem>
+              <InfoItem>
+                <InfoLabel>Date de naissance</InfoLabel>
+                <Input
+                  name="date_naissance"
+                  value={formData.date_naissance || ''}
+                  onChange={handleInputChange}
+                  type="date"
+                />
+              </InfoItem>
+              <InfoItem>
+                <InfoLabel>Genre</InfoLabel>
+                <Select
+                  name="genre"
+                  value={formData.genre || ''}
+                  onChange={handleSelectChange}
+                >
+                  <option value="">Sélectionnez un genre</option>
+                  <option value="masculin">Masculin</option>
+                  <option value="feminin">Féminin</option>
+                  <option value="autre">Autre</option>
+                </Select>
+              </InfoItem>
+              <InfoItem>
+                <InfoLabel>Catégorie de permis</InfoLabel>
+                <Select
+                  name="categorie_permis"
+                  value={formData.categorie_permis || ''}
+                  onChange={handleSelectChange}
+                >
+                  <option value="">Sélectionnez une catégorie</option>
+                  <option value="B Manuel">Permis B Manuel</option>
+                  <option value="B Automatique">Permis B Automatique</option>
+                </Select>
+              </InfoItem>
+              <InfoItem>
+                <InfoLabel>Adresse</InfoLabel>
+                <Input
+                  name="adresse"
+                  value={formData.adresse || ''}
+                  onChange={handleInputChange}
+                />
+              </InfoItem>
+              <InfoItem>
+                <InfoLabel>Ville</InfoLabel>
+                <Input
+                  name="ville"
+                  value={formData.ville || ''}
+                  onChange={handleInputChange}
+                />
+              </InfoItem>
+              <InfoItem>
+                <InfoLabel>Code postal</InfoLabel>
+                <Input
+                  name="code_postal"
+                  value={formData.code_postal || ''}
+                  onChange={handleInputChange}
+                />
+              </InfoItem>
+              <InfoItem>
+                <InfoLabel>Pays</InfoLabel>
+                <Input
+                  name="pays"
+                  value={formData.pays || ''}
+                  onChange={handleInputChange}
+                />
+              </InfoItem>
+            </>
+          ) : (
+            <>
+              <InfoItem>
+                <InfoLabel>Email</InfoLabel>
+                <InfoValue>{userData.personal_info.email}</InfoValue>
+              </InfoItem>
+              <InfoItem>
+                <InfoLabel>Téléphone</InfoLabel>
+                <InfoValue>{userData.personal_info.telephone}</InfoValue>
+              </InfoItem>
+              <InfoItem>
+                <InfoLabel>Date de naissance</InfoLabel>
+                <InfoValue>
+                  {userData.personal_info.date_naissance ? 
+                    new Date(userData.personal_info.date_naissance).toLocaleDateString('fr-FR') : 
+                    'Non renseigné'}
+                </InfoValue>
+              </InfoItem>
+              <InfoItem>
+                <InfoLabel>Genre</InfoLabel>
+                <InfoValue>
+                  {userData.personal_info.genre ? 
+                    userData.personal_info.genre.charAt(0).toUpperCase() + userData.personal_info.genre.slice(1) : 
+                    'Non renseigné'}
+                </InfoValue>
+              </InfoItem>
+              <InfoItem>
+                <InfoLabel>Catégorie de permis</InfoLabel>
+                <InfoValue>{userData.personal_info.categorie_permis || 'Non renseigné'}</InfoValue>
+              </InfoItem>
+              <InfoItem>
+                <InfoLabel>Adresse</InfoLabel>
+                <InfoValue>{userData.personal_info.adresse}</InfoValue>
+              </InfoItem>
+              <InfoItem>
+                <InfoLabel>Ville</InfoLabel>
+                <InfoValue>{userData.personal_info.ville}</InfoValue>
+              </InfoItem>
+              <InfoItem>
+                <InfoLabel>Code postal</InfoLabel>
+                <InfoValue>{userData.personal_info.code_postal}</InfoValue>
+              </InfoItem>
+              <InfoItem>
+                <InfoLabel>Pays</InfoLabel>
+                <InfoValue>{userData.personal_info.pays}</InfoValue>
+              </InfoItem>
+            </>
           )}
-        </ProfileHeader>
+        </InfoGrid>
+      </ProfileSection>
 
-        <ProfileSection>
-          <SectionTitle>Informations personnelles</SectionTitle>
-          <InfoGrid>
-            {isEditing ? (
-              <>
-                <InfoItem>
-                  <InfoLabel>Email</InfoLabel>
-                  <Input
-                    name="email"
-                    value={formData.email || ''}
-                    onChange={handleInputChange}
-                    type="email"
-                  />
-                </InfoItem>
-                <InfoItem>
-                  <InfoLabel>Téléphone</InfoLabel>
-                  <Input
-                    name="telephone"
-                    value={formData.telephone || ''}
-                    onChange={handleInputChange}
-                  />
-                </InfoItem>
-                <InfoItem>
-                  <InfoLabel>Date de naissance</InfoLabel>
-                  <Input
-                    name="date_naissance"
-                    value={formData.date_naissance || ''}
-                    onChange={handleInputChange}
-                    type="date"
-                  />
-                </InfoItem>
-                <InfoItem>
-                  <InfoLabel>Genre</InfoLabel>
-                  <Select
-                    name="genre"
-                    value={formData.genre || ''}
-                    onChange={handleSelectChange}
-                  >
-                    <option value="">Sélectionnez un genre</option>
-                    <option value="masculin">Masculin</option>
-                    <option value="feminin">Féminin</option>
-                    <option value="autre">Autre</option>
-                  </Select>
-                </InfoItem>
-                <InfoItem>
-                  <InfoLabel>Catégorie de permis</InfoLabel>
-                  <Select
-                    name="categorie_permis"
-                    value={formData.categorie_permis || ''}
-                    onChange={handleSelectChange}
-                  >
-                    <option value="">Sélectionnez une catégorie</option>
-                    <option value="B Manuel">Permis B Manuel</option>
-                    <option value="B Automatique">Permis B Automatique</option>
-                  </Select>
-                </InfoItem>
-                <InfoItem>
-                  <InfoLabel>Adresse</InfoLabel>
-                  <Input
-                    name="adresse"
-                    value={formData.adresse || ''}
-                    onChange={handleInputChange}
-                  />
-                </InfoItem>
-                <InfoItem>
-                  <InfoLabel>Ville</InfoLabel>
-                  <Input
-                    name="ville"
-                    value={formData.ville || ''}
-                    onChange={handleInputChange}
-                  />
-                </InfoItem>
-                <InfoItem>
-                  <InfoLabel>Code postal</InfoLabel>
-                  <Input
-                    name="code_postal"
-                    value={formData.code_postal || ''}
-                    onChange={handleInputChange}
-                  />
-                </InfoItem>
-                <InfoItem>
-                  <InfoLabel>Pays</InfoLabel>
-                  <Input
-                    name="pays"
-                    value={formData.pays || ''}
-                    onChange={handleInputChange}
-                  />
-                </InfoItem>
-              </>
-            ) : (
-              <>
-                <InfoItem>
-                  <InfoLabel>Email</InfoLabel>
-                  <InfoValue>{userData.personal_info.email}</InfoValue>
-                </InfoItem>
-                <InfoItem>
-                  <InfoLabel>Téléphone</InfoLabel>
-                  <InfoValue>{userData.personal_info.telephone}</InfoValue>
-                </InfoItem>
-                <InfoItem>
-                  <InfoLabel>Date de naissance</InfoLabel>
-                  <InfoValue>
-                    {userData.personal_info.date_naissance ? 
-                      new Date(userData.personal_info.date_naissance).toLocaleDateString('fr-FR') : 
-                      'Non renseigné'}
-                  </InfoValue>
-                </InfoItem>
-                <InfoItem>
-                  <InfoLabel>Genre</InfoLabel>
-                  <InfoValue>
-                    {userData.personal_info.genre ? 
-                      userData.personal_info.genre.charAt(0).toUpperCase() + userData.personal_info.genre.slice(1) : 
-                      'Non renseigné'}
-                  </InfoValue>
-                </InfoItem>
-                <InfoItem>
-                  <InfoLabel>Catégorie de permis</InfoLabel>
-                  <InfoValue>{userData.personal_info.categorie_permis || 'Non renseigné'}</InfoValue>
-                </InfoItem>
-                <InfoItem>
-                  <InfoLabel>Adresse</InfoLabel>
-                  <InfoValue>{userData.personal_info.adresse}</InfoValue>
-                </InfoItem>
-                <InfoItem>
-                  <InfoLabel>Ville</InfoLabel>
-                  <InfoValue>{userData.personal_info.ville}</InfoValue>
-                </InfoItem>
-                <InfoItem>
-                  <InfoLabel>Code postal</InfoLabel>
-                  <InfoValue>{userData.personal_info.code_postal}</InfoValue>
-                </InfoItem>
-                <InfoItem>
-                  <InfoLabel>Pays</InfoLabel>
-                  <InfoValue>{userData.personal_info.pays}</InfoValue>
-                </InfoItem>
-              </>
-            )}
-          </InfoGrid>
-        </ProfileSection>
-
-        <ProfileSection>
+      <SectionWithImage>
+        <RectangularImageContainer>
+          <ImagePlaceholder>🏢</ImagePlaceholder>
+        </RectangularImageContainer>
+        <div>
           <SectionTitle>Informations entreprise</SectionTitle>
           <InfoGrid>
             <InfoItem>
@@ -552,9 +490,14 @@ const Profile: React.FC = () => {
               <InfoValue>{userData.entreprise_info.pays}</InfoValue>
             </InfoItem>
           </InfoGrid>
-        </ProfileSection>
+        </div>
+      </SectionWithImage>
 
-        <ProfileSection>
+      <SectionWithImage>
+        <RectangularImageContainer>
+          <ImagePlaceholder>📍</ImagePlaceholder>
+        </RectangularImageContainer>
+        <div>
           <SectionTitle>Informations site</SectionTitle>
           <InfoGrid>
             <InfoItem>
@@ -578,9 +521,9 @@ const Profile: React.FC = () => {
               <InfoValue>{userData.site_info.pays}</InfoValue>
             </InfoItem>
           </InfoGrid>
-        </ProfileSection>
-      </ProfileContainer>
-    </AuthenticatedLayout>
+        </div>
+      </SectionWithImage>
+    </ProfileContainer>
   );
 };
 

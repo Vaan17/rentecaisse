@@ -1,102 +1,155 @@
-import React from "react";
-import styled from "styled-components";
-import { useSelector } from "react-redux";
-import type { RootState } from "../../store/types";
+import * as React from 'react';
+import styled from 'styled-components';
 
-const SidebarContainer = styled.div`
-  width: 350px;
-  height: 100%;
-  background-color: #616161;
-  color: #fff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-  gap: 15px;
+interface SidebarContainerProps {
+	isOpen?: boolean;
+}
+
+const SidebarContainer = styled.div<SidebarContainerProps>`
+	width: 350px;
+	height: 100%;
+	background-color: #616161;
+	color: #fff;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 20px;
+	gap: 15px;
+	position: relative;
+	z-index: 1500;
+	box-shadow: 4px 0 8px rgba(0,0,0,0.1);
 `;
 
 const MenuSection = styled.div`
-  width: 100%;
-  margin-bottom: 20px;
+	width: 100%;
+	margin-bottom: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	position: relative;
 `;
 
 const MenuTitle = styled.h2`
-  color: #fff;
-  font-size: 1.2em;
-  margin: 10px 0;
-  padding-left: 20px;
+	color: #fff;
+	font-size: 1.2em;
+	margin: 10px 0;
+	padding-left: 20px;
 `;
 
 const DropdownButton = styled.div`
-  width: 280px;
-  background-color: #777;
-  border-radius: 10px;
-  padding: 12px;
-  cursor: pointer;
-  position: relative;
-  transition: all 0.3s ease;
+	width: 280px;
+	background-color: #777;
+	border-radius: 10px;
+	padding: 12px;
+	cursor: pointer;
+	position: relative;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	margin: 4px auto;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1),
+				0 1px 2px rgba(0, 0, 0, 0.08);
+	transform: translateY(0);
 
-  &:hover {
-    background-color: #888;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  }
+	&:hover {
+		background-color: #888;
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2),
+					0 8px 16px rgba(0, 0, 0, 0.1),
+					0 2px 4px rgba(0, 0, 0, 0.1);
+		transform: translateY(-2px);
+	}
+
+	&:active {
+		transform: translateY(0);
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1),
+					0 1px 2px rgba(0, 0, 0, 0.08);
+	}
+
+	&:first-child {
+		margin-top: 12px;
+	}
+
+	&:last-child {
+		margin-bottom: 12px;
+	}
 `;
 
-const DropdownContent = styled.div<{ isOpen: boolean }>`
-  position: absolute;
-  left: 100%;
-  top: 0;
-  width: 200px;
-  background-color: #777;
-  border-radius: 0 10px 10px 0;
-  overflow: hidden;
-  max-height: ${(props) => (props.isOpen ? "500px" : "0")};
-  transition: max-height 0.3s ease-in-out;
-  z-index: 1000;
-  margin-left: 5px;
+interface DropdownContentProps {
+	isOpen: boolean;
+	top: number;
+}
+
+const DropdownContent = styled.div<DropdownContentProps>`
+	position: absolute;
+	left: calc(100% + 5px);
+	top: 0;
+	width: 200px;
+	background-color: #777;
+	border-radius: 0 10px 10px 0;
+	overflow: hidden;
+	visibility: ${(props) => (props.isOpen ? "visible" : "hidden")};
+	opacity: ${(props) => (props.isOpen ? "1" : "0")};
+	transition: visibility 0.3s, opacity 0.3s;
+	z-index: 1600;
+	box-shadow: 4px 4px 8px rgba(0,0,0,0.2);
 `;
 
 const DropdownItem = styled.div`
-  padding: 10px;
-  cursor: pointer;
-  transition: background-color 0.2s;
+	padding: 10px;
+	cursor: pointer;
+	transition: background-color 0.2s;
 
-  &:hover {
-    background-color: #888;
-  }
+	&:hover {
+		background-color: #888;
+	}
 `;
+
 const AdminMenuSection = styled(MenuSection)`
-  background-color: #515151;
-  border-top: 1px solid #777;
-  padding-top: 10px;
+	background-color: #515151;
+	border-top: 1px solid #777;
+	padding-top: 10px;
 `;
 
 const AdminMenuTitle = styled(MenuTitle)`
-  color: #ffd700; // Couleur dorée pour distinguer
+	color: #ffd700;
 `;
 
-const AdminDropdownButton = styled(DropdownButton)`
-  background-color: #666;
-  border: 1px solid #888;
-`;
-
-interface DropdownProps {
+interface MenuItem {
 	title: string;
 	items: string[];
 }
 
-const Dropdown: React.FC<DropdownProps> = ({ title, items }) => {
+interface DropdownProps {
+	title: string;
+	items: string[];
+	onItemClick?: (item: string) => void;
+}
+
+const Dropdown: React.FC<DropdownProps> = ({ title, items, onItemClick }) => {
 	const [isOpen, setIsOpen] = React.useState(false);
+	const buttonRef = React.useRef<HTMLDivElement>(null);
+	const [topPosition, setTopPosition] = React.useState(0);
+
+	React.useEffect(() => {
+		if (buttonRef.current) {
+			const rect = buttonRef.current.getBoundingClientRect();
+			setTopPosition(rect.top);
+		}
+	}, [isOpen]);
 
 	return (
 		<DropdownButton
+			ref={buttonRef}
 			onMouseEnter={() => setIsOpen(true)}
 			onMouseLeave={() => setIsOpen(false)}
 		>
 			{title}
-			<DropdownContent isOpen={isOpen}>
+			<DropdownContent isOpen={isOpen} top={topPosition}>
 				{items.map((item: string) => (
-					<DropdownItem key={item}>{item}</DropdownItem>
+					<DropdownItem 
+						key={item}
+						onClick={() => onItemClick && onItemClick(item)}
+					>
+						{item}
+					</DropdownItem>
 				))}
 			</DropdownContent>
 		</DropdownButton>
@@ -104,10 +157,7 @@ const Dropdown: React.FC<DropdownProps> = ({ title, items }) => {
 };
 
 const SideBar: React.FC = () => {
-	// Simuler un état de connexion admin - à remplacer par votre logique d'authentification
-	const isAdmin = true; // Mettez ceci en état ou utilisez votre système d'auth
-
-	const regularMenuItems = [
+	const regularMenuItems: MenuItem[] = [
 		{
 			title: "Dashboard",
 			items: ["Vue d'ensemble", "Statistiques", "Rapports"],
@@ -122,7 +172,7 @@ const SideBar: React.FC = () => {
 		},
 	];
 
-	const adminMenuItems = [
+	const adminMenuItems: MenuItem[] = [
 		{
 			title: "Gestion des emprunts",
 			items: [
@@ -138,24 +188,41 @@ const SideBar: React.FC = () => {
 		},
 	];
 
+	const handleMenuItemClick = (item: string) => {
+		console.log(`Clicked: ${item}`);
+	};
+
+	const isAdmin = true; // À remplacer par votre logique d'authentification
+
 	return (
 		<SidebarContainer>
 			<MenuSection>
 				<MenuTitle>Menu Principal</MenuTitle>
 				{regularMenuItems.map((menu) => (
-					<Dropdown key={menu.title} title={menu.title} items={menu.items} />
+					<Dropdown 
+						key={menu.title} 
+						title={menu.title} 
+						items={menu.items}
+						onItemClick={handleMenuItemClick}
+					/>
 				))}
 			</MenuSection>
 
 			{isAdmin && (
-				<MenuSection>
-					<MenuTitle>Menu Administration</MenuTitle>
+				<AdminMenuSection>
+					<AdminMenuTitle>Menu Administration</AdminMenuTitle>
 					{adminMenuItems.map((menu) => (
-						<Dropdown key={menu.title} title={menu.title} items={menu.items} />
+						<Dropdown 
+							key={menu.title} 
+							title={menu.title} 
+							items={menu.items}
+							onItemClick={handleMenuItemClick}
+						/>
 					))}
-				</MenuSection>
+				</AdminMenuSection>
 			)}
 		</SidebarContainer>
 	);
 };
+
 export default SideBar;

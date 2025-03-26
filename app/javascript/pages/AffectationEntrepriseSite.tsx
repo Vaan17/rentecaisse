@@ -39,6 +39,15 @@ const Title = styled.h1`
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
+const Description = styled.p`
+  font-size: 1rem;
+  color: #666;
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto 2rem;
+  line-height: 1.5;
+`;
+
 const Form = styled.form`
   display: flex;
   flex-direction: column;
@@ -199,6 +208,7 @@ const AffectationEntrepriseSite: React.FC = () => {
   const [showSiteList, setShowSiteList] = useState(false);
   const [code, setCode] = useState('');
   const [codeError, setCodeError] = useState('');
+  const [isEnterpriseVerified, setIsEnterpriseVerified] = useState(false);
 
   useEffect(() => {
     fetchEntreprises();
@@ -286,9 +296,55 @@ const AffectationEntrepriseSite: React.FC = () => {
     setShowSiteList(false);
   };
 
+  const verifyEnterpriseCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedEntreprise || !code) return;
+
+    setLoading(true);
+    setCodeError('');
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:3000/api/verify_and_affect_user', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          enterprise_id: selectedEntreprise.id,
+          code: code
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setIsEnterpriseVerified(true);
+        await fetchSites(selectedEntreprise.id);
+        toast.success('Code entreprise validé');
+      } else {
+        setCodeError(data.message || 'Code incorrect');
+        toast.error(data.message || 'Code incorrect');
+      }
+    } catch (error: any) {
+      console.error('Erreur lors de la vérification:', error);
+      const errorMessage = error.message || 'Erreur lors de la vérification';
+      setCodeError(errorMessage);
+      toast.error(errorMessage);
+      
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/login');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedEntreprise || !selectedSite) return;
+    if (!selectedEntreprise || !selectedSite || !code) return;
 
     setLoading(true);
     setCodeError('');
@@ -309,14 +365,7 @@ const AffectationEntrepriseSite: React.FC = () => {
         })
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      }
-
       const data = await response.json();
-      console.log('Verification response:', data);
-
       if (data.success) {
         toast.success('Affectation réussie');
         navigate(data.redirect_to);
@@ -325,8 +374,8 @@ const AffectationEntrepriseSite: React.FC = () => {
         toast.error(data.message || 'Une erreur est survenue');
       }
     } catch (error: any) {
-      console.error('Erreur lors de l\'affectation:', error);
-      const errorMessage = error.message || 'Erreur lors de l\'affectation';
+      console.error('Erreur lors de l&apos;affectation:', error);
+      const errorMessage = error.message || 'Erreur lors de l&apos;affectation';
       setCodeError(errorMessage);
       toast.error(errorMessage);
       
@@ -346,9 +395,14 @@ const AffectationEntrepriseSite: React.FC = () => {
           <Logo src="/images/logos/logo.png" alt="RenteCaisse" />
           <BrandName>RenteCaisse</BrandName>
           <Title>Sélectionnez votre entreprise et site</Title>
+          <Description>
+            {!isEnterpriseVerified 
+              ? "Pour commencer, veuillez sélectionner votre entreprise et saisir le code d&apos;accès correspondant."
+              : "Maintenant, veuillez sélectionner votre site d&apos;affectation."}
+          </Description>
         </Header>
 
-        <Form onSubmit={handleSubmit}>
+        <Form onSubmit={!isEnterpriseVerified ? verifyEnterpriseCode : handleSubmit}>
           <FormGroup>
             <Label>Entreprise*</Label>
             <ComboboxContainer>
@@ -360,13 +414,15 @@ const AffectationEntrepriseSite: React.FC = () => {
                   setShowEntrepriseList(true);
                   if (e.target.value !== selectedEntreprise?.nom) {
                     setSelectedEntreprise(null);
+                    setIsEnterpriseVerified(false);
                   }
                 }}
                 onFocus={() => setShowEntrepriseList(true)}
                 placeholder="Rechercher une entreprise..."
                 required
+                disabled={isEnterpriseVerified}
               />
-              <ComboboxList show={showEntrepriseList}>
+              <ComboboxList show={showEntrepriseList && !isEnterpriseVerified}>
                 {filteredEntreprises.map((entreprise) => (
                   <ComboboxItem
                     key={entreprise.id}
@@ -380,9 +436,27 @@ const AffectationEntrepriseSite: React.FC = () => {
             </ComboboxContainer>
           </FormGroup>
 
-          {selectedEntreprise && (
+          {selectedEntreprise && !isEnterpriseVerified && (
             <FormGroup>
-              <Label>Site*</Label>
+              <Label>Code entreprise*</Label>
+              <Input
+                type="text"
+                value={code}
+                onChange={(e) => {
+                  setCode(e.target.value);
+                  setCodeError('');
+                }}
+                placeholder="Entrez le code entreprise..."
+                required
+                className={codeError ? 'error' : ''}
+              />
+              {codeError && <ErrorMessage>{codeError}</ErrorMessage>}
+            </FormGroup>
+          )}
+
+          {isEnterpriseVerified && (
+            <FormGroup>
+              <Label>Site d&apos;affectation*</Label>
               <ComboboxContainer>
                 <ComboboxInput
                   type="text"
@@ -413,29 +487,11 @@ const AffectationEntrepriseSite: React.FC = () => {
             </FormGroup>
           )}
 
-          {selectedEntreprise && selectedSite && (
-            <FormGroup>
-              <Label>Code entreprise*</Label>
-              <Input
-                type="text"
-                value={code}
-                onChange={(e) => {
-                  setCode(e.target.value);
-                  setCodeError('');
-                }}
-                placeholder="Entrez le code entreprise..."
-                required
-                className={codeError ? 'error' : ''}
-              />
-              {codeError && <ErrorMessage>{codeError}</ErrorMessage>}
-            </FormGroup>
-          )}
-
           <Button
             type="submit"
-            disabled={loading || !selectedEntreprise || !selectedSite || !code}
+            disabled={loading || !selectedEntreprise || (!isEnterpriseVerified ? !code : !selectedSite)}
           >
-            {loading ? 'Chargement...' : 'Valider'}
+            {loading ? 'Chargement...' : !isEnterpriseVerified ? 'Vérifier le code' : 'Valider'}
           </Button>
         </Form>
       </WhiteContainerStyled>
