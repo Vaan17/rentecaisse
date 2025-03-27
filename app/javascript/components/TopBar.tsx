@@ -1,117 +1,38 @@
-import React from "react";
-import { useState, useEffect } from "react";
-import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
+import React from 'react';
+import { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
+import { Avatar, Button } from '@mui/material';
+import { Flex } from './style/flex';
+import { isDesktop } from 'react-device-detect';
 
-const TopBarContainer = styled.header`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 72px;
-  background-color: #272727;
+const TopBarContainer = styled(Flex)`
+  max-width: 100%;
+  height: var(--top-bar-height);
+  background-color: var(--secondary800);
   color: white;
-  display: flex;
-  align-items: center;
-  padding: 0 24px;
-  z-index: 2000;
+  padding: 0 16px;
 `;
-
 const LogoContainer = styled.div`
   display: flex;
   align-items: center;
   gap: 16px;
 `;
-
-const LogoImage = styled.img`
-  width: 48px;
-  height: 48px;
-  object-fit: contain;
-`;
-
-const AppTitle = styled.div`
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: white;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
+const Title = styled.div`
+  font-size: ${isDesktop ? '20px' : '14px'};
   font-family: 'Arial Black', Helvetica, sans-serif;
 `;
-
-const UserSection = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  cursor: pointer;
-  padding: 8px;
+const UserSection = styled(Flex)`
   border-radius: 8px;
-  transition: background-color 0.2s;
-
+  padding: 4px;
+  
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
+    transition: background-color 0.2s;
   }
 `;
-
-const Avatar = styled.div`
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background-color: #fff;
-  border: 2px solid white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-weight: bold;
-  color: #1a237e;
-  font-size: 1.2rem;
-`;
-
-const ProfileImage = styled.img`
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: 2px solid white;
-  object-fit: cover;
-`;
-
-const UserName = styled.span`
-  font-size: 1.1rem;
-  @media (max-width: 768px) {
-    display: none;
-  }
-`;
-
-const LogoutButton = styled.button`
-  background: transparent;
-  border: 2px solid #dc3545;
-  color: #dc3545;
-  padding: 10px 20px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 1.1rem;
-  font-weight: 500;
-
-  &:hover {
-    background-color: #dc3545;
-    color: white;
-    border-color: #dc3545;
-  }
-`;
-
-const MenuButton = styled.button`
-  background: none;
-  border: none;
-  color: white;
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: 8px;
-  display: none;
-
-  @media (max-width: 768px) {
-    display: block;
-  }
+const UserName = styled.div`
+  font-size: 18px;
 `;
 
 interface UserInfo {
@@ -120,11 +41,7 @@ interface UserInfo {
 	email: string;
 }
 
-interface TopBarProps {
-	onMenuToggle?: () => void;
-}
-
-const TopBar = ({ onMenuToggle = () => null }: TopBarProps) => {
+const TopBar = () => {
 	const [userImageUrl, setUserImageUrl] = useState<string | null>(null);
 	const [imageError, setImageError] = useState(false);
 	const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
@@ -203,37 +120,38 @@ const TopBar = ({ onMenuToggle = () => null }: TopBarProps) => {
 	};
 
 	return (
-		<TopBarContainer>
-			<MenuButton onClick={onMenuToggle}>☰</MenuButton>
+		<TopBarContainer spaceBetween>
 			<LogoContainer>
-				<LogoImage src="/images/logos/logo.png" alt="Rentecaisse Logo" />
-				<AppTitle>RENTECAISSE</AppTitle>
+				<img src="/images/logos/logo.png" alt="Rentecaisse Logo" width="32px" height="32px" />
+				<Title>RENTECAISSE</Title>
 			</LogoContainer>
-			<div style={{ flex: 1 }} />
-			<UserSection onClick={() => navigate("/profile")}>
-				{userImageUrl && !imageError ? (
-					<ProfileImage
-						src={userImageUrl}
-						onError={() => setImageError(true)}
-						alt="Photo de profil"
-					/>
-				) : (
-					<Avatar>
-						{userInfo ? `${userInfo.prenom[0]}${userInfo.nom[0]}` : ""}
-					</Avatar>
-				)}
-				<UserName>
-					{userInfo ? `${userInfo.prenom} ${userInfo.nom}` : ""}
-				</UserName>
-				<LogoutButton
+			<Flex gap="16px">
+				<Button
+					size='small'
+					variant='contained'
+					color='error'
 					onClick={(e) => {
 						e.stopPropagation();
 						handleLogout();
 					}}
 				>
-					Se déconnecter
-				</LogoutButton>
-			</UserSection>
+					Déconnexion
+				</Button>
+				<UserSection onClick={() => navigate('/profile')} gap="8px">
+					<Avatar
+						src={userImageUrl}
+						alt="Img Profil"
+						sx={{ width: 32, height: 32 }}
+					>
+						{userInfo ? `${userInfo.prenom[0]}${userInfo.nom[0]}` : ''}
+					</Avatar>
+					{isDesktop && (
+						<UserName>
+							{userInfo ? `${userInfo.prenom} ${userInfo.nom}` : ''}
+						</UserName>
+					)}
+				</UserSection>
+			</Flex>
 		</TopBarContainer>
 	);
 };
