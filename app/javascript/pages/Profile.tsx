@@ -296,6 +296,61 @@ const ButtonContainer = styled.div`
   gap: 10px;
 `;
 
+// Ajouter un composant ConfirmModal
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+`;
+
+const ModalContent = styled.div`
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+`;
+
+const ModalTitle = styled.h3`
+  margin-top: 0;
+  color: #FF4D4D;
+  font-size: 1.5rem;
+`;
+
+const ModalText = styled.p`
+  margin: 1rem 0;
+  line-height: 1.5;
+`;
+
+const ModalButtons = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+`;
+
+const ModalButton = styled.button<{ $danger?: boolean }>`
+  padding: 0.5rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  background-color: ${props => props.$danger ? '#FF4D4D' : '#f0f0f0'};
+  color: ${props => props.$danger ? 'white' : '#666'};
+  
+  &:hover {
+    background-color: ${props => props.$danger ? '#ff3333' : '#e0e0e0'};
+  }
+`;
+
 // Fonctions de validation
 const validateName = (name: string): boolean => {
   return name.length >= 2 && /^[a-zA-ZÀ-ÿ\s-]+$/.test(name);
@@ -552,6 +607,7 @@ const Profile: React.FC = () => {
   const [editingFields, setEditingFields] = useState<{[key: string]: boolean}>({});
   const [userImage, setUserImage] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -743,6 +799,31 @@ const Profile: React.FC = () => {
     setEditingFields(prev => ({ ...prev, [fieldName]: false }));
   };
 
+  const handleDeleteAccountRequest = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:3000/api/user/request_deletion', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success('Votre demande de suppression a été enregistrée');
+        navigate('/cancellation-account');
+      } else {
+        toast.error(data.message || 'Une erreur est survenue');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la demande de suppression:', error);
+      toast.error('Erreur lors de la demande de suppression');
+    }
+  };
+
   if (!userData) {
     console.log('userData est null, affichage du loader');
     return (
@@ -755,6 +836,35 @@ const Profile: React.FC = () => {
   console.log('Rendu du profil avec les données:', userData);
   return (
     <ProfileContainer>
+      {showConfirmModal && (
+        <ModalOverlay>
+          <ModalContent>
+            <ModalTitle>Confirmer la suppression de compte</ModalTitle>
+            <ModalText>
+              Êtes-vous sûr de vouloir demander la suppression de votre compte ?
+            </ModalText>
+            <ModalText>
+              Cette action va déclencher un processus de suppression qui sera effectif dans 30 jours.
+              Durant cette période, vous n'aurez plus accès aux services, mais vous pourrez annuler
+              la demande de suppression à tout moment.
+            </ModalText>
+            <ModalButtons>
+              <ModalButton onClick={() => setShowConfirmModal(false)}>
+                Annuler
+              </ModalButton>
+              <ModalButton 
+                $danger 
+                onClick={() => {
+                  setShowConfirmModal(false);
+                  handleDeleteAccountRequest();
+                }}
+              >
+                Confirmer la suppression
+              </ModalButton>
+            </ModalButtons>
+          </ModalContent>
+        </ModalOverlay>
+      )}
       <ProfileHeader>
         <ProfilePhotoContainer>
           {userImage ? (
@@ -901,7 +1011,7 @@ const Profile: React.FC = () => {
           }}>
             {editingFields.nom || editingFields.prenom ? 'Annuler' : 'Modifier'}
           </EditButton>
-          <DeleteAccountButton>
+          <DeleteAccountButton onClick={() => setShowConfirmModal(true)}>
             Faire une demande de suppression de compte
           </DeleteAccountButton>
         </ButtonContainer>

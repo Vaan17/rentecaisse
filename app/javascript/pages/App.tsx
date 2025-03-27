@@ -30,6 +30,7 @@ import VoitureDetails from "./voitures/VoitureDetails.tsx"
 import { ErrorBoundary } from "react-error-boundary"
 import ErrorFallback from "./errorFallbacks/ErrorFallback.tsx"
 import Home from "../components/Home.tsx"
+import CancellationAccountDeletion from './CancellationAccountDeletion'
 
 const AppContainer = styled.div`
 	width: 100vw;

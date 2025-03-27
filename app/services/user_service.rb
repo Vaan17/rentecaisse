@@ -156,6 +156,41 @@ class UserService
     end
   end
 
+  def self.request_account_deletion(user)
+    begin
+      user.update(
+        desactive: true,
+        date_demande_suppression: Time.current
+      )
+      { success: true, message: "Votre demande de suppression a été enregistrée" }
+    rescue ActiveRecord::RecordInvalid => e
+      { success: false, errors: e.record.errors.full_messages }
+    rescue StandardError => e
+      { success: false, errors: [e.message] }
+    end
+  end
+
+  def self.cancel_deletion_request(user)
+    begin
+      user.update(
+        desactive: false,
+        date_demande_suppression: nil
+      )
+      { success: true, message: "Votre demande de suppression a été annulée" }
+    rescue ActiveRecord::RecordInvalid => e
+      { success: false, errors: e.record.errors.full_messages }
+    rescue StandardError => e
+      { success: false, errors: [e.message] }
+    end
+  end
+
+  def self.check_account_status(user)
+    {
+      desactive: user.desactive,
+      date_demande_suppression: user.date_demande_suppression
+    }
+  end
+
   private
 
   def self.validate_field(field, value)

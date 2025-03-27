@@ -6,6 +6,15 @@ class AuthenticatedPageController < ApplicationController
     Rails.logger.info "Valeur de premiere_connexion: #{@current_user.premiere_connexion}"
     Rails.logger.info "=== Fin du log ==="
 
+    if @current_user.desactive
+      render json: {
+        success: false,
+        redirect_to: '/cancellation-account',
+        message: "Votre compte est en cours de suppression"
+      }
+      return
+    end
+
     if @current_user.premiere_connexion
       render json: {
         success: false,
@@ -226,6 +235,62 @@ class AuthenticatedPageController < ApplicationController
         success: false, 
         message: "Aucune photo fournie" 
       }, status: :unprocessable_entity
+    end
+  end
+
+  def request_account_deletion
+    result = UserService.request_account_deletion(@current_user)
+    
+    if result[:success]
+      render json: {
+        success: true,
+        redirect_to: '/cancellation-account',
+        message: result[:message]
+      }
+    else
+      render json: {
+        success: false,
+        errors: result[:errors]
+      }, status: :unprocessable_entity
+    end
+  end
+
+  def cancel_deletion_request
+    result = UserService.cancel_deletion_request(@current_user)
+    
+    if result[:success]
+      render json: {
+        success: true,
+        redirect_to: '/home',
+        message: result[:message]
+      }
+    else
+      render json: {
+        success: false,
+        errors: result[:errors]
+      }, status: :unprocessable_entity
+    end
+  end
+
+  def get_deletion_details
+    if @current_user.desactive && @current_user.date_demande_suppression
+      deletion_date = @current_user.date_demande_suppression
+      suppression_date = deletion_date + 30.days
+      remaining_days = ((suppression_date - Time.current) / 1.day).ceil
+      
+      render json: {
+        success: true,
+        deletion_request: {
+          date_demande: deletion_date,
+          date_suppression_prevue: suppression_date,
+          jours_restants: remaining_days
+        }
+      }
+    else
+      render json: {
+        success: false,
+        message: "Aucune demande de suppression en cours"
+      }, status: :not_found
     end
   end
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_03_09_193801) do
+ActiveRecord::Schema[7.2].define(version: 2025_03_25_150720) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -147,6 +147,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_09_193801) do
     t.string "session_token"
     t.datetime "session_token_expires_at"
     t.boolean "confirmation_entreprise", default: false
+    t.boolean "desactive", default: false
+    t.datetime "date_demande_suppression"
     t.index ["confirmation_token"], name: "index_utilisateurs_on_confirmation_token", unique: true
     t.index ["email"], name: "index_utilisateurs_on_email", unique: true
     t.index ["entreprise_id"], name: "index_utilisateurs_on_entreprise_id"

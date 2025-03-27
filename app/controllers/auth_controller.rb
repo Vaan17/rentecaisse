@@ -15,7 +15,23 @@ class AuthController < ApplicationController
 
       Rails.logger.info "Connexion réussie pour l'utilisateur: #{user.email}"
       
-      if user.premiere_connexion
+      # Vérification si le compte est en attente de suppression
+      if user.desactive
+        render json: {
+          success: true,
+          session_token: session_token,
+          redirect_to: '/cancellation-account',
+          message: "Votre compte est en cours de suppression",
+          user: {
+            id: user.id,
+            email: user.email,
+            nom: user.nom,
+            prenom: user.prenom,
+            admin_entreprise: user.admin_entreprise,
+            admin_rentecaisse: user.admin_rentecaisse
+          }
+        }
+      elsif user.premiere_connexion
         render json: {
           success: true,
           session_token: session_token,

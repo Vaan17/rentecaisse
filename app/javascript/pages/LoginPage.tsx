@@ -294,6 +294,13 @@ const LoginPage = () => {
         // Stocker le token de session au lieu du token simple
         localStorage.setItem('token', loginData.session_token);
 
+        // Vérifier si une redirection est déjà spécifiée dans la réponse de login
+        if (loginData.redirect_to) {
+          console.log('Redirection depuis login:', loginData.redirect_to);
+          window.location.href = loginData.redirect_to;
+          return;
+        }
+
         // Vérifier l'état de l'utilisateur
         const statusResponse = await fetch('http://localhost:3000/api/authenticated-page', {
           headers: {
