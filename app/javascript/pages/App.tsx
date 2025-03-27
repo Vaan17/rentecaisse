@@ -27,6 +27,8 @@ import Sites from "./sites/Sites.tsx"
 import SiteDetails from "./sites/SiteDetails.tsx"
 import SideBar from '../components/SideBar'
 import TopBar from "../components/TopBar.tsx"
+import Voitures from "./voitures/Voitures.tsx"
+import VoitureDetails from "./voitures/VoitureDetails.tsx"
 
 const AppContainer = styled.div`
 	width: 100vw;
@@ -88,8 +90,10 @@ const App = () => {
 										<Route path="/colors" element={<ColorsPage />} />
 										<Route path="/sites" element={<Sites />} />
 										<Route path="/sites/:id" element={<SiteDetails />} />
-										<Route path="*" element={<Navigate to="/home" replace />} />
+										<Route path="/voitures" element={<Voitures />} />
+										<Route path="/voitures/:id" element={<VoitureDetails />} />
 										<Route path="/profile" element={<Profile />} />
+										<Route path="*" element={<Navigate to="/home" replace />} />
 									</Routes>
 								</AppSubContainer>
 							</ApplicationWrapper>

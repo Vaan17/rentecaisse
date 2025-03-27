@@ -26,6 +26,10 @@ Rails.application.routes.draw do
 
   # Routes pour les sites
   get "/api/sites" => "sites#fetch_all"
+  get "/api/sites/:id" => "sites#fetch"
+
+  # Routes pour les voitures
+  get "/api/voitures" => "voitures#fetch_all"
 
   # Routes pour les entreprises
   get "/api/entreprises" => "entreprises#fetch_all"

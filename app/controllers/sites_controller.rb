@@ -5,6 +5,13 @@ class SitesController < ApplicationController
     render json: sites
   end
 
+  def fetch
+    site_id = params[:id]
+    site = Entreprise.find(site_id)
+
+    render json: site
+  end
+
   def create
   end
 
