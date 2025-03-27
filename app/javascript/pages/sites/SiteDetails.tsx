@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Flex } from '../../components/style/flex'
 import type { ISite } from './Sites'
 import axios from 'axios'
+import { isDesktop, isMobile } from 'react-device-detect'
 
 interface IEntreprise {
     id: number
@@ -62,11 +63,11 @@ const SiteDetails = () => {
             >
                 Retour
             </Button>
-            <Flex alignItemsStart gap="2em">
-                {SiteImage}
+            <Flex alignItemsStart directionColumn={isMobile} gap="2em">
+                {isDesktop && SiteImage}
                 <Flex directionColumn justifyCenter>
                     <h1>{selectedSite.nom_site}</h1>
-                    <Flex justifyCenter alignItemsStart gap="2em">
+                    <Flex justifyCenter directionColumn={isMobile} alignItemsStart gap="2em">
                         <Flex directionColumn alignItemsStart gap=".2em">
                             <h2>Informations du site</h2>
                             <div>{selectedSite.adresse}</div>

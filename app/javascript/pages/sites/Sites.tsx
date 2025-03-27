@@ -11,7 +11,6 @@ const CardContainer = styled.div`
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 1em;
-    padding: 0 3em;
 `
 export interface ISite {
     id: number

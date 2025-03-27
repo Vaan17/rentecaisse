@@ -3,6 +3,7 @@ import { MenuItem, Select, TextField } from '@mui/material'
 import { Flex } from './style/flex'
 import FilterAltIcon from '@mui/icons-material/FilterAlt'
 import styled from 'styled-components'
+import { isMobile } from 'react-device-detect'
 
 interface Option {
     value: string
@@ -10,10 +11,10 @@ interface Option {
 }
 
 const SSelect = styled(TextField)`
-    width: 15%;
+    width: ${isMobile ? '100%' : '15%'};
 `
 const STextField = styled(TextField)`
-    width: 30%;
+    width: ${isMobile ? '100%' : '30%'};
 `
 
 const CustomFilter = ({ options, filterCallback }: { options: Option[], filterCallback: (filterBy, searchValue) => void }) => {
@@ -27,7 +28,7 @@ const CustomFilter = ({ options, filterCallback }: { options: Option[], filterCa
     }, [selectedProperty, searchValue])
 
     return (
-        <Flex fullWidth gap='1em'>
+        <Flex fullWidth directionColumn={isMobile} alignItemsStart={isMobile} gap='8px'>
             <Flex alignItemsCenter gap='0.5em'>
                 <FilterAltIcon />
                 <div>Filtrer par :</div>

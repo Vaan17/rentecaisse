@@ -33,15 +33,16 @@ const AppContainer = styled.div`
 	height: 100vh;
 `
 const ApplicationWrapper = styled.div`
-	width: 100vw;
-	height: calc(100vh - 64px);
+	width: 100%;
+	height: calc(100% - var(--top-bar-height));
 	display: flex;
 `
 const AppSubContainer = styled.div`
 	width: 100%;
-	padding: 1.5em;
-	background-color: #f0f0f0;
-	overflow: auto;
+	height: calc(100% - var(--top-bar-height));
+	background-color: var(--secondary50);
+	padding: 24px;
+	overflow-y: auto;
 `
 
 const App = () => {
@@ -71,21 +72,9 @@ const App = () => {
 					{/* Routes principales avec le layout standard */}
 					<Route path="/*" element={
 						<AppContainer>
-							<TopBar></TopBar>
-							{/* STATIC TOPBAR */}
-							<div style={{ width: "100%", height: "64px", backgroundColor: "#1b1b1b", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", gap: "5em" }}>
-								<a href="/home" style={{ color: "#fff", textDecoration: "none" }}>HOME</a>
-								<a href="/colors" style={{ color: "#fff", textDecoration: "none" }}>CHARTE GRAPHIQUE</a>
-								<a href="/sandbox" style={{ color: "#fff", textDecoration: "none" }}>SANDBOX</a>
-								<a href="/login" style={{ color: "#fff", textDecoration: "none" }}>CONNEXION</a>
-								<a href="/register" style={{ color: "#fff", textDecoration: "none" }}>INSCRIPTION</a>
-								<a href="/main" style={{ color: "#fff", textDecoration: "none" }}>MAIN</a>
-								<a href="/cgv" style={{ color: "#fff", textDecoration: "none" }}>CGV</a>
-								<a href="/cgu" style={{ color: "#fff", textDecoration: "none" }}>CGU</a>
-								<a href="/mentions-legales" style={{ color: "#fff", textDecoration: "none" }}>MENTIONS LÉGALES</a>
-							</div>
+							<TopBar />
 							<ApplicationWrapper>
-								<SideBar></SideBar>
+								<SideBar />
 								<AppSubContainer>
 									<Routes>
 										<Route path="/home" element={<HomeAuthenticated />} />
