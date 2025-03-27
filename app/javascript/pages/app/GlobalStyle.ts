@@ -8,6 +8,7 @@ const fontTitle = css`
 const GlobalStyle = createGlobalStyle`
     :root {
         ${colors}
+        --top-bar-height: 48px;
     }
     h1,h2,h3 {${fontTitle}}
 

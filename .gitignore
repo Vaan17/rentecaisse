@@ -55,6 +55,7 @@ yarn-error.log*
 /tmp/storage/*
 !/tmp/storage/
 !/tmp/storage/.keep
+/db/schema.rb
 
 # Ignore master key for decrypting credentials and more.
 /config/master.key
@@ -76,3 +77,4 @@ node_modules
 *.local
 .env
 .spacedrive
+latest.dump

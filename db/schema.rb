@@ -70,7 +70,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_09_193801) do
     t.check_constraint "capital_social > 0", name: "check_capital_social"
     t.check_constraint "effectif > 0", name: "check_effectif"
     t.check_constraint "email::text ~ '^[^@]+@[^@]+.[^@]+$'::text", name: "check_email"
-    t.check_constraint "forme_juridique::text = ANY (ARRAY['SA'::character varying::text, 'SARL'::character varying::text, 'SAS'::character varying::text, 'EURL'::character varying::text, 'EI'::character varying::text, 'SC'::character varying::text, 'SCS'::character varying::text, 'SNC'::character varying::text])", name: "check_forme_juridique"
+    t.check_constraint "forme_juridique::text = ANY (ARRAY['SA'::character varying, 'SARL'::character varying, 'SAS'::character varying, 'EURL'::character varying, 'EI'::character varying, 'SC'::character varying, 'SCS'::character varying, 'SNC'::character varying]::text[])", name: "check_forme_juridique"
     t.check_constraint "length(adresse::text) >= 10", name: "check_adresse"
     t.check_constraint "length(code_postal::text) = 5", name: "check_code_postal"
     t.check_constraint "length(numero_siret::text) = ANY (ARRAY[9, 14])", name: "check_numero_siret"

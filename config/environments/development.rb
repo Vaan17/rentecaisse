@@ -13,8 +13,10 @@ Rails.application.configure do
 
   # Show full error reports.
   config.consider_all_requests_local = true
+  config.hosts << /[a-z0-9-.]+\.ngrok-free\.app/
+  config.hosts << /[a-z0-9]+\.ngrok\.app/
 
-  # Enable server timing.
+  # Enable server timing
   config.server_timing = true
 
   # Enable/disable caching. By default caching is disabled.
