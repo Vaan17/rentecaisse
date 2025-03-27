@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react"
 import Card from "@mui/material/Card"
-import { Button, CardActions, CardContent, CardHeader } from "@mui/material"
+import { Alert, Button, CardActions, CardContent, CardHeader } from "@mui/material"
 import styled from "styled-components"
 import CustomFilter from "../../components/CustomFilter"
 import { useNavigate } from "react-router-dom"
 import axios from "axios"
+import { Flex } from "../../components/style/flex"
 
 const CardContainer = styled.div`
     display: flex;
@@ -70,43 +71,56 @@ const Sites = () => {
             <CustomFilter options={filterOptions} filterCallback={
                 (filterBy, searchValue) => { setFilterProperties({ filterBy, searchValue }) }
             } />
-            <CardContainer>
-                {filteredSites.map(site => {
-                    const SiteImage = site.lien_image_site
-                        ? <img src={site.lien_image_site} alt="site" style={{ width: "100%", height: "150px", objectFit: "cover" }} />
-                        : <div style={{ width: "100%", height: "150px", backgroundColor: "lightgray", display: "flex", justifyContent: "center", alignItems: "center" }}>Image indisponible</div>
+            {!!filteredSites.length && (
+                <CardContainer>
+                    {filteredSites.map(site => {
+                        const SiteImage = site.lien_image_site
+                            ? <img src={site.lien_image_site} alt="site" style={{ width: "100%", height: "150px", objectFit: "cover" }} />
+                            : <div style={{ width: "100%", height: "150px", backgroundColor: "lightgray", display: "flex", justifyContent: "center", alignItems: "center" }}>Image indisponible</div>
 
-                    return (
-                        <Card key={site.id} sx={{ width: 300 }}>
-                            <CardHeader
-                                title={site.nom_site}
-                            />
-                            {SiteImage}
-                            <CardContent>
-                                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
-                                    <div>{site.nom_site}</div>
-                                    <div>{site.adresse}</div>
-                                    <div>{site.code_postal} {site.ville}</div>
-                                    <div>UNDEFINED véhicules rattachés</div>
-                                </div>
-                                <div>
-                                    <div>{site.telephone}</div>
-                                    <div>{site.email}</div>
-                                </div>
-                            </CardContent>
-                            <CardActions>
-                                <Button
-                                    variant="outlined"
-                                    size="small"
-                                    onClick={() => navigate(`/sites/${site.id}`)}
-                                >
-                                    Consulter détails
-                                </Button>
-                            </CardActions>
-                        </Card>
-                    )
-                })}
-            </CardContainer>
+                        return (
+                            <Card key={site.id} sx={{ width: 300 }}>
+                                <CardHeader
+                                    title={site.nom_site}
+                                />
+                                {SiteImage}
+                                <CardContent>
+                                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
+                                        <div>{site.nom_site}</div>
+                                        <div>{site.adresse}</div>
+                                        <div>{site.code_postal} {site.ville}</div>
+                                        <div>UNDEFINED véhicules rattachés</div>
+                                    </div>
+                                    <div>
+                                        <div>{site.telephone}</div>
+                                        <div>{site.email}</div>
+                                    </div>
+                                </CardContent>
+                                <CardActions>
+                                    <Button
+                                        variant="outlined"
+                                        size="small"
+                                        onClick={() => navigate(`/sites/${site.id}`)}
+                                    >
+                                        Consulter détails
+                                    </Button>
+                                </CardActions>
+                            </Card>
+                        )
+                    })}
+                </CardContainer>
+            )}
+            {!filteredSites.length && (
+                <Alert severity={
+                    filterProperties.filterBy && filterProperties.searchValue
+                        ? "warning"
+                        : "info"
+                }>
+                    {filterProperties.filterBy && filterProperties.searchValue
+                        ? "Aucun résultat ne correspond à votre recherche"
+                        : "Aucun site enregistré"}
+                </Alert>
+            )}
         </div>
     )
 }
