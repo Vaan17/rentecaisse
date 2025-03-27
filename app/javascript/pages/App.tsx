@@ -31,12 +31,12 @@ import TopBar from "../components/TopBar.tsx"
 const AppContainer = styled.div`
 	width: 100vw;
 	height: 100vh;
-`
+`;
 const ApplicationWrapper = styled.div`
 	width: 100%;
 	height: calc(100% - var(--top-bar-height));
 	display: flex;
-`
+`;
 const AppSubContainer = styled.div`
 	width: 100%;
 	height: calc(100% - var(--top-bar-height));
@@ -66,8 +66,14 @@ const App = () => {
 					{/* Routes authentifiées (plus de wrapper RequireAuth) */}
 					<Route path="/authenticated" element={<AuthenticatedPage />} />
 					<Route path="/complete-profil" element={<CompleteProfil />} />
-					<Route path="/affectation-entreprise" element={<AffectationEntrepriseSite />} />
-					<Route path="/statut-affectation" element={<StatutAffectationEnAttente />} />
+					<Route
+						path="/affectation-entreprise"
+						element={<AffectationEntrepriseSite />}
+					/>
+					<Route
+						path="/statut-affectation"
+						element={<StatutAffectationEnAttente />}
+					/>
 
 					{/* Routes principales avec le layout standard */}
 					<Route path="/*" element={
@@ -92,7 +98,7 @@ const App = () => {
 				</Routes>
 			</BrowserRouter>
 		</Provider>
-	)
-}
+	);
+};
 
 export default App;
