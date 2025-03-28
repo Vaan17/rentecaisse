@@ -61,7 +61,7 @@ const App = () => {
 					<Route path="/reset-password" element={<ResetPasswordPage />} />
 					<Route path="/cgv" element={<CGVPage />} />
 					<Route path="/cgu" element={<CGUPage />} />
-					<Route path="/mentions-legales" element={<MentionsLegalesPage />} />
+					<Route path="/mentions_legales" element={<MentionsLegalesPage />} />
 					<Route path="/confirm_email" element={<ConfirmEmailPage />} />
 					<Route path="/first-connexion" element={<FirstConnexionPage />} />
 

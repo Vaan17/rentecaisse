@@ -11,8 +11,7 @@ import { useNavigate } from 'react-router-dom';
 const SidebarContainer = styled.div<{ $isExpended: boolean }>`
 	width: 48px;
 	height: calc(100% - var(--top-bar-height));
-	background-color: var(--secondary200);
-	color: white;
+	background-color: #f9f9f9;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -35,13 +34,14 @@ const MenuTitle = styled.div`
 	font-size: 18px;
 `;
 
-const FlexContainer = styled(Flex)`
+const FlexItem = styled(Flex)`
 	padding: 4px;
 	border-radius: 4px;
-	background-color: var(--secondary600);
-	transition: background-color 0.3s;
+	border: 2px solid transparent;
+	transition: 0.15s;
 	&:hover {
-		background-color: var(--secondary500);
+		border: 2px solid var(--primary300);
+		background-color: var(--primary50)
 	}
 `
 
@@ -144,7 +144,7 @@ const SideBar = () => {
 					}
 				</Flex>
 				{regularMenuItems.map((menu) => (
-					<FlexContainer
+					<FlexItem
 						key={menu.title}
 						fullWidth
 						gap
@@ -155,14 +155,14 @@ const SideBar = () => {
 							{isExpended && <div>{menu.title}</div>}
 							{isExpended && <div>{menu.subtitle}</div>}
 						</Flex>
-					</FlexContainer>
+					</FlexItem>
 				))}
 			</MenuSection>
 			{isAdmin && (
 				<MenuSection>
 					{isExpended && <MenuTitle>Menu Administrateur</MenuTitle>}
 					{adminMenuItems.map((menu) => (
-						<FlexContainer
+						<FlexItem
 							key={menu.title}
 							fullWidth
 							gap
@@ -173,7 +173,7 @@ const SideBar = () => {
 								{isExpended && <div>{menu.title}</div>}
 								{isExpended && <div>{menu.subtitle}</div>}
 							</Flex>
-						</FlexContainer>
+						</FlexItem>
 					))}
 				</MenuSection>
 			)}
