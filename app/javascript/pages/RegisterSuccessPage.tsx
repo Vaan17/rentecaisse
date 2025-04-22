@@ -2,6 +2,9 @@ import React from 'react';
 import styled from 'styled-components';
 import BackgroundLayout from '../components/layout/BackgroundLayout';
 import WhiteContainer from '../components/layout/WhiteContainer';
+import { Card, CardContent } from '@mui/material';
+import { Flex } from '../components/style/flex';
+import { useNavigate } from 'react-router-dom';
 
 const Container = styled.div`
   display: flex;
@@ -20,49 +23,18 @@ const Container = styled.div`
   }
 `;
 
-const Logo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  margin-bottom: 4rem;
-
-  img {
-    width: 80px;
-    height: 80px;
-  }
-
-  span {
-    font-size: 3rem;
-    font-weight: 700;
-    color: #333;
-  }
+const Logo = styled.img`
+  width: 64px;
+  height: 64px;
 
   @media (max-width: 768px) {
-    margin-bottom: 3rem;
-    gap: 1.25rem;
-    
-    img {
-      width: 64px;
-      height: 64px;
-    }
-
-    span {
-      font-size: 2.5rem;
-    }
+    width: 48px;
+    height: 48px;
   }
 
   @media (max-width: 480px) {
-    margin-bottom: 2.5rem;
-    gap: 1rem;
-    
-    img {
-      width: 48px;
-      height: 48px;
-    }
-
-    span {
-      font-size: 2rem;
-    }
+    width: 40px;
+    height: 40px;
   }
 `;
 
@@ -101,64 +73,103 @@ const Message = styled.p`
   }
 `;
 
-const Button = styled.a`
-  display: inline-block;
-  margin-top: 3rem;
-  padding: 1.5rem 3rem;
+const Button = styled.button`
+  padding: 1.125rem;
   background-color: #FFD700;
-  color: #333;
-  text-decoration: none;
-  border-radius: 12px;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: 1.2rem;
   font-weight: 600;
-  font-size: 1.5rem;
+  width: 100%;
+  margin-top: 1.5rem;
   transition: all 0.2s ease;
+  font-family: 'Inter', sans-serif;
 
   &:hover {
     background-color: #FFC700;
-    transform: translateY(-2px);
-  }
-
-  &:active {
     transform: translateY(-1px);
   }
 
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    transform: none;
+  }
+
   @media (max-width: 768px) {
-    margin-top: 2.5rem;
-    padding: 1.25rem 2.5rem;
-    font-size: 1.25rem;
+    padding: 1rem;
+    font-size: 1.1rem;
+    border-radius: 12px;
+    margin-top: 1.25rem;
   }
 
   @media (max-width: 480px) {
-    margin-top: 2rem;
-    padding: 1rem 2rem;
-    font-size: 1.1rem;
+    padding: 0.875rem;
+    font-size: 1rem;
+    border-radius: 10px;
+    margin-top: 1rem;
   }
 `;
 
-const RegisterSuccessPage: React.FC = () => {
-    return (
-        <>
-            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-            <BackgroundLayout backgroundImage="/images/backgrounds/parking-background.png">
-                <WhiteContainer width="min(900px, 95%)">
-                    <Container>
-                        <Logo>
-                            <img src="/images/logos/logo.png" alt="RenteCaisse Logo" />
-                            <span>RENTECAISSE</span>
-                        </Logo>
-                        <Title>Inscription</Title>
-                        <Message>
-                            Nous venons de vous envoyer un email à l'adresse que vous avez indiquée.
-                        </Message>
-                        <Message>
-                            Cet email contient un lien de confirmation. Veuillez cliquer sur ce lien pour activer votre compte et commencer à utiliser notre application.
-                        </Message>
-                        <Button href="/">Revenir à l'accueil</Button>
-                    </Container>
-                </WhiteContainer>
-            </BackgroundLayout>
-        </>
-    );
+const BrandName = styled.span`
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #333;
+  letter-spacing: -0.02em;
+  font-family: 'Inter', sans-serif;
+
+  @media (max-width: 768px) {
+    font-size: 1.75rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 1.5rem;
+  }
+`
+const SCard = styled(Card)`
+  width: 50%;
+  min-width: 300px;
+  height: 90%;
+  padding: 1em;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+`
+const SCardContent = styled(CardContent)`
+  padding: 0 1em !important;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow-y: auto;
+  gap: 2em;
+`
+
+const RegisterSuccessPage = () => {
+  const navigate = useNavigate()
+
+  return (
+    <BackgroundLayout backgroundImage="/images/backgrounds/parking-background.png">
+      <SCard>
+        <SCardContent>
+          <Flex justifyCenter gap="1em">
+            <Logo src="/images/logos/logo.png" alt="RenteCaisse Logo" />
+            <BrandName>Inscription</BrandName>
+          </Flex>
+          <Message>
+            Nous venons de vous envoyer un email à l'adresse que vous avez indiquée.
+          </Message>
+          <Message>
+            Cet email contient un lien de confirmation. Veuillez cliquer sur ce lien pour activer votre compte et commencer à utiliser notre application.
+          </Message>
+          <Button onClick={() => navigate("/")}>Revenir à l'accueil</Button>
+        </SCardContent>
+      </SCard>
+    </BackgroundLayout>
+  )
 };
 
-export default RegisterSuccessPage; 
+export default RegisterSuccessPage
