@@ -29,6 +29,8 @@ import SideBar from '../components/SideBar'
 import TopBar from "../components/TopBar.tsx"
 import Voitures from "./voitures/Voitures.tsx"
 import VoitureDetails from "./voitures/VoitureDetails.tsx"
+import BackgroundLayout from "../components/layout/BackgroundLayout.tsx"
+import { ErrorBoundary } from "react-error-boundary"
 
 const AppContainer = styled.div`
 	width: 100vw;
@@ -51,56 +53,58 @@ const App = () => {
 	return (
 		<Provider store={store}>
 			<GlobalStyle />
-			<BrowserRouter>
-				<Routes>
-					{/* Routes publiques */}
-					<Route path="/login" element={<LoginPage />} />
-					<Route path="/register" element={<RegisterPage />} />
-					<Route path="/register-success" element={<RegisterSuccessPage />} />
-					<Route path="/forgot-password" element={<ForgottenPasswordPage />} />
-					<Route path="/reset-password" element={<ResetPasswordPage />} />
-					<Route path="/cgv" element={<CGVPage />} />
-					<Route path="/cgu" element={<CGUPage />} />
-					<Route path="/mentions_legales" element={<MentionsLegalesPage />} />
-					<Route path="/confirm_email" element={<ConfirmEmailPage />} />
-					<Route path="/first-connexion" element={<FirstConnexionPage />} />
-
-					{/* Routes authentifiées (plus de wrapper RequireAuth) */}
-					<Route path="/authenticated" element={<AuthenticatedPage />} />
-					<Route path="/complete-profil" element={<CompleteProfil />} />
-					<Route
-						path="/affectation-entreprise"
-						element={<AffectationEntrepriseSite />}
-					/>
-					<Route
-						path="/statut-affectation"
-						element={<StatutAffectationEnAttente />}
-					/>
-
-					{/* Routes principales avec le layout standard */}
-					<Route path="/*" element={
-						<AppContainer>
-							<TopBar />
-							<ApplicationWrapper>
-								<SideBar />
-								<AppSubContainer>
-									<Routes>
-										<Route path="/home" element={<HomeAuthenticated />} />
-										<Route path="/sandbox" element={<Sandbox />} />
-										<Route path="/colors" element={<ColorsPage />} />
-										<Route path="/sites" element={<Sites />} />
-										<Route path="/sites/:id" element={<SiteDetails />} />
-										<Route path="/voitures" element={<Voitures />} />
-										<Route path="/voitures/:id" element={<VoitureDetails />} />
-										<Route path="/profile" element={<Profile />} />
-										<Route path="*" element={<Navigate to="/home" replace />} />
-									</Routes>
-								</AppSubContainer>
-							</ApplicationWrapper>
-						</AppContainer>
-					} />
-				</Routes>
-			</BrowserRouter>
+			<ErrorBoundary fallback={<div>A critical error has occured, please check browser console for futher details.</div>}>
+				<BrowserRouter>
+					<Routes>
+						{/* Routes publiques */}
+						{/* <BackgroundLayout backgroundImage="/images/backgrounds/parking-background.png"> */}
+						<Route path="/login" element={<LoginPage />} />
+						<Route path="/register" element={<RegisterPage />} />
+						<Route path="/register-success" element={<RegisterSuccessPage />} />
+						<Route path="/forgot-password" element={<ForgottenPasswordPage />} />
+						<Route path="/reset-password" element={<ResetPasswordPage />} />
+						<Route path="/cgv" element={<CGVPage />} />
+						<Route path="/cgu" element={<CGUPage />} />
+						<Route path="/mentions_legales" element={<MentionsLegalesPage />} />
+						<Route path="/confirm_email" element={<ConfirmEmailPage />} />
+						<Route path="/first-connexion" element={<FirstConnexionPage />} />
+						{/* Routes authentifiées (plus de wrapper RequireAuth) */}
+						<Route path="/authenticated" element={<AuthenticatedPage />} />
+						<Route path="/complete-profil" element={<CompleteProfil />} />
+						<Route
+							path="/affectation-entreprise"
+							element={<AffectationEntrepriseSite />}
+						/>
+						<Route
+							path="/statut-affectation"
+							element={<StatutAffectationEnAttente />}
+						/>
+						{/* </BackgroundLayout> */}
+						{/* Routes principales avec le layout standard */}
+						<Route path="/*" element={
+							<AppContainer>
+								<TopBar />
+								<ApplicationWrapper>
+									<SideBar />
+									<AppSubContainer>
+										<Routes>
+											<Route path="/home" element={<HomeAuthenticated />} />
+											<Route path="/sandbox" element={<Sandbox />} />
+											<Route path="/colors" element={<ColorsPage />} />
+											<Route path="/sites" element={<Sites />} />
+											<Route path="/sites/:id" element={<SiteDetails />} />
+											<Route path="/voitures" element={<Voitures />} />
+											<Route path="/voitures/:id" element={<VoitureDetails />} />
+											<Route path="/profile" element={<Profile />} />
+											<Route path="*" element={<Navigate to="/home" replace />} />
+										</Routes>
+									</AppSubContainer>
+								</ApplicationWrapper>
+							</AppContainer>
+						} />
+					</Routes>
+				</BrowserRouter>
+			</ErrorBoundary>
 		</Provider>
 	);
 };
