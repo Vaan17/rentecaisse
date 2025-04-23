@@ -17,7 +17,6 @@ import ConfirmEmailPage from './ConfirmEmailPage'
 import FirstConnexionPage from './FirstConnexionPage'
 import ForgottenPasswordPage from './ForgottenPasswordPage'
 import ResetPasswordPage from './ResetPasswordPage'
-import AuthenticatedPage from './AuthenticatedPage'
 import CompleteProfil from './CompleteProfil'
 import AffectationEntrepriseSite from './AffectationEntrepriseSite'
 import StatutAffectationEnAttente from './StatutAffectationEnAttente'
@@ -29,6 +28,8 @@ import SideBar from '../components/SideBar'
 import TopBar from "../components/TopBar.tsx"
 import Voitures from "./voitures/Voitures.tsx"
 import VoitureDetails from "./voitures/VoitureDetails.tsx"
+import { ErrorBoundary } from "react-error-boundary"
+import ErrorFallback from "./errorFallbacks/ErrorFallback.tsx"
 
 const AppContainer = styled.div`
 	width: 100vw;
@@ -51,56 +52,63 @@ const App = () => {
 	return (
 		<Provider store={store}>
 			<GlobalStyle />
-			<BrowserRouter>
-				<Routes>
-					{/* Routes publiques */}
-					<Route path="/login" element={<LoginPage />} />
-					<Route path="/register" element={<RegisterPage />} />
-					<Route path="/register-success" element={<RegisterSuccessPage />} />
-					<Route path="/forgot-password" element={<ForgottenPasswordPage />} />
-					<Route path="/reset-password" element={<ResetPasswordPage />} />
-					<Route path="/cgv" element={<CGVPage />} />
-					<Route path="/cgu" element={<CGUPage />} />
-					<Route path="/mentions-legales" element={<MentionsLegalesPage />} />
-					<Route path="/confirm_email" element={<ConfirmEmailPage />} />
-					<Route path="/first-connexion" element={<FirstConnexionPage />} />
-
-					{/* Routes authentifiées (plus de wrapper RequireAuth) */}
-					<Route path="/authenticated" element={<AuthenticatedPage />} />
-					<Route path="/complete-profil" element={<CompleteProfil />} />
-					<Route
-						path="/affectation-entreprise"
-						element={<AffectationEntrepriseSite />}
-					/>
-					<Route
-						path="/statut-affectation"
-						element={<StatutAffectationEnAttente />}
-					/>
-
-					{/* Routes principales avec le layout standard */}
-					<Route path="/*" element={
-						<AppContainer>
-							<TopBar />
-							<ApplicationWrapper>
-								<SideBar />
-								<AppSubContainer>
-									<Routes>
-										<Route path="/home" element={<HomeAuthenticated />} />
-										<Route path="/sandbox" element={<Sandbox />} />
-										<Route path="/colors" element={<ColorsPage />} />
-										<Route path="/sites" element={<Sites />} />
-										<Route path="/sites/:id" element={<SiteDetails />} />
-										<Route path="/voitures" element={<Voitures />} />
-										<Route path="/voitures/:id" element={<VoitureDetails />} />
-										<Route path="/profile" element={<Profile />} />
-										<Route path="*" element={<Navigate to="/home" replace />} />
-									</Routes>
-								</AppSubContainer>
-							</ApplicationWrapper>
-						</AppContainer>
-					} />
-				</Routes>
-			</BrowserRouter>
+			<ErrorBoundary
+				FallbackComponent={ErrorFallback}
+				onError={(error, info) => {
+					console.error('Erreur capturée dans ErrorBoundary :', error);
+					console.error('Infos :', info);
+				}}
+			>
+				<BrowserRouter>
+					<Routes>
+						{/* Routes publiques */}
+						<Route path="/login" element={<LoginPage />} />
+						<Route path="/register" element={<RegisterPage />} />
+						<Route path="/register-success" element={<RegisterSuccessPage />} />
+						<Route path="/forgot-password" element={<ForgottenPasswordPage />} />
+						<Route path="/reset-password" element={<ResetPasswordPage />} />
+						<Route path="/cgv" element={<CGVPage />} />
+						<Route path="/cgu" element={<CGUPage />} />
+						<Route path="/mentions_legales" element={<MentionsLegalesPage />} />
+						<Route path="/confirm_email" element={<ConfirmEmailPage />} />
+						{/* Routes authentifiées (plus de wrapper RequireAuth) */}
+						// Todo NOLAN : Check them and decide which ones to keep, and delete the other
+						<Route path="/first-connexion" element={<FirstConnexionPage />} /> //! currently unused
+						<Route path="/complete-profil" element={<CompleteProfil />} /> //* currently used
+						// Todo NOLAN : ==============================================================
+						<Route
+							path="/affectation-entreprise"
+							element={<AffectationEntrepriseSite />}
+						/>
+						<Route
+							path="/statut-affectation"
+							element={<StatutAffectationEnAttente />}
+						/>
+						{/* Routes principales avec le layout standard */}
+						<Route path="/*" element={
+							<AppContainer>
+								<TopBar />
+								<ApplicationWrapper>
+									<SideBar />
+									<AppSubContainer>
+										<Routes>
+											<Route path="/home" element={<HomeAuthenticated />} />
+											<Route path="/sandbox" element={<Sandbox />} />
+											<Route path="/colors" element={<ColorsPage />} />
+											<Route path="/sites" element={<Sites />} />
+											<Route path="/sites/:id" element={<SiteDetails />} />
+											<Route path="/voitures" element={<Voitures />} />
+											<Route path="/voitures/:id" element={<VoitureDetails />} />
+											<Route path="/profile" element={<Profile />} />
+											<Route path="*" element={<Navigate to="/home" replace />} />
+										</Routes>
+									</AppSubContainer>
+								</ApplicationWrapper>
+							</AppContainer>
+						} />
+					</Routes>
+				</BrowserRouter>
+			</ErrorBoundary>
 		</Provider>
 	);
 };

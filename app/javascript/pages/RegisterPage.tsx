@@ -2,25 +2,8 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import BackgroundLayout from '../components/layout/BackgroundLayout';
 import WhiteContainer from '../components/layout/WhiteContainer';
-
-const Header = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  margin-bottom: 3rem;
-  justify-content: center;
-  font-family: 'Inter', sans-serif;
-
-  @media (max-width: 768px) {
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-
-  @media (max-width: 480px) {
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
-  }
-`;
+import { Card, CardContent } from '@mui/material';
+import { Flex } from '../components/style/flex';
 
 const Logo = styled.img`
   width: 64px;
@@ -50,26 +33,6 @@ const BrandName = styled.span`
 
   @media (max-width: 480px) {
     font-size: 1.5rem;
-  }
-`;
-
-const Title = styled.h1`
-  font-size: 2.5rem;
-  margin-bottom: 3rem;
-  text-align: center;
-  color: #333;
-  font-weight: 700;
-  font-family: 'Inter', sans-serif;
-  letter-spacing: -0.01em;
-  
-  @media (max-width: 768px) {
-    font-size: 2rem;
-    margin-bottom: 2rem;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 1.75rem;
-    margin-bottom: 1.5rem;
   }
 `;
 
@@ -259,27 +222,6 @@ const ErrorText = styled.span`
   font-family: 'Inter', sans-serif;
 `;
 
-const PasswordRequirements = styled.div`
-  font-size: 0.9rem;
-  color: #666;
-  margin-top: -0.5rem;
-  padding: 0.5rem;
-  border-radius: 8px;
-  font-family: 'Inter', sans-serif;
-
-  p {
-    margin: 0.25rem 0;
-  }
-
-  @media (max-width: 768px) {
-    font-size: 0.85rem;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 0.8rem;
-  }
-`;
-
 const CheckboxGroup = styled.div`
   display: flex;
   align-items: flex-start;
@@ -380,7 +322,19 @@ const SignInLink = styled.div`
   }
 `;
 
-const RegisterPage: React.FC = () => {
+const SCard = styled(Card)`
+  width: 75%;
+  min-width: 300px;
+  height: 90%;
+  padding: 1em;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+`
+const FlexContainer = styled(Flex)`
+  height: 100%;
+  overflow-y: auto;
+`
+
+const RegisterPage = () => {
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [password, setPassword] = useState('');
@@ -507,15 +461,13 @@ const RegisterPage: React.FC = () => {
   };
 
   return (
-    <>
-      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-      <BackgroundLayout backgroundImage="/images/backgrounds/parking-background.png">
-        <WhiteContainer width="min(1200px, 90%)">
-          <Header>
+    <BackgroundLayout backgroundImage="/images/backgrounds/parking-background.png">
+      <SCard>
+        <FlexContainer fullWidth justifyCenter directionColumn>
+          <Flex justifyCenter gap="1em">
             <Logo src="/images/logos/logo.png" alt="RenteCaisse Logo" />
-            <BrandName>RENTECAISSE</BrandName>
-          </Header>
-          <Title>Inscription</Title>
+            <BrandName>Inscription</BrandName>
+          </Flex>
           {error && (
             <div style={{ color: 'red', textAlign: 'center', marginBottom: '1rem' }}>
               {error}
@@ -614,9 +566,9 @@ const RegisterPage: React.FC = () => {
               </WarningText>
             </RequirementsSection>
           </FormContainer>
-        </WhiteContainer>
-      </BackgroundLayout>
-    </>
+        </FlexContainer>
+      </SCard>
+    </BackgroundLayout>
   );
 };
 

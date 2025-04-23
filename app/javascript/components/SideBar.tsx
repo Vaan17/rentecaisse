@@ -5,44 +5,78 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { Flex } from './style/flex';
 import { isDesktop } from 'react-device-detect';
 import { IconButton } from '@mui/material';
-import HomeIcon from '@mui/icons-material/Home';
 import { useNavigate } from 'react-router-dom';
+import HomeIcon from '@mui/icons-material/Home';
+import PlaceIcon from '@mui/icons-material/Place';
+import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import ContentPasteSearchIcon from '@mui/icons-material/ContentPasteSearch';
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import ContentPasteIcon from '@mui/icons-material/ContentPaste';
+import CommuteIcon from '@mui/icons-material/Commute';
+import KeyIcon from '@mui/icons-material/Key';
 
-const SidebarContainer = styled.div<{ $isExpended: boolean }>`
-	width: 48px;
-	height: calc(100% - var(--top-bar-height));
-	background-color: var(--secondary200);
-	color: white;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	padding: 24px;
-	transition: width 0.15s;
+const SidebarContainer = styled(Flex) <{ $isExpended: boolean }>`
+	width: 40px;
+
+	height: calc(100% - var(--top-bar-height) + 16px);
+	background-color: #f9f9f9;
+	padding: 16px 16px;
+	transition: width .3s;
 	${({ $isExpended }) =>
-		$isExpended && css`width: 400px;`
+		$isExpended && css`
+			width: 400px;
+			/* padding: 24px; */
+		`
 	}
 	overflow-y: auto;
-`;
+`
 
 const MenuSection = styled.div`
 	width: 100%;
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
-`;
+`
 
-const MenuTitle = styled.div`
-	font-size: 18px;
-`;
-
-const FlexContainer = styled(Flex)`
+const FlexItem = styled(Flex) <{ $isExpended?: boolean }>`
+	min-height: 36px;
 	padding: 4px;
 	border-radius: 4px;
-	background-color: var(--secondary600);
-	transition: background-color 0.3s;
+	border: 2px solid transparent;
+	transition: 0.15s;
 	&:hover {
-		background-color: var(--secondary500);
+		border: 2px solid var(--primary300);
+		background-color: var(--primary50);
+	};
+	${({ $isExpended }) =>
+		!$isExpended && css`
+			width: fit-content;
+			border-radius: 24px;
+		`
 	}
+`
+
+const Separator = styled.div`
+	width: 100%;
+	height: 1px;
+	background-color: var(--secondary200);
+	flex-shrink: 0;
+`
+
+const ItemTitle = styled.div`
+	font-size: 16px;
+	font-weight: bold;
+`
+
+const ItemSubtitle = styled.div`
+	font-size: 12px;
+	text-decoration: italic;
+	color: var(--secondary500);
+`
+
+const FlexReverse = styled(Flex)`
+	flex-direction: row-reverse;
 `
 
 interface MenuItem {
@@ -65,58 +99,58 @@ const SideBar = () => {
 			path: "/home",
 		},
 		{
-			icon: <HomeIcon />,
+			icon: <PlaceIcon />,
 			title: "Consulter les sites",
 			subtitle: "Permet de consulter les sites",
 			path: "/sites",
 		},
 		{
-			icon: <HomeIcon />,
+			icon: <DirectionsCarIcon />,
 			title: "Consulter les voitures",
 			subtitle: "Permet de consulter les voitures",
 			path: "/voitures",
 		},
 		{
-			icon: <HomeIcon />,
+			icon: <CalendarMonthIcon />,
 			title: "Reserver un véhicule",
 			subtitle: "Faire un emprunt de véhicule",
 			path: "/emprunts",
 		},
 		{
-			icon: <HomeIcon />,
+			icon: <ContentPasteSearchIcon />,
 			title: "Consulter mes emprunts",
-			subtitle: "Permet de consulter les emprunts passés et à venir",
+			subtitle: "Consulter tout vos emprunts",
 			path: "/emprunts_historique",
 		},
 	];
 
 	const adminMenuItems: MenuItem[] = [
 		{
-			icon: <HomeIcon />,
+			icon: <PeopleAltIcon />,
 			title: "Administration des utilisateurs",
 			subtitle: "Permet de gérer les utilisateurs",
 			path: "/admin/utilisateurs",
 		},
 		{
-			icon: <HomeIcon />,
+			icon: <ContentPasteIcon />,
 			title: "Administration des emprunts",
 			subtitle: "Permet de gérer les emprunts",
 			path: "/admin/emprunts",
 		},
 		{
-			icon: <HomeIcon />,
+			icon: <PlaceIcon />,
 			title: "Administration des sites",
 			subtitle: "Permet de gérer les sites",
 			path: "/admin/sites",
 		},
 		{
-			icon: <HomeIcon />,
+			icon: <CommuteIcon />,
 			title: "Administration des voitures",
 			subtitle: "Permet de gérer les voitures",
 			path: "/admin/voitures",
 		},
 		{
-			icon: <HomeIcon />,
+			icon: <KeyIcon />,
 			title: "Administration des clés",
 			subtitle: "Permet de gérer les clés",
 			path: "/admin/cles",
@@ -124,58 +158,61 @@ const SideBar = () => {
 	];
 
 	return (
-		<SidebarContainer $isExpended={isExpended}>
+		<SidebarContainer directionColumn alignItemsCenter gap $isExpended={isExpended}>
 			<MenuSection>
-				<Flex fullWidth spaceBetween>
-					{isExpended && <MenuTitle>Menu Principal</MenuTitle>}
-					{
-						<IconButton>
-							{isExpended ?
-								<ChevronRightIcon
-									onClick={() => setIsExpended(false)}
-									style={{ cursor: 'pointer' }}
-								/>
-								:
-								<ChevronLeftIcon
-									onClick={() => setIsExpended(true)}
-									style={{ cursor: 'pointer' }}
-								/>}
-						</IconButton>
-					}
-				</Flex>
+				<FlexReverse fullWidth>
+					<IconButton>
+						{isExpended ?
+							<ChevronLeftIcon
+								onClick={() => setIsExpended(false)}
+								style={{ cursor: 'pointer' }}
+							/>
+							:
+							<ChevronRightIcon
+								onClick={() => setIsExpended(true)}
+								style={{ cursor: 'pointer' }}
+							/>}
+					</IconButton>
+				</FlexReverse>
 				{regularMenuItems.map((menu) => (
-					<FlexContainer
+					<FlexItem
 						key={menu.title}
 						fullWidth
+						justifyCenter
 						gap
 						onClick={() => navigate(menu.path)}
+						$isExpended={isExpended}
 					>
 						{menu.icon}
-						<Flex fullWidth directionColumn alignItemsStart gap="4px">
-							{isExpended && <div>{menu.title}</div>}
-							{isExpended && <div>{menu.subtitle}</div>}
-						</Flex>
-					</FlexContainer>
+						{isExpended && <Flex fullWidth directionColumn alignItemsStart gap="4px">
+							<ItemTitle>{menu.title}</ItemTitle>
+							<ItemSubtitle>{menu.subtitle}</ItemSubtitle>
+						</Flex>}
+					</FlexItem>
 				))}
 			</MenuSection>
 			{isAdmin && (
-				<MenuSection>
-					{isExpended && <MenuTitle>Menu Administrateur</MenuTitle>}
-					{adminMenuItems.map((menu) => (
-						<FlexContainer
-							key={menu.title}
-							fullWidth
-							gap
-							onClick={() => navigate(menu.path)}
-						>
-							{menu.icon}
-							<Flex fullWidth directionColumn alignItemsStart gap="4px">
-								{isExpended && <div>{menu.title}</div>}
-								{isExpended && <div>{menu.subtitle}</div>}
-							</Flex>
-						</FlexContainer>
-					))}
-				</MenuSection>
+				<>
+					<Separator />
+					<MenuSection>
+						{adminMenuItems.map((menu) => (
+							<FlexItem
+								key={menu.title}
+								fullWidth
+								justifyCenter
+								gap
+								onClick={() => navigate(menu.path)}
+								$isExpended={isExpended}
+							>
+								{menu.icon}
+								{isExpended && <Flex fullWidth directionColumn alignItemsStart gap="4px">
+									<ItemTitle>{menu.title}</ItemTitle>
+									<ItemSubtitle>{menu.subtitle}</ItemSubtitle>
+								</Flex>}
+							</FlexItem>
+						))}
+					</MenuSection>
+				</>
 			)}
 		</SidebarContainer>
 	);

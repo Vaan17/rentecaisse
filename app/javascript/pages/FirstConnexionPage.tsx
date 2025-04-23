@@ -1,26 +1,8 @@
 import React from 'react';
 import BackgroundLayout from '../components/layout/BackgroundLayout';
-import WhiteContainer from '../components/layout/WhiteContainer';
 import styled from 'styled-components';
-
-const Header = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  margin-bottom: 3rem;
-  justify-content: center;
-  font-family: 'Inter', sans-serif;
-
-  @media (max-width: 768px) {
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-
-  @media (max-width: 480px) {
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
-  }
-`;
+import { Card } from '@mui/material';
+import { Flex } from '../components/style/flex';
 
 const Logo = styled.img`
   width: 64px;
@@ -50,26 +32,6 @@ const BrandName = styled.span`
 
   @media (max-width: 480px) {
     font-size: 1.5rem;
-  }
-`;
-
-const Title = styled.h1`
-  font-size: 2.5rem;
-  margin-bottom: 3rem;
-  text-align: center;
-  color: #333;
-  font-weight: 700;
-  font-family: 'Inter', sans-serif;
-  letter-spacing: -0.01em;
-
-  @media (max-width: 768px) {
-    font-size: 2rem;
-    margin-bottom: 2rem;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 1.75rem;
-    margin-bottom: 1.5rem;
   }
 `;
 
@@ -162,13 +124,6 @@ const Input = styled.input`
     font-size: 0.9rem;
     border-radius: 8px;
   }
-`;
-
-const ErrorText = styled.span`
-  color: #ff4d4d;
-  font-size: 0.85rem;
-  margin-top: 0.25rem;
-  font-family: 'Inter', sans-serif;
 `;
 
 const GenderGroup = styled.div`
@@ -264,34 +219,6 @@ const Button = styled.button`
   }
 `;
 
-const SignInLink = styled.div`
-  text-align: center;
-  margin-top: 2rem;
-  font-size: 1.1rem;
-  color: #666;
-  font-family: 'Inter', sans-serif;
-
-  a {
-    color: #333;
-    text-decoration: none;
-    font-weight: 600;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-
-  @media (max-width: 768px) {
-    margin-top: 1.75rem;
-    font-size: 1rem;
-  }
-
-  @media (max-width: 480px) {
-    margin-top: 1.5rem;
-    font-size: 0.9rem;
-  }
-`;
-
 const WarningText = styled.p`
   font-size: 0.85rem;
   color: #666;
@@ -300,97 +227,110 @@ const WarningText = styled.p`
   line-height: 1.4;
 `;
 
-const FirstConnexionPage: React.FC = () => {
+const SCard = styled(Card)`
+  width: 70%;
+  min-width: 300px;
+  height: 90%;
+  padding: 1em;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+`
+const FlexContainer = styled(Flex)`
+  height: 100%;
+  overflow-y: auto;
+`
+
+const FirstConnexionPage = () => {
   return (
     <BackgroundLayout backgroundImage="/images/backgrounds/parking-background.png">
-      <WhiteContainer width="min(1200px, 90%)">
-        <Header>
-          <Logo src="/images/logos/logo.png" alt="RenteCaisse Logo" />
-          <BrandName>RENTECAISSE</BrandName>
-        </Header>
-        <Title>Nous voulons en savoir un peu plus sur vous !</Title>
-        <Subtitle>Il s'agit de votre première connexion à notre application.<br />Pour pouvoir utiliser notre application, veuillez renseigner certaines de vos informations personnelles.</Subtitle>
-        <FormContainer>
-          <Form>
-            <FormGroup>
-              <Label>Prénom*</Label>
-              <Input type="text" placeholder="Marcel" required />
-            </FormGroup>
-            <FormGroup>
-              <Label>Nom*</Label>
-              <Input type="text" placeholder="Picho" required />
-            </FormGroup>
-            <FormGroup>
-              <Label>Date de naissance*</Label>
-              <Input type="date" placeholder="01/01/2000" required />
-            </FormGroup>
-            <FormGroup>
-              <Label>Adresse*</Label>
-              <Input type="text" placeholder="23 Rue Saint-Honoré" required />
-            </FormGroup>
-            <FormGroup>
-              <Label>Ville*</Label>
-              <Input type="text" placeholder="Paris" required />
-            </FormGroup>
-            <FormGroup>
-              <Label>Code Postal*</Label>
-              <Input type="text" placeholder="75000" required />
-            </FormGroup>
-            <FormGroup>
-              <Label>Pays*</Label>
-              <Input type="text" placeholder="France" required />
-            </FormGroup>
-            <FormGroup>
-              <Label>Numéro de téléphone mobile*</Label>
-              <Input type="tel" placeholder="01.02.03.04.05" required />
-            </FormGroup>
-            <FormGroup>
-              <Label>Genre</Label>
-              <GenderGroup>
-                <label>
-                  <input type="radio" name="gender" value="masculin" required />
-                  Masculin
-                </label>
-                <label>
-                  <input type="radio" name="gender" value="féminin" />
-                  Féminin
-                </label>
-                <label>
-                  <input type="radio" name="gender" value="autre" />
-                  Autre
-                </label>
-              </GenderGroup>
-            </FormGroup>
-            <FormGroup>
-              <Label>Type de permis</Label>
-              <LicenseGroup>
-                <div className="license-options">
+      <SCard>
+        <FlexContainer fullWidth directionColumn>
+          <Flex justifyCenter gap="1em">
+            <Logo src="/images/logos/logo.png" alt="RenteCaisse Logo" />
+            <BrandName>Dites nous en plus</BrandName>
+          </Flex>
+          <Subtitle>Il s'agit de votre première connexion à notre application.<br />Pour pouvoir utiliser notre application, veuillez renseigner certaines de vos informations personnelles.</Subtitle>
+          <FormContainer>
+            <Form>
+              <FormGroup>
+                <Label>Prénom*</Label>
+                <Input type="text" placeholder="Marcel" required />
+              </FormGroup>
+              <FormGroup>
+                <Label>Nom*</Label>
+                <Input type="text" placeholder="Picho" required />
+              </FormGroup>
+              <FormGroup>
+                <Label>Date de naissance*</Label>
+                <Input type="date" placeholder="01/01/2000" required />
+              </FormGroup>
+              <FormGroup>
+                <Label>Adresse*</Label>
+                <Input type="text" placeholder="23 Rue Saint-Honoré" required />
+              </FormGroup>
+              <FormGroup>
+                <Label>Ville*</Label>
+                <Input type="text" placeholder="Paris" required />
+              </FormGroup>
+              <FormGroup>
+                <Label>Code Postal*</Label>
+                <Input type="text" placeholder="75000" required />
+              </FormGroup>
+              <FormGroup>
+                <Label>Pays*</Label>
+                <Input type="text" placeholder="France" required />
+              </FormGroup>
+              <FormGroup>
+                <Label>Numéro de téléphone mobile*</Label>
+                <Input type="tel" placeholder="01.02.03.04.05" required />
+              </FormGroup>
+              <FormGroup>
+                <Label>Genre</Label>
+                <GenderGroup>
                   <label>
-                    <input type="radio" name="permis" value="manuel" required />
-                    Permis B Manuel
+                    <input type="radio" name="gender" value="masculin" required />
+                    Masculin
                   </label>
                   <label>
-                    <input type="radio" name="permis" value="automatique" />
-                    Permis B Automatique
+                    <input type="radio" name="gender" value="féminin" />
+                    Féminin
                   </label>
-                </div>
-              </LicenseGroup>
-            </FormGroup>
-            <FormGroup>
-              <Label>
-                <input type="checkbox" required />
-                Je suis titulaire d'un permis de conduire de catégorie B en cours de validité
-              </Label>
-              <WarningText>
-                En cochant cette case, je certifie sur l'honneur être titulaire d'un permis de conduire de catégorie B en cours de validité me permettant de conduire le véhicule emprunté. Je suis conscient(e) que toute fausse déclaration pourra entraîner ma responsabilité civile et pénale.
-              </WarningText>
-            </FormGroup>
-            <ButtonContainer>
-              <Button type="submit">Continuer</Button>
-            </ButtonContainer>
-          </Form>
-        </FormContainer>
-      </WhiteContainer>
+                  <label>
+                    <input type="radio" name="gender" value="autre" />
+                    Autre
+                  </label>
+                </GenderGroup>
+              </FormGroup>
+              <FormGroup>
+                <Label>Type de permis</Label>
+                <LicenseGroup>
+                  <div className="license-options">
+                    <label>
+                      <input type="radio" name="permis" value="manuel" required />
+                      Permis B Manuel
+                    </label>
+                    <label>
+                      <input type="radio" name="permis" value="automatique" />
+                      Permis B Automatique
+                    </label>
+                  </div>
+                </LicenseGroup>
+              </FormGroup>
+              <FormGroup>
+                <Label>
+                  <input type="checkbox" required />
+                  Je suis titulaire d'un permis de conduire de catégorie B en cours de validité
+                </Label>
+                <WarningText>
+                  En cochant cette case, je certifie sur l'honneur être titulaire d'un permis de conduire de catégorie B en cours de validité me permettant de conduire le véhicule emprunté. Je suis conscient(e) que toute fausse déclaration pourra entraîner ma responsabilité civile et pénale.
+                </WarningText>
+              </FormGroup>
+              <ButtonContainer>
+                <Button type="submit">Continuer</Button>
+              </ButtonContainer>
+            </Form>
+          </FormContainer>
+        </FlexContainer>
+      </SCard>
     </BackgroundLayout>
   );
 };

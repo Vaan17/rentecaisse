@@ -2,25 +2,9 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import BackgroundLayout from '../components/layout/BackgroundLayout';
 import WhiteContainer from '../components/layout/WhiteContainer';
-
-const Header = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  margin-bottom: 3rem;
-  justify-content: center;
-  font-family: 'Inter', sans-serif;
-
-  @media (max-width: 768px) {
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-
-  @media (max-width: 480px) {
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
-  }
-`;
+import { Flex } from '../components/style/flex';
+import { Card, CardContent } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 const Logo = styled.img`
   width: 64px;
@@ -50,26 +34,6 @@ const BrandName = styled.span`
 
   @media (max-width: 480px) {
     font-size: 1.5rem;
-  }
-`;
-
-const Title = styled.h1`
-  font-size: 2.5rem;
-  margin-bottom: 3rem;
-  text-align: center;
-  color: #333;
-  font-weight: 700;
-  font-family: 'Inter', sans-serif;
-  letter-spacing: -0.01em;
-  
-  @media (max-width: 768px) {
-    font-size: 2rem;
-    margin-bottom: 2rem;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 1.75rem;
-    margin-bottom: 1.5rem;
   }
 `;
 
@@ -240,127 +204,132 @@ const BackToLogin = styled.div`
   }
 `;
 
-const ForgottenPasswordPage: React.FC = () => {
-    const [email, setEmail] = useState('');
-    const [emailError, setEmailError] = useState('');
-    const [isSubmitted, setIsSubmitted] = useState(false);
-    const [error, setError] = useState('');
+const SCard = styled(Card)`
+  width: 50%;
+  min-width: 300px;
+  height: 90%;
+  padding: 1em;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+`
+const FlexContainer = styled(Flex)`
+  height: 100%;
+  overflow-y: auto;
+`
 
-    const validateEmail = (email: string) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!email) {
-            setEmailError('L\'email est requis');
-            return false;
-        }
-        if (!emailRegex.test(email)) {
-            setEmailError('Format d\'email invalide');
-            return false;
-        }
-        setEmailError('');
-        return true;
-    };
+const ForgottenPasswordPage = () => {
+  const navigate = useNavigate()
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState('');
 
-    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setEmail(e.target.value);
-        if (emailError) {
-            validateEmail(e.target.value);
-        }
-    };
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      setEmailError('L\'email est requis');
+      return false;
+    }
+    if (!emailRegex.test(email)) {
+      setEmailError('Format d\'email invalide');
+      return false;
+    }
+    setEmailError('');
+    return true;
+  };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+    if (emailError) {
+      validateEmail(e.target.value);
+    }
+  };
 
-        if (!validateEmail(email)) {
-            return;
-        }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-        try {
-            const response = await fetch('http://localhost:3000/api/auth/forgot-password', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ user: { email } }),
-            });
-
-            if (response.ok) {
-                setIsSubmitted(true);
-                setError('');
-            } else {
-                const data = await response.json();
-                setError(data.message || 'Une erreur est survenue');
-            }
-        } catch (err) {
-            setError('Une erreur est survenue lors de la connexion au serveur');
-        }
-    };
-
-    if (isSubmitted) {
-        return (
-            <>
-                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-                <BackgroundLayout backgroundImage="/images/backgrounds/parking-background.png">
-                    <WhiteContainer width="min(600px, 90%)">
-                        <Header>
-                            <Logo src="/images/logos/logo.png" alt="RenteCaisse Logo" />
-                            <BrandName>RENTECAISSE</BrandName>
-                        </Header>
-                        <Title>Email envoyé</Title>
-                        <Description>
-                            Si un compte existe avec cette adresse e-mail, vous recevrez un e-mail contenant les instructions pour réinitialiser votre mot de passe.
-                        </Description>
-                        <Button onClick={() => window.location.href = '/login'}>
-                            Retour à la connexion
-                        </Button>
-                    </WhiteContainer>
-                </BackgroundLayout>
-            </>
-        );
+    if (!validateEmail(email)) {
+      return;
     }
 
-    return (
-        <>
-            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-            <BackgroundLayout backgroundImage="/images/backgrounds/parking-background.png">
-                <WhiteContainer width="min(600px, 90%)">
-                    <Header>
-                        <Logo src="/images/logos/logo.png" alt="RenteCaisse Logo" />
-                        <BrandName>RENTECAISSE</BrandName>
-                    </Header>
-                    <Title>Mot de passe oublié</Title>
-                    <Description>
-                        Entrez votre adresse e-mail ci-dessous et nous vous enverrons les instructions pour réinitialiser votre mot de passe.
-                    </Description>
-                    {error && (
-                        <div style={{ color: 'red', textAlign: 'center', marginBottom: '1rem' }}>
-                            {error}
-                        </div>
-                    )}
-                    <Form onSubmit={handleSubmit}>
-                        <FormGroup>
-                            <Label>Email*</Label>
-                            <Input
-                                type="email"
-                                name="email"
-                                placeholder="marcel.picho@gmail.com"
-                                value={email}
-                                onChange={handleEmailChange}
-                                required
-                                className={emailError ? 'error' : ''}
-                            />
-                            {emailError && <ErrorText>{emailError}</ErrorText>}
-                        </FormGroup>
-                        <Button type="submit">
-                            Envoyer les instructions
-                        </Button>
-                        <BackToLogin>
-                            <a href="/login">Retour à la connexion</a>
-                        </BackToLogin>
-                    </Form>
-                </WhiteContainer>
-            </BackgroundLayout>
-        </>
-    );
+    try {
+      const response = await fetch('http://localhost:3000/api/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ user: { email } }),
+      });
+
+      if (response.ok) {
+        setIsSubmitted(true);
+        setError('');
+      } else {
+        const data = await response.json();
+        setError(data.message || 'Une erreur est survenue');
+      }
+    } catch (err) {
+      setError('Une erreur est survenue lors de la connexion au serveur');
+    }
+  };
+
+  return (
+    <BackgroundLayout backgroundImage="/images/backgrounds/parking-background.png">
+      <SCard>
+        <FlexContainer fullWidth justifyCenter directionColumn>
+          {!isSubmitted && (
+            <>
+              <Flex justifyCenter gap="1em">
+                <Logo src="/images/logos/logo.png" alt="RenteCaisse Logo" />
+                <BrandName>Mot de passe oublié</BrandName>
+              </Flex>
+              <Description>
+                Entrez votre adresse e-mail ci-dessous et nous vous enverrons les instructions pour réinitialiser votre mot de passe.
+              </Description>
+              {error && (
+                <div style={{ color: 'red', textAlign: 'center', marginBottom: '1rem' }}>
+                  {error}
+                </div>
+              )}
+              <Form onSubmit={handleSubmit}>
+                <FormGroup>
+                  <Label>Email*</Label>
+                  <Input
+                    type="email"
+                    name="email"
+                    placeholder="marcel.picho@gmail.com"
+                    value={email}
+                    onChange={handleEmailChange}
+                    required
+                    className={emailError ? 'error' : ''}
+                  />
+                  {emailError && <ErrorText>{emailError}</ErrorText>}
+                </FormGroup>
+                <Button type="submit">
+                  Envoyer les instructions
+                </Button>
+                <BackToLogin>
+                  <a href="/login">Retour à la connexion</a>
+                </BackToLogin>
+              </Form></>
+          )}
+          {isSubmitted && (
+            <>
+              <Flex justifyCenter gap="1em">
+                <Logo src="/images/logos/logo.png" alt="RenteCaisse Logo" />
+                <BrandName>Email envoyé</BrandName>
+              </Flex>
+              <Description>
+                Si un compte existe avec cette adresse e-mail, vous recevrez un e-mail contenant les instructions pour réinitialiser votre mot de passe.
+              </Description>
+              <Button onClick={() => navigate('/login')}>
+                Retour à la connexion
+              </Button>
+            </>
+          )}
+        </FlexContainer>
+      </SCard>
+    </BackgroundLayout>
+  );
 };
 
 export default ForgottenPasswordPage; 
