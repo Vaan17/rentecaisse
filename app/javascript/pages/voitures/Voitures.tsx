@@ -76,7 +76,6 @@ const Voitures = () => {
 
     const filteredVoitures = voitures.filter(voiture => {
         if (!filterProperties.filterBy || !filterProperties.searchValue) return true
-        debugger
         return voiture[filterProperties.filterBy]?.toString()?.toLowerCase().includes(filterProperties.searchValue.toLowerCase())
     })
 

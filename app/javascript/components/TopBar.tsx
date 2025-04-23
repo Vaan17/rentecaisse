@@ -5,7 +5,9 @@ import { useNavigate } from 'react-router-dom';
 import { Avatar, Button, MenuItem, Popover } from '@mui/material';
 import { Flex } from './style/flex';
 import { isDesktop } from 'react-device-detect';
-import HomeIcon from '@mui/icons-material/Home';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import LogoutIcon from '@mui/icons-material/Logout';
+import DescriptionIcon from '@mui/icons-material/Description';
 
 const TopBarContainer = styled(Flex)`
 	max-width: 100%;
@@ -52,6 +54,17 @@ const Divider = styled.div`
 	width: 100%;
 	height: 1px;
 	background-color: var(--secondary200);
+`
+
+const ItemTitle = styled.div`
+	font-size: 16px;
+	font-weight: bold;
+`
+
+const ItemSubtitle = styled.div`
+	font-size: 12px;
+	text-decoration: italic;
+	color: var(--secondary500);
 `
 
 interface UserInfo {
@@ -145,13 +158,13 @@ const TopBar = () => {
 
 	const mainOptions = [
 		{
-			icon: <HomeIcon />,
+			icon: <AccountCircleIcon />,
 			title: "Profil",
 			subtitle: "Accédez à vos informations de profil",
 			path: "/profile",
 		},
 		{
-			icon: <HomeIcon />,
+			icon: <LogoutIcon />,
 			title: "Déconnexion",
 			subtitle: "Déconnectez vous de l'application",
 			path: "/login",
@@ -160,19 +173,19 @@ const TopBar = () => {
 	];
 	const legalOptions = [
 		{
-			icon: <HomeIcon />,
+			icon: <DescriptionIcon />,
 			title: "CGV",
 			subtitle: "Consultez les CGV de Rentecaisse",
 			path: "/cgv",
 		},
 		{
-			icon: <HomeIcon />,
+			icon: <DescriptionIcon />,
 			title: "CGU",
 			subtitle: "Consultez les CGU de Rentecaisse",
 			path: "/cgu",
 		},
 		{
-			icon: <HomeIcon />,
+			icon: <DescriptionIcon />,
 			title: "Mentions légales",
 			subtitle: "Consultez les mentions légales de Rentecaisse",
 			path: "/mentions_legales",
@@ -227,8 +240,8 @@ const TopBar = () => {
 								>
 									{option.icon}
 									<Flex fullWidth directionColumn alignItemsStart gap="4px">
-										<div>{option.title}</div>
-										<div>{option.subtitle}</div>
+										<ItemTitle>{option.title}</ItemTitle>
+										<ItemSubtitle>{option.subtitle}</ItemSubtitle>
 									</Flex>
 								</FlexItem>
 							)}
@@ -242,8 +255,8 @@ const TopBar = () => {
 								>
 									{option.icon}
 									<Flex fullWidth directionColumn alignItemsStart gap="4px">
-										<div>{option.title}</div>
-										<div>{option.subtitle}</div>
+										<ItemTitle>{option.title}</ItemTitle>
+										<ItemSubtitle>{option.subtitle}</ItemSubtitle>
 									</Flex>
 								</FlexItem>
 							)}
