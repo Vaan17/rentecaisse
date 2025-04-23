@@ -246,14 +246,9 @@ const SCard = styled(Card)`
   padding: 1em;
   box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
 `
-const SCardContent = styled(CardContent)`
-  padding: 0 1em !important;
+const FlexContainer = styled(Flex)`
   height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
   overflow-y: auto;
-  gap: 2em;
 `
 
 interface PasswordErrors {
@@ -351,7 +346,7 @@ const ResetPasswordPage = () => {
   return (
     <BackgroundLayout backgroundImage="/images/backgrounds/parking-background.png">
       <SCard>
-        <SCardContent>
+        <FlexContainer fullWidth justifyCenter directionColumn>
           {!token && (
             <>
               <Flex justifyCenter gap="1em">
@@ -434,7 +429,7 @@ const ResetPasswordPage = () => {
               </Form>
             </>
           )}
-        </SCardContent>
+        </FlexContainer>
       </SCard>
     </BackgroundLayout>
   );

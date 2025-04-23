@@ -127,7 +127,6 @@ const Button = styled.button`
   cursor: pointer;
   font-size: 1.2rem;
   font-weight: 600;
-  width: 100%;
   margin-top: 1.5rem;
   transition: all 0.2s ease;
   font-family: 'Inter', sans-serif;
@@ -215,14 +214,9 @@ const SCard = styled(Card)`
   padding: 1em;
   box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
 `
-const SCardContent = styled(CardContent)`
-  padding: 0 1em !important;
+const FlexContainer = styled(Flex)`
   height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
   overflow-y: auto;
-  gap: 2em;
 `
 
 const LoginPage = () => {
@@ -332,7 +326,7 @@ const LoginPage = () => {
   return (
     <BackgroundLayout backgroundImage="/images/backgrounds/parking-background.png">
       <SCard>
-        <SCardContent>
+        <FlexContainer fullWidth justifyCenter directionColumn>
           <Flex justifyCenter gap="1em">
             <Logo src="/images/logos/logo.png" alt="RenteCaisse Logo" />
             <BrandName>Connexion</BrandName>
@@ -375,7 +369,7 @@ const LoginPage = () => {
               Vous n'avez pas de compte ? <a href="/register">S'inscrire</a>
             </SignUpLink>
           </Form>
-        </SCardContent>
+        </FlexContainer>
       </SCard>
     </BackgroundLayout>
   );

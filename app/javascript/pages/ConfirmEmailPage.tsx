@@ -1,26 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import BackgroundLayout from '../components/layout/BackgroundLayout';
-import WhiteContainer from '../components/layout/WhiteContainer';
-import { Card, CardContent } from '@mui/material';
+import { Card } from '@mui/material';
 import { Flex } from '../components/style/flex';
-
-const Header = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  margin-bottom: 3rem;
-  justify-content: center;
-  font-family: 'Inter', sans-serif;
-  @media (max-width: 768px) {
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-  @media (max-width: 480px) {
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
-  }
-`;
 
 const Logo = styled.img`
   width: 64px;
@@ -49,49 +31,6 @@ const BrandName = styled.span`
   }
 `;
 
-const Title = styled.h1`
-  font-size: 3rem;
-  margin-bottom: 4rem;
-  text-align: center;
-  color: #333;
-  font-weight: 700;
-  font-family: 'Inter', sans-serif;
-  letter-spacing: -0.01em;
-  @media (max-width: 768px) {
-    font-size: 2.5rem;
-    margin-bottom: 3rem;
-  }
-  @media (max-width: 480px) {
-    font-size: 2.25rem;
-    margin-bottom: 2.5rem;
-  }
-`;
-
-const MessageContainer = styled.div<{ isSuccess: boolean }>`
-  padding: 1rem;
-  border-radius: 8px;
-  background-color: ${props => props.isSuccess ? '#e6ffe6' : '#ffe6e6'};
-  border: 1px solid ${props => props.isSuccess ? '#b3ffb3' : '#ffb3b3'};
-  margin-bottom: 2rem;
-`;
-
-const Message = styled.p<{ isSuccess: boolean }>`
-  font-size: 1.75rem;
-  color: ${props => props.isSuccess ? '#006600' : '#cc0000'};
-  line-height: 1.6;
-  margin-bottom: 2rem;
-  max-width: 800px;
-  text-align: center;
-  @media (max-width: 768px) {
-    font-size: 1.5rem;
-    margin-bottom: 1.75rem;
-  }
-  @media (max-width: 480px) {
-    font-size: 1.25rem;
-    margin-bottom: 1.5rem;
-  }
-`;
-
 const Button = styled.button`
   padding: 1.125rem;
   background-color: #FFD700;
@@ -100,7 +39,6 @@ const Button = styled.button`
   cursor: pointer;
   font-size: 1.2rem;
   font-weight: 600;
-  width: 100%;
   margin-top: 1.5rem;
   transition: all 0.2s ease;
   font-family: 'Inter', sans-serif;
@@ -130,7 +68,6 @@ const ErrorContainer = styled.div`
   border-radius: 8px;
   background-color: #ffe6e6;
   border: 1px solid #ffb3b3;
-  margin-bottom: 2rem;
 `;
 
 const SuccessMessage = styled.p`
@@ -174,14 +111,9 @@ const SCard = styled(Card)`
   padding: 1em;
   box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
 `
-const SCardContent = styled(CardContent)`
-  padding: 0 1em !important;
+const FlexContainer = styled(Flex)`
   height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
   overflow-y: auto;
-  gap: 2em;
 `
 
 const ConfirmEmailPage = () => {
@@ -237,7 +169,7 @@ const ConfirmEmailPage = () => {
   return (
     <BackgroundLayout backgroundImage="/images/backgrounds/parking-background.png">
       <SCard>
-        <SCardContent>
+        <FlexContainer fullWidth justifyCenter directionColumn gap>
           <Flex justifyCenter gap="1em">
             <Logo src="/images/logos/logo.png" alt="RenteCaisse Logo" />
             <BrandName>Confirmation de l'email</BrandName>
@@ -252,7 +184,7 @@ const ConfirmEmailPage = () => {
             )
           )}
           <Button onClick={() => window.location.href = '/login'}>Se connecter</Button>
-        </SCardContent>
+        </FlexContainer>
       </SCard>
     </BackgroundLayout>
   );

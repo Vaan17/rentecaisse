@@ -81,7 +81,6 @@ const Button = styled.button`
   cursor: pointer;
   font-size: 1.2rem;
   font-weight: 600;
-  width: 100%;
   margin-top: 1.5rem;
   transition: all 0.2s ease;
   font-family: 'Inter', sans-serif;
@@ -138,14 +137,9 @@ const SCard = styled(Card)`
   padding: 1em;
   box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
 `
-const SCardContent = styled(CardContent)`
-  padding: 0 1em !important;
+const FlexContainer = styled(Flex)`
   height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
   overflow-y: auto;
-  gap: 2em;
 `
 
 const RegisterSuccessPage = () => {
@@ -154,7 +148,7 @@ const RegisterSuccessPage = () => {
   return (
     <BackgroundLayout backgroundImage="/images/backgrounds/parking-background.png">
       <SCard>
-        <SCardContent>
+        <FlexContainer fullWidth justifyCenter directionColumn>
           <Flex justifyCenter gap="1em">
             <Logo src="/images/logos/logo.png" alt="RenteCaisse Logo" />
             <BrandName>Inscription</BrandName>
@@ -166,7 +160,7 @@ const RegisterSuccessPage = () => {
             Cet email contient un lien de confirmation. Veuillez cliquer sur ce lien pour activer votre compte et commencer à utiliser notre application.
           </Message>
           <Button onClick={() => navigate("/")}>Revenir à l'accueil</Button>
-        </SCardContent>
+        </FlexContainer>
       </SCard>
     </BackgroundLayout>
   )

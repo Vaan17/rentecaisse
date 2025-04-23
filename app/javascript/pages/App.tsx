@@ -17,7 +17,6 @@ import ConfirmEmailPage from './ConfirmEmailPage'
 import FirstConnexionPage from './FirstConnexionPage'
 import ForgottenPasswordPage from './ForgottenPasswordPage'
 import ResetPasswordPage from './ResetPasswordPage'
-import AuthenticatedPage from './AuthenticatedPage'
 import CompleteProfil from './CompleteProfil'
 import AffectationEntrepriseSite from './AffectationEntrepriseSite'
 import StatutAffectationEnAttente from './StatutAffectationEnAttente'
@@ -29,7 +28,6 @@ import SideBar from '../components/SideBar'
 import TopBar from "../components/TopBar.tsx"
 import Voitures from "./voitures/Voitures.tsx"
 import VoitureDetails from "./voitures/VoitureDetails.tsx"
-import BackgroundLayout from "../components/layout/BackgroundLayout.tsx"
 import { ErrorBoundary } from "react-error-boundary"
 import ErrorFallback from "./errorFallbacks/ErrorFallback.tsx"
 

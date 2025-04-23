@@ -329,14 +329,9 @@ const SCard = styled(Card)`
   padding: 1em;
   box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
 `
-const SCardContent = styled(CardContent)`
-  padding: 0 1em !important;
+const FlexContainer = styled(Flex)`
   height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
   overflow-y: auto;
-  gap: 2em;
 `
 
 const RegisterPage = () => {
@@ -468,7 +463,7 @@ const RegisterPage = () => {
   return (
     <BackgroundLayout backgroundImage="/images/backgrounds/parking-background.png">
       <SCard>
-        <SCardContent>
+        <FlexContainer fullWidth justifyCenter directionColumn>
           <Flex justifyCenter gap="1em">
             <Logo src="/images/logos/logo.png" alt="RenteCaisse Logo" />
             <BrandName>Inscription</BrandName>
@@ -571,7 +566,7 @@ const RegisterPage = () => {
               </WarningText>
             </RequirementsSection>
           </FormContainer>
-        </SCardContent>
+        </FlexContainer>
       </SCard>
     </BackgroundLayout>
   );
