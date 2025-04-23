@@ -4,6 +4,8 @@ import { toast } from 'react-toastify';
 import styled from 'styled-components';
 import BackgroundLayout from '../components/layout/BackgroundLayout';
 import WhiteContainer from '../components/layout/WhiteContainer';
+import { Card } from '@mui/material';
+import { Flex } from '../components/style/flex';
 
 const Header = styled.div`
   display: flex;
@@ -16,18 +18,34 @@ const Header = styled.div`
 `;
 
 const Logo = styled.img`
-  width: 32px;
-  height: 32px;
-  margin-bottom: 0.5rem;
+  width: 64px;
+  height: 64px;
+
+  @media (max-width: 768px) {
+    width: 48px;
+    height: 48px;
+  }
+
+  @media (max-width: 480px) {
+    width: 40px;
+    height: 40px;
+  }
 `;
 
-const BrandName = styled.div`
-  font-size: 1.5rem;
+const BrandName = styled.span`
+  font-size: 2.25rem;
   font-weight: 700;
   color: #333;
-  margin-bottom: 1.5rem;
+  letter-spacing: -0.02em;
   font-family: 'Inter', sans-serif;
-  text-transform: uppercase;
+
+  @media (max-width: 768px) {
+    font-size: 1.75rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 1.5rem;
+  }
 `;
 
 const Title = styled.h1`
@@ -169,19 +187,18 @@ const Button = styled.button`
   }
 `;
 
-const WhiteContainerStyled = styled(WhiteContainer)`
-  max-width: 800px;
-  width: 95%;
-  margin: 2rem auto;
-  padding: 2.5rem 2rem;
-  border-radius: 24px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-
-  @media (max-width: 768px) {
-    width: 90%;
-    padding: 1.5rem;
-  }
-`;
+const SCard = styled(Card)`
+  width: 50%;
+  min-width: 300px;
+  height: 90%;
+  padding: 1em;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+`
+const FlexContainer = styled(Flex)`
+  height: 100%;
+  justify-content: center;
+  overflow-y: auto;
+`
 
 interface Entreprise {
   id: number;
@@ -195,7 +212,7 @@ interface Site {
   adresse: string;
 }
 
-const AffectationEntrepriseSite: React.FC = () => {
+const AffectationEntrepriseSite = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [entreprises, setEntreprises] = useState<Entreprise[]>([]);
@@ -238,7 +255,7 @@ const AffectationEntrepriseSite: React.FC = () => {
 
       const data = await response.json();
       console.log('Entreprises response:', data);
-      
+
       if (data.success) {
         setEntreprises(data.entreprises);
       }
@@ -264,7 +281,7 @@ const AffectationEntrepriseSite: React.FC = () => {
 
       const data = await response.json();
       console.log('Sites response:', data);
-      
+
       if (data.success) {
         setSites(data.entreprise.sites);
       }
@@ -332,7 +349,7 @@ const AffectationEntrepriseSite: React.FC = () => {
       const errorMessage = error.message || 'Erreur lors de la vérification';
       setCodeError(errorMessage);
       toast.error(errorMessage);
-      
+
       if (error.response?.status === 401) {
         localStorage.removeItem('token');
         navigate('/login');
@@ -378,7 +395,7 @@ const AffectationEntrepriseSite: React.FC = () => {
       const errorMessage = error.message || 'Erreur lors de l&apos;affectation';
       setCodeError(errorMessage);
       toast.error(errorMessage);
-      
+
       if (error.response?.status === 401) {
         localStorage.removeItem('token');
         navigate('/login');
@@ -390,111 +407,112 @@ const AffectationEntrepriseSite: React.FC = () => {
 
   return (
     <BackgroundLayout backgroundImage="/images/backgrounds/parking-background.png">
-      <WhiteContainerStyled>
-        <Header>
-          <Logo src="/images/logos/logo.png" alt="RenteCaisse" />
-          <BrandName>RenteCaisse</BrandName>
+      <SCard>
+        <FlexContainer fullWidth directionColumn gap="1em">
+          <Flex justifyCenter gap="1em">
+            <Logo src="/images/logos/logo.png" alt="RenteCaisse Logo" />
+            <BrandName>Dites nous en plus</BrandName>
+          </Flex>
           <Title>Sélectionnez votre entreprise et site</Title>
           <Description>
-            {!isEnterpriseVerified 
+            {!isEnterpriseVerified
               ? "Pour commencer, veuillez sélectionner votre entreprise et saisir le code d&apos;accès correspondant."
               : "Maintenant, veuillez sélectionner votre site d&apos;affectation."}
           </Description>
-        </Header>
-
-        <Form onSubmit={!isEnterpriseVerified ? verifyEnterpriseCode : handleSubmit}>
-          <FormGroup>
-            <Label>Entreprise*</Label>
-            <ComboboxContainer>
-              <ComboboxInput
-                type="text"
-                value={entrepriseSearch}
-                onChange={(e) => {
-                  setEntrepriseSearch(e.target.value);
-                  setShowEntrepriseList(true);
-                  if (e.target.value !== selectedEntreprise?.nom) {
-                    setSelectedEntreprise(null);
-                    setIsEnterpriseVerified(false);
-                  }
-                }}
-                onFocus={() => setShowEntrepriseList(true)}
-                placeholder="Rechercher une entreprise..."
-                required
-                disabled={isEnterpriseVerified}
-              />
-              <ComboboxList show={showEntrepriseList && !isEnterpriseVerified}>
-                {filteredEntreprises.map((entreprise) => (
-                  <ComboboxItem
-                    key={entreprise.id}
-                    active={selectedEntreprise?.id === entreprise.id}
-                    onClick={() => handleEntrepriseSelect(entreprise)}
-                  >
-                    {entreprise.nom}
-                  </ComboboxItem>
-                ))}
-              </ComboboxList>
-            </ComboboxContainer>
-          </FormGroup>
-
-          {selectedEntreprise && !isEnterpriseVerified && (
+          <Form onSubmit={!isEnterpriseVerified ? verifyEnterpriseCode : handleSubmit}>
             <FormGroup>
-              <Label>Code entreprise*</Label>
-              <Input
-                type="text"
-                value={code}
-                onChange={(e) => {
-                  setCode(e.target.value);
-                  setCodeError('');
-                }}
-                placeholder="Entrez le code entreprise..."
-                required
-                className={codeError ? 'error' : ''}
-              />
-              {codeError && <ErrorMessage>{codeError}</ErrorMessage>}
-            </FormGroup>
-          )}
-
-          {isEnterpriseVerified && (
-            <FormGroup>
-              <Label>Site d&apos;affectation*</Label>
+              <Label>Entreprise*</Label>
               <ComboboxContainer>
                 <ComboboxInput
                   type="text"
-                  value={siteSearch}
+                  value={entrepriseSearch}
                   onChange={(e) => {
-                    setSiteSearch(e.target.value);
-                    setShowSiteList(true);
-                    if (e.target.value !== selectedSite?.nom) {
-                      setSelectedSite(null);
+                    setEntrepriseSearch(e.target.value);
+                    setShowEntrepriseList(true);
+                    if (e.target.value !== selectedEntreprise?.nom) {
+                      setSelectedEntreprise(null);
+                      setIsEnterpriseVerified(false);
                     }
                   }}
-                  onFocus={() => setShowSiteList(true)}
-                  placeholder="Rechercher un site..."
+                  onFocus={() => setShowEntrepriseList(true)}
+                  placeholder="Rechercher une entreprise..."
                   required
+                  disabled={isEnterpriseVerified}
                 />
-                <ComboboxList show={showSiteList}>
-                  {filteredSites.map((site) => (
+                <ComboboxList show={showEntrepriseList && !isEnterpriseVerified}>
+                  {filteredEntreprises.map((entreprise) => (
                     <ComboboxItem
-                      key={site.id}
-                      active={selectedSite?.id === site.id}
-                      onClick={() => handleSiteSelect(site)}
+                      key={entreprise.id}
+                      active={selectedEntreprise?.id === entreprise.id}
+                      onClick={() => handleEntrepriseSelect(entreprise)}
                     >
-                      {site.nom} - {site.adresse}
+                      {entreprise.nom}
                     </ComboboxItem>
                   ))}
                 </ComboboxList>
               </ComboboxContainer>
             </FormGroup>
-          )}
 
-          <Button
-            type="submit"
-            disabled={loading || !selectedEntreprise || (!isEnterpriseVerified ? !code : !selectedSite)}
-          >
-            {loading ? 'Chargement...' : !isEnterpriseVerified ? 'Vérifier le code' : 'Valider'}
-          </Button>
-        </Form>
-      </WhiteContainerStyled>
+            {selectedEntreprise && !isEnterpriseVerified && (
+              <FormGroup>
+                <Label>Code entreprise*</Label>
+                <Input
+                  type="text"
+                  value={code}
+                  onChange={(e) => {
+                    setCode(e.target.value);
+                    setCodeError('');
+                  }}
+                  placeholder="Entrez le code entreprise..."
+                  required
+                  className={codeError ? 'error' : ''}
+                />
+                {codeError && <ErrorMessage>{codeError}</ErrorMessage>}
+              </FormGroup>
+            )}
+
+            {isEnterpriseVerified && (
+              <FormGroup>
+                <Label>Site d&apos;affectation*</Label>
+                <ComboboxContainer>
+                  <ComboboxInput
+                    type="text"
+                    value={siteSearch}
+                    onChange={(e) => {
+                      setSiteSearch(e.target.value);
+                      setShowSiteList(true);
+                      if (e.target.value !== selectedSite?.nom) {
+                        setSelectedSite(null);
+                      }
+                    }}
+                    onFocus={() => setShowSiteList(true)}
+                    placeholder="Rechercher un site..."
+                    required
+                  />
+                  <ComboboxList show={showSiteList}>
+                    {filteredSites.map((site) => (
+                      <ComboboxItem
+                        key={site.id}
+                        active={selectedSite?.id === site.id}
+                        onClick={() => handleSiteSelect(site)}
+                      >
+                        {site.nom} - {site.adresse}
+                      </ComboboxItem>
+                    ))}
+                  </ComboboxList>
+                </ComboboxContainer>
+              </FormGroup>
+            )}
+
+            <Button
+              type="submit"
+              disabled={loading || !selectedEntreprise || (!isEnterpriseVerified ? !code : !selectedSite)}
+            >
+              {loading ? 'Chargement...' : !isEnterpriseVerified ? 'Vérifier le code' : 'Valider'}
+            </Button>
+          </Form>
+        </FlexContainer>
+      </SCard>
     </BackgroundLayout>
   );
 };

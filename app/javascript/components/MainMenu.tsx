@@ -159,127 +159,127 @@ const StyledCard = styled(Card)`
 `;
 
 interface Emprunt {
-	numero: string;
-	dateDebut: string;
-	dateFin: string;
-	vehicule: string;
-	passagers: number;
-	destination: string;
+  numero: string;
+  dateDebut: string;
+  dateFin: string;
+  vehicule: string;
+  passagers: number;
+  destination: string;
 }
 
 const MainMenu = () => {
-	const empruntsEnCours: Emprunt[] = [
-		{
-			numero: "314",
-			dateDebut: "01/01/2025 08h00",
-			dateFin: "02/01/2025 17h00",
-			vehicule: "GOLF 3 GTI VD-142-XZ",
-			passagers: 2,
-			destination: "Campus ENI Rennes",
-		},
-	];
+  const empruntsEnCours: Emprunt[] = [
+    {
+      numero: "314",
+      dateDebut: "01/01/2025 08h00",
+      dateFin: "02/01/2025 17h00",
+      vehicule: "GOLF 3 GTI VD-142-XZ",
+      passagers: 2,
+      destination: "Campus ENI Rennes",
+    },
+  ];
 
-	const empruntsEnAttente: Emprunt[] = [
-		{
-			numero: "418",
-			dateDebut: "01/06/2025 08lh00",
-			dateFin: "02/06/2025 17h00",
-			vehicule: "GOLF 3 GTI VD-142-XZ",
-			passagers: 0,
-			destination: "Campus ENI Rennes",
-		},
-	];
+  const empruntsEnAttente: Emprunt[] = [
+    {
+      numero: "418",
+      dateDebut: "01/06/2025 08lh00",
+      dateFin: "02/06/2025 17h00",
+      vehicule: "GOLF 3 GTI VD-142-XZ",
+      passagers: 0,
+      destination: "Campus ENI Rennes",
+    },
+  ];
 
-	return (
-		<Container>
-			<Title>Tableau de bord</Title>
-			<MenuGrid>
-				<div>
-					<SectionTitle>Emprunts en cours</SectionTitle>
-					<Link href="/dashboard" sx={{ textDecoration: "none" }}>
-						<StyledCard
-							sx={{
-								cursor: "pointer",
-								padding: "1.5rem",
-								borderRadius: "20px",
-							}}
-						>
-							{empruntsEnCours.map((emprunt) => (
-								<div key={emprunt.numero}>
-									<EmpruntInfo>
-										<div className="emprunt-numero">
-											Emprunt n°{emprunt.numero}
-										</div>
-										<div className="dates-section">
-											<p>
-												<span className="calendar-icon">📅</span> Début :{" "}
-												{emprunt.dateDebut}
-											</p>
-											<p>
-												<span className="calendar-icon">📅</span> Fin :{" "}
-												{emprunt.dateFin}
-											</p>
-										</div>
-										<div className="vehicule">🚗 {emprunt.vehicule}</div>
-										<div className="passagers">
-											{emprunt.passagers === 0
-												? "🚫👤 Pas de passager"
-												: `👥 ${emprunt.passagers} passager${emprunt.passagers > 1 ? "s" : ""}`}
-										</div>
-										<div className="destination">
-											📍 Destination : {emprunt.destination}
-										</div>
-									</EmpruntInfo>
-								</div>
-							))}
-						</StyledCard>
-					</Link>
-				</div>
+  return (
+    <Container>
+      <Title>Tableau de bord</Title>
+      <MenuGrid>
+        <div>
+          <SectionTitle>Emprunts en cours</SectionTitle>
+          <Link href="/dashboard" sx={{ textDecoration: "none" }}>
+            <StyledCard
+              sx={{
+                cursor: "pointer",
+                padding: "1.5rem",
+                borderRadius: "20px",
+              }}
+            >
+              {empruntsEnCours.map((emprunt) => (
+                <div key={emprunt.numero}>
+                  <EmpruntInfo>
+                    <div className="emprunt-numero">
+                      Emprunt n°{emprunt.numero}
+                    </div>
+                    <div className="dates-section">
+                      <p>
+                        <span className="calendar-icon">📅</span> Début :{" "}
+                        {emprunt.dateDebut}
+                      </p>
+                      <p>
+                        <span className="calendar-icon">📅</span> Fin :{" "}
+                        {emprunt.dateFin}
+                      </p>
+                    </div>
+                    <div className="vehicule">🚗 {emprunt.vehicule}</div>
+                    <div className="passagers">
+                      {emprunt.passagers === 0
+                        ? "🚫👤 Pas de passager"
+                        : `👥 ${emprunt.passagers} passager${emprunt.passagers > 1 ? "s" : ""}`}
+                    </div>
+                    <div className="destination">
+                      📍 Destination : {emprunt.destination}
+                    </div>
+                  </EmpruntInfo>
+                </div>
+              ))}
+            </StyledCard>
+          </Link>
+        </div>
 
-				<div>
-					<SectionTitle>Emprunts en attente</SectionTitle>
-					<Link href="/dashboard" sx={{ textDecoration: "none" }}>
-						<StyledCard
-							sx={{
-								cursor: "pointer",
-								padding: "1.5rem",
-								borderRadius: "20px",
-							}}
-						>
-							{empruntsEnAttente.map((emprunt) => (
-								<div key={emprunt.numero}>
-									<EmpruntInfo>
-										<div className="emprunt-numero">
-											Emprunt n°{emprunt.numero}
-										</div>
-										<div className="dates-section">
-											<p>
-												<span className="calendar-icon">📅</span> Début :{" "}
-												{emprunt.dateDebut}
-											</p>
-											<p>
-												<span className="calendar-icon">📅</span> Fin :{" "}
-												{emprunt.dateFin}
-											</p>
-										</div>
-										<div className="vehicule">🚗 {emprunt.vehicule}</div>
-										<div className="passagers">
-											{emprunt.passagers === 0
-												? "🚫👤 Pas de passager"
-												: `👥 ${emprunt.passagers} passager${emprunt.passagers > 1 ? "s" : ""}`}
-										</div>
-										<div className="destination">
-											📍 Destination : {emprunt.destination}
-										</div>
-									</EmpruntInfo>
-								</div>
-							))}
-						</StyledCard>
-					</Link>
-				</div>
-			</MenuGrid>
-		</Container>
-	);
+        <div>
+          <SectionTitle>Emprunts en attente</SectionTitle>
+          <Link href="/dashboard" sx={{ textDecoration: "none" }}>
+            <StyledCard
+              sx={{
+                cursor: "pointer",
+                padding: "1.5rem",
+                borderRadius: "20px",
+              }}
+            >
+              {empruntsEnAttente.map((emprunt) => (
+                <div key={emprunt.numero}>
+                  <EmpruntInfo>
+                    <div className="emprunt-numero">
+                      Emprunt n°{emprunt.numero}
+                    </div>
+                    <div className="dates-section">
+                      <p>
+                        <span className="calendar-icon">📅</span> Début :{" "}
+                        {emprunt.dateDebut}
+                      </p>
+                      <p>
+                        <span className="calendar-icon">📅</span> Fin :{" "}
+                        {emprunt.dateFin}
+                      </p>
+                    </div>
+                    <div className="vehicule">🚗 {emprunt.vehicule}</div>
+                    <div className="passagers">
+                      {emprunt.passagers === 0
+                        ? "🚫👤 Pas de passager"
+                        : `👥 ${emprunt.passagers} passager${emprunt.passagers > 1 ? "s" : ""}`}
+                    </div>
+                    <div className="destination">
+                      📍 Destination : {emprunt.destination}
+                    </div>
+                  </EmpruntInfo>
+                </div>
+              ))}
+            </StyledCard>
+          </Link>
+        </div>
+      </MenuGrid>
+    </Container>
+  );
 };
 
 export default MainMenu;

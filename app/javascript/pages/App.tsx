@@ -31,6 +31,7 @@ import Voitures from "./voitures/Voitures.tsx"
 import VoitureDetails from "./voitures/VoitureDetails.tsx"
 import BackgroundLayout from "../components/layout/BackgroundLayout.tsx"
 import { ErrorBoundary } from "react-error-boundary"
+import ErrorFallback from "./errorFallbacks/ErrorFallback.tsx"
 
 const AppContainer = styled.div`
 	width: 100vw;
@@ -53,11 +54,16 @@ const App = () => {
 	return (
 		<Provider store={store}>
 			<GlobalStyle />
-			<ErrorBoundary fallback={<div>A critical error has occured, please check browser console for futher details.</div>}>
+			<ErrorBoundary
+				FallbackComponent={ErrorFallback}
+				onError={(error, info) => {
+					console.error('Erreur capturée dans ErrorBoundary :', error);
+					console.error('Infos :', info);
+				}}
+			>
 				<BrowserRouter>
 					<Routes>
 						{/* Routes publiques */}
-						{/* <BackgroundLayout backgroundImage="/images/backgrounds/parking-background.png"> */}
 						<Route path="/login" element={<LoginPage />} />
 						<Route path="/register" element={<RegisterPage />} />
 						<Route path="/register-success" element={<RegisterSuccessPage />} />
@@ -67,10 +73,11 @@ const App = () => {
 						<Route path="/cgu" element={<CGUPage />} />
 						<Route path="/mentions_legales" element={<MentionsLegalesPage />} />
 						<Route path="/confirm_email" element={<ConfirmEmailPage />} />
-						<Route path="/first-connexion" element={<FirstConnexionPage />} />
 						{/* Routes authentifiées (plus de wrapper RequireAuth) */}
-						<Route path="/authenticated" element={<AuthenticatedPage />} />
-						<Route path="/complete-profil" element={<CompleteProfil />} />
+						// Todo NOLAN : Check them and decide which ones to keep, and delete the other
+						<Route path="/first-connexion" element={<FirstConnexionPage />} /> //! currently unused
+						<Route path="/complete-profil" element={<CompleteProfil />} /> //* currently used
+						// Todo NOLAN : ==============================================================
 						<Route
 							path="/affectation-entreprise"
 							element={<AffectationEntrepriseSite />}
@@ -79,7 +86,6 @@ const App = () => {
 							path="/statut-affectation"
 							element={<StatutAffectationEnAttente />}
 						/>
-						{/* </BackgroundLayout> */}
 						{/* Routes principales avec le layout standard */}
 						<Route path="/*" element={
 							<AppContainer>

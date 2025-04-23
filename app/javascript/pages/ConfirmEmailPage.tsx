@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import BackgroundLayout from '../components/layout/BackgroundLayout';
 import WhiteContainer from '../components/layout/WhiteContainer';
+import { Card, CardContent } from '@mui/material';
+import { Flex } from '../components/style/flex';
 
 const Header = styled.div`
   display: flex;
@@ -123,7 +125,66 @@ const Button = styled.button`
   }
 `;
 
-const ConfirmEmailPage: React.FC = () => {
+const ErrorContainer = styled.div`
+  padding: 1rem;
+  border-radius: 8px;
+  background-color: #ffe6e6;
+  border: 1px solid #ffb3b3;
+  margin-bottom: 2rem;
+`;
+
+const SuccessMessage = styled.p`
+  font-size: 1.75rem;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  max-width: 800px;
+  text-align: center;
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+    margin-bottom: 1.75rem;
+  }
+  @media (max-width: 480px) {
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+`;
+
+const ErrorMessage = styled.p`
+  font-size: 1.75rem;
+  color: #cc0000;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  max-width: 800px;
+  text-align: center;
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+    margin-bottom: 1.75rem;
+  }
+  @media (max-width: 480px) {
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+`;
+
+const SCard = styled(Card)`
+  width: 50%;
+  min-width: 300px;
+  height: 90%;
+  padding: 1em;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+`
+const SCardContent = styled(CardContent)`
+  padding: 0 1em !important;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow-y: auto;
+  gap: 2em;
+`
+
+const ConfirmEmailPage = () => {
   const [message, setMessage] = useState('');
   const [isRequestSent, setIsRequestSent] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -173,58 +234,14 @@ const ConfirmEmailPage: React.FC = () => {
     }
   }, [location.search, isRequestSent]);
 
-  const ErrorContainer = styled.div`
-    padding: 1rem;
-    border-radius: 8px;
-    background-color: #ffe6e6;
-    border: 1px solid #ffb3b3;
-    margin-bottom: 2rem;
-  `;
-
-  const SuccessMessage = styled.p`
-    font-size: 1.75rem;
-    color: #666;
-    line-height: 1.6;
-    margin-bottom: 2rem;
-    max-width: 800px;
-    text-align: center;
-    @media (max-width: 768px) {
-      font-size: 1.5rem;
-      margin-bottom: 1.75rem;
-    }
-    @media (max-width: 480px) {
-      font-size: 1.25rem;
-      margin-bottom: 1.5rem;
-    }
-  `;
-
-  const ErrorMessage = styled.p`
-    font-size: 1.75rem;
-    color: #cc0000;
-    line-height: 1.6;
-    margin-bottom: 2rem;
-    max-width: 800px;
-    text-align: center;
-    @media (max-width: 768px) {
-      font-size: 1.5rem;
-      margin-bottom: 1.75rem;
-    }
-    @media (max-width: 480px) {
-      font-size: 1.25rem;
-      margin-bottom: 1.5rem;
-    }
-  `;
-
   return (
-    <>
-      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-      <BackgroundLayout backgroundImage="/images/backgrounds/parking-background.png">
-        <WhiteContainer width="min(600px, 90%)">
-          <Header>
+    <BackgroundLayout backgroundImage="/images/backgrounds/parking-background.png">
+      <SCard>
+        <SCardContent>
+          <Flex justifyCenter gap="1em">
             <Logo src="/images/logos/logo.png" alt="RenteCaisse Logo" />
-            <BrandName>RENTECAISSE</BrandName>
-          </Header>
-          <Title>Confirmation de l'email</Title>
+            <BrandName>Confirmation de l'email</BrandName>
+          </Flex>
           {message && (
             isSuccess ? (
               <SuccessMessage>{message}</SuccessMessage>
@@ -235,9 +252,9 @@ const ConfirmEmailPage: React.FC = () => {
             )
           )}
           <Button onClick={() => window.location.href = '/login'}>Se connecter</Button>
-        </WhiteContainer>
-      </BackgroundLayout>
-    </>
+        </SCardContent>
+      </SCard>
+    </BackgroundLayout>
   );
 };
 
