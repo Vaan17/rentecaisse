@@ -10,7 +10,23 @@ const GlobalStyle = createGlobalStyle`
         ${colors}
         --top-bar-height: 48px;
     }
-    h1,h2,h3 {${fontTitle}}
+
+    *::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    *::-webkit-scrollbar-track {
+        border-radius: 8px;
+        box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5);
+        background-color: var(--secondary200);
+    }
+
+    *::-webkit-scrollbar-thumb {
+        border-radius: 8px;
+        background: linear-gradient(180deg, var(--primary400) 0%, var(--primary500) 100%);
+    }
+
+    h1, h2, h3 {${fontTitle}}
 
     body {
         margin: 0;
