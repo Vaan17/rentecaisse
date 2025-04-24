@@ -4,7 +4,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { Flex } from './style/flex';
 import { isDesktop } from 'react-device-detect';
-import { IconButton } from '@mui/material';
+import { IconButton, Tooltip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import PlaceIcon from '@mui/icons-material/Place';
@@ -46,8 +46,8 @@ const FlexItem = styled(Flex) <{ $isExpended?: boolean }>`
 	border: 2px solid transparent;
 	transition: 0.15s;
 	&:hover {
-		border: 2px solid var(--primary300);
-		background-color: var(--primary50);
+		border: 2px solid var(--primary300) !important;
+		background-color: var(--primary50) !important;
 	};
 	${({ $isExpended }) =>
 		!$isExpended && css`
@@ -175,20 +175,27 @@ const SideBar = () => {
 					</IconButton>
 				</FlexReverse>
 				{regularMenuItems.map((menu) => (
-					<FlexItem
+					<Tooltip
 						key={menu.title}
-						fullWidth
-						justifyCenter
-						gap
-						onClick={() => navigate(menu.path)}
-						$isExpended={isExpended}
+						title={menu.title}
+						placement="right"
+						arrow
+						disableHoverListener={isExpended}
 					>
-						{menu.icon}
-						{isExpended && <Flex fullWidth directionColumn alignItemsStart gap="4px">
-							<ItemTitle>{menu.title}</ItemTitle>
-							<ItemSubtitle>{menu.subtitle}</ItemSubtitle>
-						</Flex>}
-					</FlexItem>
+						<FlexItem
+							fullWidth
+							justifyCenter
+							gap
+							onClick={() => navigate(menu.path)}
+							$isExpended={isExpended}
+						>
+							{menu.icon}
+							{isExpended && <Flex fullWidth directionColumn alignItemsStart gap="4px">
+								<ItemTitle>{menu.title}</ItemTitle>
+								<ItemSubtitle>{menu.subtitle}</ItemSubtitle>
+							</Flex>}
+						</FlexItem>
+					</Tooltip>
 				))}
 			</MenuSection>
 			{isAdmin && (
@@ -196,20 +203,28 @@ const SideBar = () => {
 					<Separator />
 					<MenuSection>
 						{adminMenuItems.map((menu) => (
-							<FlexItem
+							<Tooltip
 								key={menu.title}
-								fullWidth
-								justifyCenter
-								gap
-								onClick={() => navigate(menu.path)}
-								$isExpended={isExpended}
+								title={menu.title}
+								placement="right"
+								arrow
+								disableHoverListener={isExpended}
 							>
-								{menu.icon}
-								{isExpended && <Flex fullWidth directionColumn alignItemsStart gap="4px">
-									<ItemTitle>{menu.title}</ItemTitle>
-									<ItemSubtitle>{menu.subtitle}</ItemSubtitle>
-								</Flex>}
-							</FlexItem>
+								<FlexItem
+									key={menu.title}
+									fullWidth
+									justifyCenter
+									gap
+									onClick={() => navigate(menu.path)}
+									$isExpended={isExpended}
+								>
+									{menu.icon}
+									{isExpended && <Flex fullWidth directionColumn alignItemsStart gap="4px">
+										<ItemTitle>{menu.title}</ItemTitle>
+										<ItemSubtitle>{menu.subtitle}</ItemSubtitle>
+									</Flex>}
+								</FlexItem>
+							</Tooltip>
 						))}
 					</MenuSection>
 				</>

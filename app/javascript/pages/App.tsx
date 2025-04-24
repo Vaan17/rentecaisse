@@ -20,7 +20,6 @@ import ResetPasswordPage from './ResetPasswordPage'
 import CompleteProfil from './CompleteProfil'
 import AffectationEntrepriseSite from './AffectationEntrepriseSite'
 import StatutAffectationEnAttente from './StatutAffectationEnAttente'
-import HomeAuthenticated from './HomeAuthenticated'
 import Profile from './Profile'
 import Sites from "./sites/Sites.tsx"
 import SiteDetails from "./sites/SiteDetails.tsx"
@@ -30,6 +29,7 @@ import Voitures from "./voitures/Voitures.tsx"
 import VoitureDetails from "./voitures/VoitureDetails.tsx"
 import { ErrorBoundary } from "react-error-boundary"
 import ErrorFallback from "./errorFallbacks/ErrorFallback.tsx"
+import Home from "../components/Home.tsx"
 
 const AppContainer = styled.div`
 	width: 100vw;
@@ -92,7 +92,7 @@ const App = () => {
 									<SideBar />
 									<AppSubContainer>
 										<Routes>
-											<Route path="/home" element={<HomeAuthenticated />} />
+											<Route path="/home" element={<Home />} />
 											<Route path="/sandbox" element={<Sandbox />} />
 											<Route path="/colors" element={<ColorsPage />} />
 											<Route path="/sites" element={<Sites />} />

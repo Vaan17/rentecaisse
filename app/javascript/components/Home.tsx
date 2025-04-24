@@ -167,7 +167,7 @@ interface Emprunt {
   destination: string;
 }
 
-const MainMenu = () => {
+const Home = () => {
   const empruntsEnCours: Emprunt[] = [
     {
       numero: "314",
@@ -282,4 +282,4 @@ const MainMenu = () => {
   );
 };
 
-export default MainMenu;
+export default Home;
