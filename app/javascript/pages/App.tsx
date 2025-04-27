@@ -14,7 +14,6 @@ import CGVPage from './CGVPage'
 import CGUPage from './CGUPage'
 import MentionsLegalesPage from './MentionsLegalesPage'
 import ConfirmEmailPage from './ConfirmEmailPage'
-import FirstConnexionPage from './FirstConnexionPage'
 import ForgottenPasswordPage from './ForgottenPasswordPage'
 import ResetPasswordPage from './ResetPasswordPage'
 import CompleteProfil from './CompleteProfil'
@@ -73,10 +72,7 @@ const App = () => {
 						<Route path="/mentions_legales" element={<MentionsLegalesPage />} />
 						<Route path="/confirm_email" element={<ConfirmEmailPage />} />
 						{/* Routes authentifiées (plus de wrapper RequireAuth) */}
-						// Todo NOLAN : Check them and decide which ones to keep, and delete the other
-						<Route path="/first-connexion" element={<FirstConnexionPage />} /> //! currently unused
-						<Route path="/complete-profil" element={<CompleteProfil />} /> //* currently used
-						// Todo NOLAN : ==============================================================
+						<Route path="/complete-profil" element={<CompleteProfil />} /> /
 						<Route
 							path="/affectation-entreprise"
 							element={<AffectationEntrepriseSite />}

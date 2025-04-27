@@ -73,6 +73,50 @@ const ItemSubtitle = styled.div`
 	color: var(--secondary500);
 `
 
+// Composants manquants
+const MenuButton = styled.button`
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  margin-right: 16px;
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+
+const LogoImage = styled.img`
+  height: 32px;
+  width: auto;
+`;
+
+const AppTitle = styled.div`
+  font-size: ${isDesktop ? '20px' : '14px'};
+  font-family: 'Arial Black', Helvetica, sans-serif;
+`;
+
+const ProfileImage = styled.img`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 8px;
+`;
+
+const LogoutButton = styled.button`
+  background: none;
+  border: none;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  margin-left: 8px;
+  text-decoration: underline;
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+
 interface UserInfo {
   id: number;
   prenom: string;
@@ -164,6 +208,18 @@ const TopBar = () => {
 			setImageError(true);
 		}
 	};
+
+  // Fonctions manquantes
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
+
+  const onMenuToggle = () => {
+    // Fonction pour gérer le toggle du menu
+    console.log('Menu toggle clicked');
+    // Ici, vous pourriez ajouter la logique pour ouvrir/fermer le menu latéral
+  };
 
 	const mainOptions = [
 		{
