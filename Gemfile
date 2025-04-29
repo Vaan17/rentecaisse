@@ -48,3 +48,4 @@ end
 gem "pry-rails"
 gem "pry-byebug"
 gem "standard", ">= 1.43.0"
+gem "rufus-scheduler"  # Pour la programmation de tâches en mémoire

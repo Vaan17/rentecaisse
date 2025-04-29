@@ -72,6 +72,10 @@ const App = () => {
 						<Route path="/mentions_legales" element={<MentionsLegalesPage />} />
 						<Route path="/confirm_email" element={<ConfirmEmailPage />} />
 						{/* Routes authentifiées (plus de wrapper RequireAuth) */}
+						<Route
+            path="/cancellation-account"
+            element={<CancellationAccountDeletion />}
+            />
 						<Route path="/complete-profil" element={<CompleteProfil />} /> /
 						<Route
 							path="/affectation-entreprise"
