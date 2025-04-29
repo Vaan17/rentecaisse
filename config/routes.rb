@@ -30,6 +30,7 @@ Rails.application.routes.draw do
 
   # Routes pour les voitures
   get "/api/voitures" => "voitures#fetch_all"
+  post "/api/voitures" => "voitures#create"
 
   # Routes pour les entreprises
   get "/api/entreprises" => "entreprises#fetch_all"

@@ -5,7 +5,6 @@ import styled from "styled-components"
 import CustomFilter from "../../components/CustomFilter"
 import { useNavigate } from "react-router-dom"
 import axios from "axios"
-import { Flex } from "../../components/style/flex"
 
 const CardContainer = styled.div`
     display: flex;

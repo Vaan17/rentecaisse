@@ -30,6 +30,7 @@ import VoitureDetails from "./voitures/VoitureDetails.tsx"
 import { ErrorBoundary } from "react-error-boundary"
 import ErrorFallback from "./errorFallbacks/ErrorFallback.tsx"
 import Home from "../components/Home.tsx"
+import AdminVoitures from "./admin/AdminVoitures.tsx"
 
 const AppContainer = styled.div`
 	width: 100vw;
@@ -92,14 +93,19 @@ const App = () => {
 									<SideBar />
 									<AppSubContainer>
 										<Routes>
-											<Route path="/home" element={<Home />} />
+											{/* Temporaires */}
 											<Route path="/sandbox" element={<Sandbox />} />
 											<Route path="/colors" element={<ColorsPage />} />
+											{/* Routes globales */}
+											<Route path="/home" element={<Home />} />
 											<Route path="/sites" element={<Sites />} />
 											<Route path="/sites/:id" element={<SiteDetails />} />
 											<Route path="/voitures" element={<Voitures />} />
 											<Route path="/voitures/:id" element={<VoitureDetails />} />
 											<Route path="/profile" element={<Profile />} />
+											{/* Routes admin */}
+											<Route path="/admin/voitures" element={<AdminVoitures />} />
+											{/* Fallback */}
 											<Route path="*" element={<Navigate to="/home" replace />} />
 										</Routes>
 									</AppSubContainer>
