@@ -2,6 +2,7 @@ class DeletionAccountSchedule
   def self.anonymize_user(utilisateur)
     ActiveRecord::Base.transaction do
       user_id = utilisateur.id
+      original_email = utilisateur.email
 
       utilisateur.update(
         email: "DeletedEmailUser#{user_id}@deleted.rentecaisse.com",
@@ -38,6 +39,14 @@ class DeletionAccountSchedule
       )
 
       delete_user_files(user_id)
+
+      begin
+        Rails.logger.info "Envoi d'email de confirmation de suppression à #{original_email}"
+        UserMailer.account_deletion_confirmation(original_email).deliver_now
+      rescue => e
+        Rails.logger.error "Erreur lors de l'envoi de l'email de confirmation: #{e.message}"
+      end
+
       
       Rails.logger.info "Utilisateur ##{user_id} anonymisé avec succès"
 
@@ -64,8 +73,10 @@ class DeletionAccountSchedule
   def self.process_pending_anonymizations
     date_limite = 30.days.ago
     
+    # Exclure les utilisateurs déjà anonymisés (dont l'email contient deleted.rentecaisse.com)
     utilisateurs_a_anonymiser = Utilisateur.where("date_demande_suppression IS NOT NULL AND date_demande_suppression <= ?", date_limite)
                                          .where(desactive: true)
+                                         .where("email NOT LIKE ?", "%deleted.rentecaisse.com%")
     
     count = 0
     utilisateurs_a_anonymiser.each do |utilisateur|
