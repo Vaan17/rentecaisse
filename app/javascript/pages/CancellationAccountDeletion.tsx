@@ -3,49 +3,38 @@ import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import BackgroundLayout from '../components/layout/BackgroundLayout';
-import WhiteContainer from '../components/layout/WhiteContainer';
-
-const Header = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 3rem;
-  text-align: center;
-  width: 100%;
-`;
+import { Card } from '@mui/material';
+import { Flex } from '../components/style/flex';
 
 const Logo = styled.img`
   width: 32px;
   height: 32px;
-  margin-bottom: 0.5rem;
+
+  @media (max-width: 768px) {
+    width: 28px;
+    height: 28px;
+  }
+
+  @media (max-width: 480px) {
+    width: 24px;
+    height: 24px;
+  }
 `;
 
-const BrandName = styled.div`
-  font-size: 1.5rem;
+const BrandName = styled.span`
+  font-size: 1.75rem;
   font-weight: 700;
   color: #333;
-  margin-bottom: 1.5rem;
+  letter-spacing: -0.02em;
   font-family: 'Inter', sans-serif;
-  text-transform: uppercase;
-`;
 
-const Title = styled.h1`
-  font-size: 1.75rem;
-  color: #333;
-  font-weight: 600;
-  font-family: 'Inter', sans-serif;
-  margin-bottom: 0.75rem;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-`;
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
 
-const ContentContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  text-align: center;
-  padding: 2rem;
+  @media (max-width: 480px) {
+    font-size: 1.25rem;
+  }
 `;
 
 const InfoText = styled.p`
@@ -63,37 +52,44 @@ const StatusText = styled.p`
 `;
 
 const Button = styled.button`
-  padding: 0.75rem 2rem;
+  padding: 1.125rem;
   background-color: #FFD700;
   border: none;
-  border-radius: 4px;
-  color: #333;
-  font-weight: 600;
+  border-radius: 14px;
   cursor: pointer;
-  margin-top: 1rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
   transition: all 0.2s ease;
+  font-family: 'Inter', sans-serif;
 
   &:hover {
     background-color: #FFC700;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 
   &:disabled {
-    background-color: #ddd;
+    background-color: #ccc;
     cursor: not-allowed;
+    transform: none;
   }
-`;
-
-const WhiteContainerStyled = styled(WhiteContainer)`
-  max-width: 800px;
-  width: 95%;
-  margin: 2rem auto;
-  padding: 2.5rem 2rem;
-  border-radius: 24px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 
   @media (max-width: 768px) {
-    width: 90%;
-    padding: 1.5rem;
+    padding: 1rem;
+    font-size: 1.1rem;
+    border-radius: 12px;
+    margin-top: 1.25rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.875rem;
+    font-size: 1rem;
+    border-radius: 10px;
+    margin-top: 1rem;
   }
 `;
 
@@ -106,7 +102,7 @@ const DateInfo = styled.div`
   border-radius: 4px;
 `;
 
-const TimerContainer = styled.div`
+const TimerContainer = styled(Card)`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -138,7 +134,7 @@ const TimerText = styled.p`
   margin: 0;
 `;
 
-const DeletionInfoCard = styled.div`
+const DeletionInfoCard = styled(Card)`
   background-color: #f5f5f5;
   border-radius: 8px;
   padding: 1rem;
@@ -166,13 +162,26 @@ const DeletionInfoValue = styled.span`
   font-weight: 500;
 `;
 
+const SCard = styled(Card)`
+  width: 75%;
+  min-width: 300px;
+  height: 90%;
+  padding: 1em;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+`;
+
+const FlexContainer = styled(Flex)`
+  height: 100%;
+  overflow-y: auto;
+`;
+
 interface DeletionDetails {
   date_demande: string;
   date_suppression_prevue: string;
   jours_restants: number;
 }
 
-const CancellationAccountDeletion: React.FC = () => {
+const CancellationAccountDeletion = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [deletionDetails, setDeletionDetails] = useState<DeletionDetails | null>(null);
@@ -252,56 +261,57 @@ const CancellationAccountDeletion: React.FC = () => {
 
   return (
     <BackgroundLayout backgroundImage="/images/backgrounds/parking-background.png">
-      <WhiteContainerStyled>
-        <Header>
-          <Logo src="/images/logos/logo.png" alt="RenteCaisse" />
-          <BrandName>RenteCaisse</BrandName>
-          <Title>Compte en cours de suppression</Title>
-        </Header>
+      <SCard>
+        <FlexContainer fullWidth justifyCenter directionColumn>
+          <Flex justifyCenter gap="1em">
+            <Logo src="/images/logos/logo.png" alt="RenteCaisse" />
+            <BrandName>Compte suppression</BrandName>
+          </Flex>
 
-        <ContentContainer>
-          <InfoText>Votre demande de suppression de compte a été enregistrée.</InfoText>
-          
-          {fetchingDetails ? (
-            <div>Chargement des informations...</div>
-          ) : deletionDetails ? (
-            <>
-              <TimerContainer>
-                <TimerTitle>Temps restant avant suppression définitive</TimerTitle>
-                <TimerValue>{deletionDetails.jours_restants} jours</TimerValue>
-                <TimerText>Votre compte sera définitivement supprimé le {formatDate(deletionDetails.date_suppression_prevue)}</TimerText>
-              </TimerContainer>
+          <Flex directionColumn alignItemsCenter gap="1rem" padding="2rem">
+            <InfoText>Votre demande de suppression de compte a été enregistrée.</InfoText>
+            
+            {fetchingDetails ? (
+              <div>Chargement des informations...</div>
+            ) : deletionDetails ? (
+              <>
+                <TimerContainer>
+                  <TimerTitle>Temps restant avant suppression définitive</TimerTitle>
+                  <TimerValue>{deletionDetails.jours_restants} jours</TimerValue>
+                  <TimerText>Votre compte sera définitivement supprimé le {formatDate(deletionDetails.date_suppression_prevue)}</TimerText>
+                </TimerContainer>
 
-              <DeletionInfoCard>
-                <DeletionInfoItem>
-                  <DeletionInfoLabel>Date de la demande :</DeletionInfoLabel>
-                  <DeletionInfoValue>{formatDate(deletionDetails.date_demande)}</DeletionInfoValue>
-                </DeletionInfoItem>
-                <DeletionInfoItem>
-                  <DeletionInfoLabel>Date de suppression prévue :</DeletionInfoLabel>
-                  <DeletionInfoValue>{formatDate(deletionDetails.date_suppression_prevue)}</DeletionInfoValue>
-                </DeletionInfoItem>
-              </DeletionInfoCard>
-            </>
-          ) : (
-            <InfoText>Impossible de récupérer les détails de la demande de suppression.</InfoText>
-          )}
+                <DeletionInfoCard>
+                  <DeletionInfoItem>
+                    <DeletionInfoLabel>Date de la demande :</DeletionInfoLabel>
+                    <DeletionInfoValue>{formatDate(deletionDetails.date_demande)}</DeletionInfoValue>
+                  </DeletionInfoItem>
+                  <DeletionInfoItem>
+                    <DeletionInfoLabel>Date de suppression prévue :</DeletionInfoLabel>
+                    <DeletionInfoValue>{formatDate(deletionDetails.date_suppression_prevue)}</DeletionInfoValue>
+                  </DeletionInfoItem>
+                </DeletionInfoCard>
+              </>
+            ) : (
+              <InfoText>Impossible de récupérer les détails de la demande de suppression.</InfoText>
+            )}
 
-          <StatusText>Statut : En attente de suppression</StatusText>
+            <StatusText>Statut : En attente de suppression</StatusText>
 
-          <Button onClick={handleCancelDeletion} disabled={loading}>
-            {loading ? 'Traitement...' : 'Annuler la demande de suppression'}
-          </Button>
+            <Button onClick={handleCancelDeletion} disabled={loading}>
+              {loading ? 'Traitement...' : 'Annuler la demande de suppression'}
+            </Button>
 
-          <Button onClick={handleLogout} style={{ backgroundColor: '#f0f0f0', marginTop: '1rem' }}>
-            Se déconnecter
-          </Button>
-          
-          <DateInfo>
-            Tous vos accès seront bloqués jusqu&apos;à l&apos;annulation de cette demande.
-          </DateInfo>
-        </ContentContainer>
-      </WhiteContainerStyled>
+            <Button onClick={handleLogout} style={{ backgroundColor: '#f0f0f0', marginTop: '1rem' }}>
+              Se déconnecter
+            </Button>
+            
+            <DateInfo>
+              Tous vos accès seront bloqués jusqu&apos;à l&apos;annulation de cette demande.
+            </DateInfo>
+          </Flex>
+        </FlexContainer>
+      </SCard>
     </BackgroundLayout>
   );
 };
