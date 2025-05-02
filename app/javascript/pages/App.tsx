@@ -1,6 +1,6 @@
-import React from "react"
+import React, { useEffect } from "react"
 import "./App.css"
-import { Provider } from "react-redux"
+import { Provider, useDispatch } from "react-redux"
 import store from "../redux/store.ts"
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom"
 import Sandbox from "./sandbox/Sandbox.js"
@@ -32,6 +32,7 @@ import ErrorFallback from "./errorFallbacks/ErrorFallback.tsx"
 import Home from "../components/Home.tsx"
 import AdminVoitures from "./admin/AdminVoitures.tsx"
 import { ToastContainer } from "react-toastify"
+import ReduxSync from "../redux/ReduxSync.tsx"
 
 const AppContainer = styled.div`
 	width: 100vw;
@@ -61,67 +62,69 @@ const App = () => {
 					console.error('Infos :', info);
 				}}
 			>
-				<BrowserRouter>
-					<ToastContainer
-						position="bottom-left"
-						autoClose={5000}
-						pauseOnFocusLoss={false}
-						theme="colored"
-						newestOnTop
-					/>
-					<Routes>
-						{/* Routes publiques */}
-						<Route path="/login" element={<LoginPage />} />
-						<Route path="/register" element={<RegisterPage />} />
-						<Route path="/register-success" element={<RegisterSuccessPage />} />
-						<Route path="/forgot-password" element={<ForgottenPasswordPage />} />
-						<Route path="/reset-password" element={<ResetPasswordPage />} />
-						<Route path="/cgv" element={<CGVPage />} />
-						<Route path="/cgu" element={<CGUPage />} />
-						<Route path="/mentions_legales" element={<MentionsLegalesPage />} />
-						<Route path="/confirm_email" element={<ConfirmEmailPage />} />
-						{/* Routes authentifiées (plus de wrapper RequireAuth) */}
+				<ReduxSync>
+					<BrowserRouter>
+						<ToastContainer
+							position="bottom-left"
+							autoClose={5000}
+							pauseOnFocusLoss={false}
+							theme="colored"
+							newestOnTop
+						/>
+						<Routes>
+							{/* Routes publiques */}
+							<Route path="/login" element={<LoginPage />} />
+							<Route path="/register" element={<RegisterPage />} />
+							<Route path="/register-success" element={<RegisterSuccessPage />} />
+							<Route path="/forgot-password" element={<ForgottenPasswordPage />} />
+							<Route path="/reset-password" element={<ResetPasswordPage />} />
+							<Route path="/cgv" element={<CGVPage />} />
+							<Route path="/cgu" element={<CGUPage />} />
+							<Route path="/mentions_legales" element={<MentionsLegalesPage />} />
+							<Route path="/confirm_email" element={<ConfirmEmailPage />} />
+							{/* Routes authentifiées (plus de wrapper RequireAuth) */}
 						// Todo NOLAN : Check them and decide which ones to keep, and delete the other
-						<Route path="/first-connexion" element={<FirstConnexionPage />} /> //! currently unused
-						<Route path="/complete-profil" element={<CompleteProfil />} /> //* currently used
-						// Todo NOLAN : ==============================================================
-						<Route
-							path="/affectation-entreprise"
-							element={<AffectationEntrepriseSite />}
-						/>
-						<Route
-							path="/statut-affectation"
-							element={<StatutAffectationEnAttente />}
-						/>
-						{/* Routes principales avec le layout standard */}
-						<Route path="/*" element={
-							<AppContainer>
-								<TopBar />
-								<ApplicationWrapper>
-									<SideBar />
-									<AppSubContainer>
-										<Routes>
-											{/* Temporaires */}
-											<Route path="/sandbox" element={<Sandbox />} />
-											<Route path="/colors" element={<ColorsPage />} />
-											{/* Routes globales */}
-											<Route path="/home" element={<Home />} />
-											<Route path="/sites" element={<Sites />} />
-											<Route path="/sites/:id" element={<SiteDetails />} />
-											<Route path="/voitures" element={<Voitures />} />
-											<Route path="/voitures/:id" element={<VoitureDetails />} />
-											<Route path="/profile" element={<Profile />} />
-											{/* Routes admin */}
-											<Route path="/admin/voitures" element={<AdminVoitures />} />
-											{/* Fallback */}
-											<Route path="*" element={<Navigate to="/home" replace />} />
-										</Routes>
-									</AppSubContainer>
-								</ApplicationWrapper>
-							</AppContainer>
-						} />
-					</Routes>
-				</BrowserRouter>
+							<Route path="/first-connexion" element={<FirstConnexionPage />} /> //! currently unused
+							<Route path="/complete-profil" element={<CompleteProfil />} /> //* currently used
+							// Todo NOLAN : ==============================================================
+							<Route
+								path="/affectation-entreprise"
+								element={<AffectationEntrepriseSite />}
+							/>
+							<Route
+								path="/statut-affectation"
+								element={<StatutAffectationEnAttente />}
+							/>
+							{/* Routes principales avec le layout standard */}
+							<Route path="/*" element={
+								<AppContainer>
+									<TopBar />
+									<ApplicationWrapper>
+										<SideBar />
+										<AppSubContainer>
+											<Routes>
+												{/* Temporaires */}
+												<Route path="/sandbox" element={<Sandbox />} />
+												<Route path="/colors" element={<ColorsPage />} />
+												{/* Routes globales */}
+												<Route path="/home" element={<Home />} />
+												<Route path="/sites" element={<Sites />} />
+												<Route path="/sites/:id" element={<SiteDetails />} />
+												<Route path="/voitures" element={<Voitures />} />
+												<Route path="/voitures/:id" element={<VoitureDetails />} />
+												<Route path="/profile" element={<Profile />} />
+												{/* Routes admin */}
+												<Route path="/admin/voitures" element={<AdminVoitures />} />
+												{/* Fallback */}
+												<Route path="*" element={<Navigate to="/home" replace />} />
+											</Routes>
+										</AppSubContainer>
+									</ApplicationWrapper>
+								</AppContainer>
+							} />
+						</Routes>
+					</BrowserRouter>
+				</ReduxSync>
 			</ErrorBoundary>
 		</Provider>
 	);

@@ -5,6 +5,7 @@ import styled from "styled-components"
 import CustomFilter from "../../components/CustomFilter"
 import { useNavigate } from "react-router-dom"
 import axios from "axios"
+import useCars from "../../hook/useCars"
 
 const CardContainer = styled.div`
     display: flex;
@@ -35,16 +36,9 @@ export interface IVoiture {
 
 const Voitures = () => {
     const navigate = useNavigate()
-    const [filterProperties, setFilterProperties] = useState({ filterBy: undefined, searchValue: "" })
-    const [voitures, setVoitures] = useState<IVoiture[]>([])
+    const cars = useCars()
 
-    useEffect(() => {
-        const fetchSites = async () => {
-            const res = await axios.get("http://localhost:3000/api/voitures")
-            setVoitures(res.data)
-        }
-        fetchSites()
-    }, [])
+    const [filterProperties, setFilterProperties] = useState({ filterBy: undefined, searchValue: "" })
 
     const filterOptions = [
         {
@@ -73,9 +67,9 @@ const Voitures = () => {
         },
     ]
 
-    const filteredVoitures = voitures.filter(voiture => {
+    const filteredCars = Object.values(cars).filter(car => {
         if (!filterProperties.filterBy || !filterProperties.searchValue) return true
-        return voiture[filterProperties.filterBy]?.toString()?.toLowerCase().includes(filterProperties.searchValue.toLowerCase())
+        return car[filterProperties.filterBy]?.toString()?.toLowerCase().includes(filterProperties.searchValue.toLowerCase())
     })
 
     return (
@@ -83,38 +77,38 @@ const Voitures = () => {
             <CustomFilter options={filterOptions} filterCallback={
                 (filterBy, searchValue) => { setFilterProperties({ filterBy, searchValue }) }
             } />
-            {!!filteredVoitures.length && (
+            {!!filteredCars.length && (
                 <CardContainer>
-                    {filteredVoitures.map(voiture => {
-                        const VoitureImage = voiture.lien_image_voiture
-                            ? <img src={voiture.lien_image_voiture} alt="voiture" style={{ width: "100%", height: "150px", objectFit: "cover" }} />
+                    {filteredCars.map(car => {
+                        const VoitureImage = car.lien_image_voiture
+                            ? <img src={car.lien_image_voiture} alt="voiture" style={{ width: "100%", height: "150px", objectFit: "cover" }} />
                             : <div style={{ width: "100%", height: "150px", backgroundColor: "lightgray", display: "flex", justifyContent: "center", alignItems: "center" }}>Image indisponible</div>
 
                         return (
-                            <Card key={voiture.id} sx={{ width: 300 }}>
+                            <Card key={car.id} sx={{ width: 300 }}>
                                 <CardHeader
-                                    title={voiture.modele}
+                                    title={car.modele}
                                 />
                                 {VoitureImage}
                                 <CardContent>
                                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
                                         <div>SITE DE RATTACHEMENT</div>
-                                        <div>{voiture.immatriculation}</div>
-                                        <div>{voiture.marque} {voiture.modele}</div>
-                                        <div>{voiture.année_fabrication}</div>
-                                        <div>{voiture.carburant}</div>
-                                        <div>{voiture.couleur}</div>
-                                        <div>{voiture.puissance} CV</div>
-                                        <div>{voiture.nombre_portes} portes</div>
-                                        <div>{voiture.nombre_places} places assises</div>
-                                        <div>Boite {voiture.type_boite}</div>
+                                        <div>{car.immatriculation}</div>
+                                        <div>{car.marque} {car.modele}</div>
+                                        <div>{car.année_fabrication}</div>
+                                        <div>{car.carburant}</div>
+                                        <div>{car.couleur}</div>
+                                        <div>{car.puissance} CV</div>
+                                        <div>{car.nombre_portes} portes</div>
+                                        <div>{car.nombre_places} places assises</div>
+                                        <div>Boite {car.type_boite}</div>
                                     </div>
                                 </CardContent>
                                 <CardActions>
                                     <Button
                                         variant="outlined"
                                         size="small"
-                                        onClick={() => navigate(`/voitures/${voiture.id}`)}
+                                        onClick={() => navigate(`/voitures/${car.id}`)}
                                     >
                                         Consulter détails
                                     </Button>
@@ -124,7 +118,7 @@ const Voitures = () => {
                     })}
                 </CardContainer>
             )}
-            {!filteredVoitures.length && (
+            {!filteredCars.length && (
                 <Alert severity={
                     filterProperties.filterBy && filterProperties.searchValue
                         ? "warning"

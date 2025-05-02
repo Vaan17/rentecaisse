@@ -1,6 +1,15 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 
+const fetchAll = async () => {
+	try {
+		const res = await axios.get("http://localhost:3000/api/voitures");
+		return res.data;
+	} catch (error) {
+		toast.error("Erreur lors de la récupération des voitures.");
+	}
+};
+
 const createVoiture = async (voitureData) => {
 	try {
 		const res = await axios.post("http://localhost:3000/api/voitures", {
@@ -15,5 +24,6 @@ const createVoiture = async (voitureData) => {
 };
 
 export default {
+	fetchAll,
 	createVoiture,
 };
