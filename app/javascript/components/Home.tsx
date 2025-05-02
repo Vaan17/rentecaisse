@@ -8,7 +8,6 @@ const Container = styled.div`
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
-  background: linear-gradient(to bottom, #f8f9fa, #ffffff);
   min-height: 100vh;
 `;
 
@@ -340,40 +339,20 @@ const Home = () => {
 			<MenuGrid>
 				<div>
 					<SectionTitle>Emprunts en cours</SectionTitle>
-					<Link href="/dashboard" sx={{ textDecoration: "none" }}>
-						<StyledCard
-							sx={{
-								cursor: "pointer",
-								padding: "1.5rem",
-								borderRadius: "20px",
-							}}
-						>
-							{empruntsEnCours.length === 0 ? (
-								<div>Aucun emprunt en cours</div>
-							) : (
-								empruntsEnCours.map(renderEmpruntCard)
-							)}
-						</StyledCard>
-					</Link>
+					{empruntsEnCours.length === 0 ? (
+						<div>Aucun emprunt en cours</div>
+					) : (
+						empruntsEnCours.map(renderEmpruntCard)
+					)}
 				</div>
 
 				<div>
 					<SectionTitle>Emprunts en attente</SectionTitle>
-					<Link href="/dashboard" sx={{ textDecoration: "none" }}>
-						<StyledCard
-							sx={{
-								cursor: "pointer",
-								padding: "1.5rem",
-								borderRadius: "20px",
-							}}
-						>
-							{empruntsEnAttente.length === 0 ? (
-								<div>Aucun emprunt en attente</div>
-							) : (
-								empruntsEnAttente.map(renderEmpruntCard)
-							)}
-						</StyledCard>
-					</Link>
+					{empruntsEnAttente.length === 0 ? (
+						<div>Aucun emprunt en attente</div>
+					) : (
+						empruntsEnAttente.map(renderEmpruntCard)
+					)}
 				</div>
 			</MenuGrid>
 		</Container>
