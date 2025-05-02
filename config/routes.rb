@@ -41,7 +41,7 @@ Rails.application.routes.draw do
   post '/api/user/profile/photo', to: 'authenticated_page#update_profile_photo'
 
   # Routes pour les emprunts
-  get '/api/emprunts', to: 'emprunts_user#get_emprunts_users'
+  get "/api/emprunts" => "emprunts_user#get_emprunts_users"
   get '/api/emprunts/:id', to: 'emprunts_user#get_emprunts_user_by_id'
   
   # Routes pour la gestion de suppression de compte

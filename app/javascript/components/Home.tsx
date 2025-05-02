@@ -1,13 +1,13 @@
 import { Button, Card, Link } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
+import axios from "axios";
 
 const Container = styled.div`
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
-  background: linear-gradient(to bottom, #f8f9fa, #ffffff);
   min-height: 100vh;
 `;
 
@@ -159,127 +159,204 @@ const StyledCard = styled(Card)`
 `;
 
 interface Emprunt {
-  numero: string;
-  dateDebut: string;
-  dateFin: string;
-  vehicule: string;
-  passagers: number;
-  destination: string;
+	numero: string;
+	nom_emprunt: string;
+	dateDebut: string;
+	dateFin: string;
+	vehicule: string;
+	vehicule_id: number;
+	passagers: number;
+	destination: string;
+	statut: string;
+	demandeur: string;
+	description: string;
 }
 
 const Home = () => {
-  const empruntsEnCours: Emprunt[] = [
-    {
-      numero: "314",
-      dateDebut: "01/01/2025 08h00",
-      dateFin: "02/01/2025 17h00",
-      vehicule: "GOLF 3 GTI VD-142-XZ",
-      passagers: 2,
-      destination: "Campus ENI Rennes",
-    },
-  ];
+	const [empruntsEnCours, setEmpruntsEnCours] = useState<Emprunt[]>([]);
+	const [empruntsEnAttente, setEmpruntsEnAttente] = useState<Emprunt[]>([]);
+	const [loading, setLoading] = useState(true);
 
-  const empruntsEnAttente: Emprunt[] = [
-    {
-      numero: "418",
-      dateDebut: "01/06/2025 08lh00",
-      dateFin: "02/06/2025 17h00",
-      vehicule: "GOLF 3 GTI VD-142-XZ",
-      passagers: 0,
-      destination: "Campus ENI Rennes",
-    },
-  ];
+	useEffect(() => {
+		const fetchEmprunts = async () => {
+			try {
+				console.log("Début de la récupération des emprunts...");
+				const response = await axios.get("/api/emprunts");
+				if (response.status !== 200) {
+					throw new Error(`Erreur HTTP: ${response.status}`);
+				}
 
-  return (
-    <Container>
-      <Title>Tableau de bord</Title>
-      <MenuGrid>
-        <div>
-          <SectionTitle>Emprunts en cours</SectionTitle>
-          <Link href="/dashboard" sx={{ textDecoration: "none" }}>
-            <StyledCard
-              sx={{
-                cursor: "pointer",
-                padding: "1.5rem",
-                borderRadius: "20px",
-              }}
-            >
-              {empruntsEnCours.map((emprunt) => (
-                <div key={emprunt.numero}>
-                  <EmpruntInfo>
-                    <div className="emprunt-numero">
-                      Emprunt n°{emprunt.numero}
-                    </div>
-                    <div className="dates-section">
-                      <p>
-                        <span className="calendar-icon">📅</span> Début :{" "}
-                        {emprunt.dateDebut}
-                      </p>
-                      <p>
-                        <span className="calendar-icon">📅</span> Fin :{" "}
-                        {emprunt.dateFin}
-                      </p>
-                    </div>
-                    <div className="vehicule">🚗 {emprunt.vehicule}</div>
-                    <div className="passagers">
-                      {emprunt.passagers === 0
-                        ? "🚫👤 Pas de passager"
-                        : `👥 ${emprunt.passagers} passager${emprunt.passagers > 1 ? "s" : ""}`}
-                    </div>
-                    <div className="destination">
-                      📍 Destination : {emprunt.destination}
-                    </div>
-                  </EmpruntInfo>
-                </div>
-              ))}
-            </StyledCard>
-          </Link>
-        </div>
+				console.log("Réponse brute de l'API:", response);
 
-        <div>
-          <SectionTitle>Emprunts en attente</SectionTitle>
-          <Link href="/dashboard" sx={{ textDecoration: "none" }}>
-            <StyledCard
-              sx={{
-                cursor: "pointer",
-                padding: "1.5rem",
-                borderRadius: "20px",
-              }}
-            >
-              {empruntsEnAttente.map((emprunt) => (
-                <div key={emprunt.numero}>
-                  <EmpruntInfo>
-                    <div className="emprunt-numero">
-                      Emprunt n°{emprunt.numero}
-                    </div>
-                    <div className="dates-section">
-                      <p>
-                        <span className="calendar-icon">📅</span> Début :{" "}
-                        {emprunt.dateDebut}
-                      </p>
-                      <p>
-                        <span className="calendar-icon">📅</span> Fin :{" "}
-                        {emprunt.dateFin}
-                      </p>
-                    </div>
-                    <div className="vehicule">🚗 {emprunt.vehicule}</div>
-                    <div className="passagers">
-                      {emprunt.passagers === 0
-                        ? "🚫👤 Pas de passager"
-                        : `👥 ${emprunt.passagers} passager${emprunt.passagers > 1 ? "s" : ""}`}
-                    </div>
-                    <div className="destination">
-                      📍 Destination : {emprunt.destination}
-                    </div>
-                  </EmpruntInfo>
-                </div>
-              ))}
-            </StyledCard>
-          </Link>
-        </div>
-      </MenuGrid>
-    </Container>
-  );
+				// S'assurer que nous avons un tableau
+				const emprunts = Array.isArray(response.data) ? response.data : [];
+				console.log("Emprunts après transformation:", emprunts);
+
+				// Filtrer les emprunts en cours (date actuelle entre dateDebut et dateFin)
+				const maintenant = new Date();
+				console.log("Date actuelle:", maintenant);
+
+				const empruntsCours = emprunts.filter((emprunt: Emprunt) => {
+					const debut = new Date(emprunt.dateDebut);
+					const fin = new Date(emprunt.dateFin);
+					console.log("Emprunt:", emprunt.numero, "Début:", debut, "Fin:", fin);
+					return maintenant >= debut && maintenant <= fin;
+				});
+
+				// Les autres emprunts sont en attente
+				const empruntsAttente = emprunts.filter((emprunt: Emprunt) => {
+					const debut = new Date(emprunt.dateDebut);
+					return maintenant < debut;
+				});
+
+				console.log("Emprunts en cours:", empruntsCours);
+				console.log("Emprunts en attente:", empruntsAttente);
+
+				setEmpruntsEnCours(empruntsCours);
+				setEmpruntsEnAttente(empruntsAttente);
+			} catch (error) {
+				console.error("Erreur détaillée:", error);
+				if (error.response) {
+					console.error("Status:", error.response.status);
+					console.error("Data:", error.response.data);
+					if (error.response.status === 401) {
+						// Rediriger vers la page de connexion si non authentifié
+						window.location.href = "/login";
+					}
+				}
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		fetchEmprunts();
+	}, []);
+
+	if (loading) {
+		return <div>Chargement...</div>;
+	}
+
+	const renderEmpruntCard = (emprunt: Emprunt) => (
+		<div key={emprunt.numero}>
+			<EmpruntInfo>
+				<div className="emprunt-numero">
+					Emprunt n°{emprunt.numero} - {emprunt.nom_emprunt}
+				</div>
+				<div className="dates-section">
+					<p>
+						<span className="calendar-icon">📅</span> Début :{" "}
+						{new Date(emprunt.dateDebut).toLocaleString("fr-FR", {
+							year: "numeric",
+							month: "long",
+							day: "numeric",
+							hour: "2-digit",
+							minute: "2-digit",
+						})}
+					</p>
+					<p>
+						<span className="calendar-icon">📅</span> Fin :{" "}
+						{new Date(emprunt.dateFin).toLocaleString("fr-FR", {
+							year: "numeric",
+							month: "long",
+							day: "numeric",
+							hour: "2-digit",
+							minute: "2-digit",
+						})}
+					</p>
+				</div>
+				<div className="vehicule">
+					🚗
+					<Link
+						href={`/voitures/${emprunt.vehicule_id}`}
+						sx={{
+							color: "#3498db",
+							textDecoration: "underline",
+							fontWeight: 500,
+						}}
+					>
+						{emprunt.vehicule}
+					</Link>
+				</div>
+				<div className="passagers">
+					{emprunt.passagers === 0
+						? "🚫👤 Pas de passager"
+						: `👥 ${emprunt.passagers} passager${emprunt.passagers > 1 ? "s" : ""}`}
+				</div>
+				<div className="destination">
+					📍 Destination : {emprunt.destination}
+				</div>
+				<div
+					style={{
+						padding: "1.2rem 1.5rem",
+						background: "#f8f9fa",
+						borderTop: "1px solid #eee",
+						display: "flex",
+						flexDirection: "column",
+						gap: "0.5rem",
+					}}
+				>
+					<div style={{ display: "flex", alignItems: "center", gap: "0.7rem" }}>
+						<span
+							style={{
+								background:
+									emprunt.statut === "EN COURS"
+										? "#27ae60"
+										: emprunt.statut === "EN ATTENTE"
+											? "#f39c12"
+											: "#b2bec3",
+								color: "white",
+								borderRadius: "8px",
+								padding: "0.2rem 0.7rem",
+								fontWeight: "bold",
+								fontSize: "0.95rem",
+							}}
+						>
+							{emprunt.statut}
+						</span>
+						<span style={{ color: "#34495e", fontWeight: 500 }}>
+							<span style={{ marginRight: 4 }}>👤</span> {emprunt.demandeur}
+						</span>
+					</div>
+					{emprunt.description && (
+						<div
+							style={{
+								color: "#636e72",
+								fontStyle: "italic",
+								marginLeft: "1.5rem",
+							}}
+						>
+							<span style={{ marginRight: 4 }}>📝</span> {emprunt.description}
+						</div>
+					)}
+				</div>
+			</EmpruntInfo>
+		</div>
+	);
+
+	return (
+		<Container>
+			<Title>Tableau de bord</Title>
+			<MenuGrid>
+				<div>
+					<SectionTitle>Emprunts en cours</SectionTitle>
+					{empruntsEnCours.length === 0 ? (
+						<div>Aucun emprunt en cours</div>
+					) : (
+						empruntsEnCours.map(renderEmpruntCard)
+					)}
+				</div>
+
+				<div>
+					<SectionTitle>Emprunts en attente</SectionTitle>
+					{empruntsEnAttente.length === 0 ? (
+						<div>Aucun emprunt en attente</div>
+					) : (
+						empruntsEnAttente.map(renderEmpruntCard)
+					)}
+				</div>
+			</MenuGrid>
+		</Container>
+	);
 };
 
 export default Home;
