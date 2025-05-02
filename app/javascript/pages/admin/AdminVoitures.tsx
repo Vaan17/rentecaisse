@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Flex } from '../../components/style/flex'
 import CustomFilter from '../../components/CustomFilter'
-import { Button, Checkbox, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Tooltip } from '@mui/material'
+import { Alert, Button, Checkbox, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Tooltip } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import type { IVoiture } from '../voitures/Voitures'
 import axios from 'axios'
@@ -9,6 +9,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete'
 import styled from 'styled-components'
 import AdminVoitureModal from '../../modals/AdminVoitureModal'
+import useCars from '../../hook/useCars'
 
 const SButton = styled(Button)`
     min-width: fit-content !important;
@@ -17,21 +18,14 @@ const SButton = styled(Button)`
 
 const AdminVoitures = () => {
     const navigate = useNavigate()
+    const cars = useCars()
+
     const [filterProperties, setFilterProperties] = useState({ filterBy: undefined, searchValue: "" })
-    const [voitures, setVoitures] = useState<IVoiture[]>([])
     const [isOpen, setIsOpen] = useState(false)
     const [selected, setSelected] = useState<string[]>([])
     const [page, setPage] = useState(0)
     const [rowsPerPage, setRowsPerPage] = useState(5)
     const isAdmin = true // Replacer par une vérification réelle de l'utilisateur
-
-    useEffect(() => {
-        const fetchSites = async () => {
-            const res = await axios.get("http://localhost:3000/api/voitures")
-            setVoitures(res.data)
-        }
-        fetchSites()
-    }, [])
 
     const filterOptions = [
         {
@@ -66,9 +60,9 @@ const AdminVoitures = () => {
         { id: 'delete', label: '', colWidth: 50 },
     ]
 
-    const filteredVoitures = voitures.filter(voiture => {
+    const filteredCars = Object.values(cars).filter(car => {
         if (!filterProperties.filterBy || !filterProperties.searchValue) return true
-        return voiture[filterProperties.filterBy]?.toString()?.toLowerCase().includes(filterProperties.searchValue.toLowerCase())
+        return car[filterProperties.filterBy]?.toString()?.toLowerCase().includes(filterProperties.searchValue.toLowerCase())
     })
 
     if (!isAdmin) {
@@ -112,7 +106,7 @@ const AdminVoitures = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {filteredVoitures.map((car, index) => {
+                            {filteredCars.map((car, index) => {
                                 const isItemSelected = selected.includes(car.immatriculation);
                                 const labelId = `enhanced-table-checkbox-${index}`;
 
@@ -160,13 +154,20 @@ const AdminVoitures = () => {
                                     </TableRow>
                                 );
                             })}
+                            {filteredCars.length === 0 && (
+                                <TableRow>
+                                    <TableCell colSpan={headCells.length + 1} align="center">
+                                        <Alert severity='info'>Aucune voiture trouvée</Alert>
+                                    </TableCell>
+                                </TableRow>
+                            )}
                         </TableBody>
                     </Table>
                 </TableContainer>
                 <TablePagination
                     rowsPerPageOptions={[5, 10, 25]}
                     component="div"
-                    count={filteredVoitures.length}
+                    count={filteredCars.length}
                     rowsPerPage={rowsPerPage}
                     onRowsPerPageChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                         setRowsPerPage(parseInt(event.target.value, 10))

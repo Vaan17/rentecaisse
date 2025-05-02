@@ -11,6 +11,9 @@ import FNumber from '../utils/form/FNumber';
 import FSelect from '../utils/form/FSelect';
 import axios from 'axios';
 import _ from 'lodash';
+import VoitureAPI from "../redux/data/voiture/VoitureAPI"
+import { useDispatch } from 'react-redux';
+import { addCar } from '../redux/data/voiture/voitureReducer';
 
 const ModalContent = styled(Flex)`
     position: absolute;
@@ -74,6 +77,8 @@ const AdminVoitureModal = ({
     isNew: boolean
     onClose: () => void
 }) => {
+    const dispatch = useDispatch()
+
     const methods = useForm({
         resolver: yupResolver(schema),
         defaultValues: isNew
@@ -87,17 +92,13 @@ const AdminVoitureModal = ({
     const onSubmit = async (values) => {
         const { key, ...formValues } = values
 
-        try {
-            if (isNew) {
-                const res = await axios.post("http://localhost:3000/api/voitures", { data: formValues })
-
-                alert("Voiture créée avec succès !")
-            } else {
-            }
-            onClose()
-        } catch (error) {
-            alert(`Erreur lors de la soumission du formulaire: ${error.message}`)
+        if (isNew) {
+            const voiture = await VoitureAPI.createVoiture(formValues)
+            dispatch(addCar(voiture))
+        } else {
+            debugger
         }
+        onClose()
     }
 
     return (

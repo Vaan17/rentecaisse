@@ -1,7 +1,7 @@
 import React from "react"
 import "./App.css"
 import { Provider } from "react-redux"
-import store from "../../store/store.js"
+import store from "../redux/store.ts"
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom"
 import Sandbox from "./sandbox/Sandbox.js"
 import ColorsPage from "./sandbox/ColorsPage.js"
@@ -31,6 +31,7 @@ import { ErrorBoundary } from "react-error-boundary"
 import ErrorFallback from "./errorFallbacks/ErrorFallback.tsx"
 import Home from "../components/Home.tsx"
 import AdminVoitures from "./admin/AdminVoitures.tsx"
+import { ToastContainer } from "react-toastify"
 
 const AppContainer = styled.div`
 	width: 100vw;
@@ -61,6 +62,13 @@ const App = () => {
 				}}
 			>
 				<BrowserRouter>
+					<ToastContainer
+						position="bottom-left"
+						autoClose={5000}
+						pauseOnFocusLoss={false}
+						theme="colored"
+						newestOnTop
+					/>
 					<Routes>
 						{/* Routes publiques */}
 						<Route path="/login" element={<LoginPage />} />
