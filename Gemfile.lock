@@ -94,6 +94,11 @@ GEM
       railties (>= 6.1)
     drb (2.2.1)
     erubi (1.13.0)
+    et-orbi (1.2.11)
+      tzinfo
+    fugit (1.11.1)
+      et-orbi (~> 1, >= 1.2.11)
+      raabro (~> 1.4)
     globalid (1.2.1)
       activesupport (>= 6.1)
     i18n (1.14.6)
@@ -158,6 +163,7 @@ GEM
       stringio
     puma (6.4.3)
       nio4r (~> 2.0)
+    raabro (1.4.0)
     racc (1.8.1)
     rack (3.1.8)
     rack-cors (2.0.2)
@@ -234,6 +240,8 @@ GEM
       rubocop-performance
       rubocop-rails
     ruby-progressbar (1.13.0)
+    rufus-scheduler (3.9.2)
+      fugit (~> 1.1, >= 1.11.1)
     securerandom (0.3.1)
     standard (1.45.0)
       language_server-protocol (~> 3.17.0.2)
@@ -280,6 +288,7 @@ DEPENDENCIES
   rack-cors
   rails (~> 7.2.1, >= 7.2.1.1)
   rubocop-rails-omakase
+  rufus-scheduler
   standard (>= 1.43.0)
   tzinfo-data
 

@@ -30,6 +30,7 @@ import { ErrorBoundary } from "react-error-boundary"
 import ErrorFallback from "./errorFallbacks/ErrorFallback.tsx"
 import Home from "../components/Home.tsx"
 import CancellationAccountDeletion from './CancellationAccountDeletion'
+import ReservationVoiturePage from './emprunts/ReservationVoiturePage'
 
 const AppContainer = styled.div`
 	width: 100vw;
@@ -101,6 +102,7 @@ const App = () => {
 											<Route path="/voitures" element={<Voitures />} />
 											<Route path="/voitures/:id" element={<VoitureDetails />} />
 											<Route path="/profile" element={<Profile />} />
+                      <Route path="/reservations-voitures" element={<ReservationVoiturePage />} />
 											<Route path="*" element={<Navigate to="/home" replace />} />
 										</Routes>
 									</AppSubContainer>

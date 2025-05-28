@@ -1,0 +1,30 @@
+Ce document a pour but d'expliciter le fonctionnement attendu
+de la liaison back-end entre le front end et le back-end de la réservation de véhicules.
+Il est possible que nous ajoutions ici des fonctionnalités supplémentaires ou changements
+par rapport à la partie front déjà existante (il existe déjà un système front avec des données mockées qui sert d'exemple). L'objectif vise à passer cette partie mockées avec des vraies données en suivant le fonctionnement décris dans le fonctionnement.
+
+
+Pour remplacer les données mockées par une liaison back-end nous devons déjà définir les comportements attendues : 
+
+Lorsque l'utilisateur (connecté) arrive sur la page de réservation de véhicules, la page doit aller requêter le back-end et la DB avec une requête qui va sélectionner les voitures qui sont rattachés au même site que l'utilisateur : méthode envisagée, récuperer le site de l'utilisateur, et aller requêter les voitures ayant le même site_id (champ site_id en base de données)
+
+Il ne faudra afficher que les voitures qui sont du même site de l'utilisateur c'est pourquoi la requête doit bien interroger les voitures du même site que l'utilisateur, sinon l'utilisateur serait capable de créer des emprunts avec des voitures d'un site auquel il n'est pas rattaché, ce n'est pas un comportement que l'on souhaite.
+
+Lorsque le planning s'affiche, il faut ensuite aller pour chaque voiture du site (et donc affiché à l'écran) aller faire une requête pour vérifier les emprunts en cours. Il faut aller chercher dans la table emprunt, les emprunts qui ont le même voiture_id et qui ont une date de début et une date de fin qui est compris entre la période que l'utilisateur affiche à son écran : 
+
+Exemple si un emprunt d'une voiture avec l'id 1 est crée et validé pour le 15 juillet 2025 de 00h00 à 23h59, lorsque l'utilisateur regarde le planning de la voiture, il devrait voir "indisponible" sur toute la journée du 15 juillet 2025. Et donc il devrait seulement pouvoir consulter l'emprunt et ne pas en créer.
+
+A chaque selecteur de date, que ce soit par le selecteur rapide (+1 et -1 en jour), aujourd'hui ou le selecteur de date plus précis, il faut qu'a chaque fois que l'on change de date, on réexecute la requête pour afficher les changements, à chaque nouvelle date, on actualise les données, mais sans recharger la page !
+
+Liste des status disponible ( à gérer avec le champ statut_emprunt dans la table emprunt) : 
+
+Disponible (Couleur Grise ) : Aucun emprunt est en cours ou en brouillon par l'utilisateur ou un autre utilisateur sur la période visible : L'utilisateur peut réserver
+
+Brouillon (Couleur Orange claire): L'utilisateur ou un autre peut créer une demande d'emprunt, sans pour autant qu'elle soit validé, elle devra être validé par un administrateur, pour autant lorsqu'il a inscrit un brouillon, personne d'autres ne devraient pouvoir réserver pendant son créneau, le créneau restera bloquée.
+
+Validé (Couleur Verte claire): L'utilisateur a fait sa demande et son emprunt est validé, il peut quand même le modifier mais alors il repassera au statut Brouillon.
+
+En cours (Couleur Rouge clair) : L'emprunt est validé mais il est affiché en couleur rouge car l'horaire à l'instant T correspond à un emprunt qui se déroule.
+
+Point important à considérer : il faudra un changement du front end
+
