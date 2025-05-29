@@ -4,7 +4,7 @@ import { Alert, Button, CardActions, CardContent, CardHeader } from "@mui/materi
 import styled from "styled-components"
 import CustomFilter from "../../components/CustomFilter"
 import { useNavigate } from "react-router-dom"
-import axios from "axios"
+import axiosSecured from '../../services/apiService'
 import { Flex } from "../../components/style/flex"
 
 const CardContainer = styled.div`
@@ -36,7 +36,7 @@ const Sites = () => {
 
     useEffect(() => {
         const fetchSites = async () => {
-            const res = await axios.get("http://localhost:3000/api/sites")
+            const res = await axiosSecured.get("/sites")
             setSites(res.data)
         }
         fetchSites()

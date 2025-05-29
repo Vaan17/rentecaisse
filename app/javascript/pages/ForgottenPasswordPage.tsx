@@ -5,6 +5,7 @@ import WhiteContainer from '../components/layout/WhiteContainer';
 import { Flex } from '../components/style/flex';
 import { Card, CardContent } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Logo = styled.img`
   width: 64px;
@@ -252,23 +253,18 @@ const ForgottenPasswordPage = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:3000/api/auth/forgot-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ user: { email } }),
+      const response = await axios.post('/api/auth/forgot-password', {
+        user: { email }
       });
 
-      if (response.ok) {
-        setIsSubmitted(true);
-        setError('');
-      } else {
-        const data = await response.json();
-        setError(data.message || 'Une erreur est survenue');
-      }
+      setIsSubmitted(true);
+      setError('');
     } catch (err) {
-      setError('Une erreur est survenue lors de la connexion au serveur');
+      if (err.response && err.response.data) {
+        setError(err.response.data.message || 'Une erreur est survenue');
+      } else {
+        setError('Une erreur est survenue lors de la connexion au serveur');
+      }
     }
   };
 
