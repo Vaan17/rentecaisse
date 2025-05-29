@@ -3,7 +3,7 @@ import { Button } from '@mui/material'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Flex } from '../../components/style/flex'
 import type { ISite } from './Sites'
-import axios from 'axios'
+import axiosSecured from '../../services/apiService'
 import { isDesktop, isMobile } from 'react-device-detect'
 
 interface IEntreprise {
@@ -29,28 +29,30 @@ interface IEntreprise {
 }
 
 const SiteDetails = () => {
-    const { id } = useParams()
+    const { id } = useParams<{ id: string }>()
     const navigate = useNavigate()
     const [sites, setSites] = useState<ISite[]>([])
     const [entreprise, setEntreprise] = useState<IEntreprise | undefined>(undefined)
 
     useEffect(() => {
         const fetchSites = async () => {
-            const res = await axios.get("http://localhost:3000/api/sites")
+            const res = await axiosSecured.get("/sites")
             setSites(res.data)
         }
         fetchSites()
     }, [])
 
-    const selectedSite = sites.find(site => site.id === parseInt(id)) ?? {} as ISite
+    const selectedSite = sites.find(site => site.id === parseInt(id || '0')) ?? {} as ISite
     const SiteImage = selectedSite.lien_image_site
         ? <img src={selectedSite.lien_image_site} alt="site" style={{ width: "500px", height: "300px", objectFit: "cover" }} />
         : <div style={{ width: "500px", height: "300px", backgroundColor: "lightgray", display: "flex", justifyContent: "center", alignItems: "center" }}>Image indisponible</div>
 
     useEffect(() => {
         const fetchEntreprise = async () => {
-            const res = await axios.get(`http://localhost:3000/api/entreprises/${selectedSite.entreprise_id}`)
-            setEntreprise(res.data)
+            if (selectedSite.entreprise_id) {
+                const res = await axiosSecured.get(`/entreprises/${selectedSite.entreprise_id}`)
+                setEntreprise(res.data)
+            }
         }
         fetchEntreprise()
     }, [selectedSite])
@@ -71,7 +73,7 @@ const SiteDetails = () => {
                         <Flex directionColumn alignItemsStart gap=".2em">
                             <h2>Informations du site</h2>
                             <div>{selectedSite.adresse}</div>
-                            <div>{selectedSite.code_postal} {selectedSite.city}</div>
+                            <div>{selectedSite.code_postal} {selectedSite.ville}</div>
                             <div>UNDEFINED véhicules attachés</div>
                             <div>Téléphone: {selectedSite.telephone}</div>
                             <div>Email: {selectedSite.email}</div>

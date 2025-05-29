@@ -6,6 +6,7 @@ import BackgroundLayout from '../components/layout/BackgroundLayout';
 import WhiteContainer from '../components/layout/WhiteContainer';
 import { Card } from '@mui/material';
 import { Flex } from '../components/style/flex';
+import axiosSecured from '../services/apiService';
 
 const Logo = styled.img`
   width: 64px;
@@ -102,6 +103,7 @@ const FlexContainer = styled(Flex)`
 const StatutAffectationEnAttente = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [isStillPending, setIsStillPending] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -111,44 +113,21 @@ const StatutAffectationEnAttente = () => {
   const handleRefresh = async () => {
     setLoading(true);
     try {
-      console.log('Début de la vérification du statut...');
-      const token = localStorage.getItem('token');
-      console.log('Token récupéré:', token ? 'Présent' : 'Absent');
-
-      console.log('Envoi de la requête à /api/authenticated-page...');
-      const response = await fetch('http://localhost:3000/api/authenticated-page', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
-        }
-      });
-
-      console.log('Réponse reçue:', {
-        status: response.status,
-        statusText: response.statusText,
-        ok: response.ok
-      });
-
-      const data = await response.json();
-      console.log('Données reçues:', {
-        success: data.success,
-        redirect_to: data.redirect_to,
-        user: data.user,
-        completeData: data
-      });
-
-      console.log('Vérification des conditions de redirection...');
+      const response = await axiosSecured.get('/authenticated-page');
+      const data = response.data;
+      
+      console.log('Response data:', data);
+      
       if (data.success) {
-        console.log('Condition data.success vérifiée, redirection vers:', data.redirect_to);
-        navigate(data.redirect_to);
-      } else if (data.redirect_to && data.redirect_to !== '/statut-affectation') {
-        console.log('Condition else-if vérifiée, redirection vers:', data.redirect_to);
+        // Si l'utilisateur est maintenant validé, rediriger vers la page principale
+        navigate(data.redirect_to || '/home');
+      } else if (data.redirect_to !== '/statut-affectation') {
+        // Si l'utilisateur doit être redirigé ailleurs
         navigate(data.redirect_to);
       } else {
-        console.log('Aucune condition de redirection remplie. État actuel:', {
-          success: data.success,
-          redirect_to: data.redirect_to
-        });
+        // Si toujours en attente, mettre à jour l'état
+        setIsStillPending(true);
+        toast.info("Votre demande est toujours en attente de validation");
       }
     } catch (error) {
       console.error('Erreur détaillée lors de la vérification du statut:', {
@@ -158,12 +137,6 @@ const StatutAffectationEnAttente = () => {
         response: error.response
       });
       toast.error('Erreur lors de la vérification du statut');
-
-      if (error.response?.status === 401) {
-        console.log('Erreur 401 détectée, redirection vers login');
-        localStorage.removeItem('token');
-        navigate('/login');
-      }
     } finally {
       console.log('Fin de la vérification du statut');
       setLoading(false);
@@ -173,38 +146,20 @@ const StatutAffectationEnAttente = () => {
   const handleCancelAffectation = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/cancel_affectation', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
-        }
-      });
-
-      const data = await response.json();
+      const response = await axiosSecured.post('/cancel_affectation');
+      const data = response.data;
+      
       if (data.success) {
         toast.success("Demande d'affectation annulée");
 
         // Vérifier l'état après l'annulation
-        const statusResponse = await fetch('http://localhost:3000/api/authenticated-page', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json'
-          }
-        });
-
-        const statusData = await statusResponse.json();
+        const statusResponse = await axiosSecured.get('/authenticated-page');
+        const statusData = statusResponse.data;
         navigate(statusData.redirect_to);
       }
     } catch (error) {
       console.error('Erreur lors de l\'annulation:', error);
       toast.error('Erreur lors de l\'annulation de la demande');
-
-      if (error.response?.status === 401) {
-        localStorage.removeItem('token');
-        navigate('/login');
-      }
     } finally {
       setLoading(false);
     }

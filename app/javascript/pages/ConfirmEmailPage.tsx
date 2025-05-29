@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import BackgroundLayout from '../components/layout/BackgroundLayout';
 import { Card } from '@mui/material';
 import { Flex } from '../components/style/flex';
+import axios from 'axios';
 
 const Logo = styled.img`
   width: 64px;
@@ -133,17 +134,10 @@ const ConfirmEmailPage = () => {
       setIsRequestSent(true);
       const confirmEmail = async () => {
         try {
-          const response = await fetch('http://localhost:3000/api/auth/confirm_email', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            },
-            body: JSON.stringify(formData)
-          });
+          const response = await axios.post('/api/auth/confirm_email', formData);
 
           console.log('Statut de la réponse:', response.status);
-          const data = await response.json();
+          const data = response.data;
           console.log('Données reçues:', data);
 
           setIsSuccess(data.success);

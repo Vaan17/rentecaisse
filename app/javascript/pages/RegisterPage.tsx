@@ -4,6 +4,7 @@ import BackgroundLayout from '../components/layout/BackgroundLayout';
 import WhiteContainer from '../components/layout/WhiteContainer';
 import { Card, CardContent } from '@mui/material';
 import { Flex } from '../components/style/flex';
+import axios from 'axios';
 
 const Logo = styled.img`
   width: 64px;
@@ -433,21 +434,14 @@ const RegisterPage = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:3000/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          user: {
-            email,
-            password // Envoi du mot de passe non hashé
-          }
-        })
+      const response = await axios.post('/api/auth/register', {
+        user: {
+          email,
+          password // Envoi du mot de passe non hashé
+        }
       });
 
-      const data = await response.json();
+      const data = response.data;
 
       if (data.success) {
         window.location.href = '/register-success';
