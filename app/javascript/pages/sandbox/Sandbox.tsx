@@ -28,7 +28,7 @@ const Sandbox = () => {
 
     useEffect(() => {
         axios
-            .get("http://localhost:3000/demo2")
+            .get("/demo2")
             .then((response) => {
                 setMyText(response.data);
             })

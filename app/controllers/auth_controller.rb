@@ -1,4 +1,6 @@
 class AuthController < ApplicationController
+  skip_before_action :verify_authentication, raise: false
+  
   def login
     Rails.logger.info "Tentative de connexion avec l'email: #{user_params[:email]}"
     

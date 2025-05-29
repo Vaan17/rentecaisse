@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import BackgroundLayout from '../components/layout/BackgroundLayout';
 import WhiteContainer from '../components/layout/WhiteContainer';
+import axiosSecured from '../services/apiService';
 
 const Header = styled.div`
   display: flex;
@@ -185,19 +186,10 @@ const CancellationAccountDeletion: React.FC = () => {
   const fetchDeletionDetails = async () => {
     setFetchingDetails(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/user/deletion_details', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
-        }
-      });
+      const response = await axiosSecured.get('/user/deletion_details');
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          setDeletionDetails(data.deletion_request);
-        }
+      if (response.data.success) {
+        setDeletionDetails(response.data.deletion_request);
       }
     } catch (error) {
       console.error('Erreur lors de la récupération des détails:', error);
@@ -226,16 +218,9 @@ const CancellationAccountDeletion: React.FC = () => {
   const handleCancelDeletion = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/user/cancel_deletion', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
-        }
-      });
+      const response = await axiosSecured.post('/user/cancel_deletion');
 
-      const data = await response.json();
+      const data = response.data;
       if (data.success) {
         toast.success(data.message);
         navigate('/home');
@@ -243,8 +228,8 @@ const CancellationAccountDeletion: React.FC = () => {
         toast.error(data.message || 'Une erreur est survenue');
       }
     } catch (error) {
-      console.error('Erreur lors de l&apos;annulation:', error);
-      toast.error('Erreur lors de l&apos;annulation de la demande');
+      console.error('Erreur lors de l\'annulation:', error);
+      toast.error('Erreur lors de l\'annulation de la demande');
     } finally {
       setLoading(false);
     }

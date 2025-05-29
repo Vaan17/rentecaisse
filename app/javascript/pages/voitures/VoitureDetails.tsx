@@ -2,34 +2,36 @@ import React, { useState, useEffect } from 'react'
 import { Button } from '@mui/material'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Flex } from '../../components/style/flex'
-import axios from 'axios'
+import axiosSecured from '../../services/apiService'
 import { isDesktop, isMobile } from 'react-device-detect'
 import type { ISite } from '../sites/Sites'
 import type { IVoiture } from './Voitures'
 
 const VoitureDetails = () => {
-    const { id } = useParams()
+    const { id } = useParams<{ id: string }>()
     const navigate = useNavigate()
     const [voitures, setVoitures] = useState<IVoiture[]>([])
     const [site, setSite] = useState<ISite | undefined>(undefined)
 
     useEffect(() => {
         const fetchVoitures = async () => {
-            const res = await axios.get("http://localhost:3000/api/voitures")
+            const res = await axiosSecured.get("/voitures")
             setVoitures(res.data)
         }
         fetchVoitures()
     }, [])
 
-    const selectedVoiture = voitures.find(site => site.id === parseInt(id)) ?? {} as IVoiture
+    const selectedVoiture = voitures.find(site => site.id === parseInt(id || '0')) ?? {} as IVoiture
     const VoitureImage = selectedVoiture.lien_image_voiture
         ? <img src={selectedVoiture.lien_image_voiture} alt="site" style={{ width: "500px", height: "300px", objectFit: "cover" }} />
         : <div style={{ width: "500px", height: "300px", backgroundColor: "lightgray", display: "flex", justifyContent: "center", alignItems: "center" }}>Image indisponible</div>
 
     useEffect(() => {
         const fetchSite = async () => {
-            const res = await axios.get(`http://localhost:3000/api/sites/${selectedVoiture.site_id}`)
-            setSite(res.data)
+            if (selectedVoiture.site_id) {
+                const res = await axiosSecured.get(`/sites/${selectedVoiture.site_id}`)
+                setSite(res.data)
+            }
         }
         fetchSite()
     }, [selectedVoiture])

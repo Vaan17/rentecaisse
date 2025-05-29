@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import axiosSecured from '../services/apiService';
 
 const ProfileContainer = styled.div`
   max-width: 1200px;
@@ -624,31 +625,13 @@ const Profile: React.FC = () => {
 
   const fetchUserProfile = async () => {
     try {
-      const token = localStorage.getItem('token');
-      console.log('Token récupéré:', token ? 'Présent' : 'Absent');
-
       console.log('Envoi de la requête au profil...');
-      const response = await fetch('http://localhost:3000/api/user/profile', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
-        }
-      });
+      const response = await axiosSecured.get('/user/profile');
 
       console.log('Statut de la réponse:', response.status);
-      console.log('Headers de la réponse:', Object.fromEntries(response.headers.entries()));
+      console.log('Headers de la réponse:', response.headers);
 
-      if (response.status === 401) {
-        console.log('Non autorisé, redirection vers login');
-        navigate('/login');
-        return;
-      }
-
-      if (!response.ok) {
-        throw new Error('Erreur lors de la récupération du profil');
-      }
-
-      const data = await response.json();
+      const data = response.data;
       console.log('Données reçues:', data);
       
       setUserData(data);
@@ -666,16 +649,10 @@ const Profile: React.FC = () => {
     if (!userData) return; // Protection TypeScript
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/users/profile-image?user_id=${userData.personal_info.id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
-        }
-      });
+      const response = await axiosSecured.get(`/users/profile-image?user_id=${userData.personal_info.id}`);
 
-      if (response.ok) {
-        const data = await response.json();
+      if (response.status === 200) {
+        const data = response.data;
         if (data.success) {
           const binaryData = atob(data.image_data);
           const bytes = new Uint8Array(binaryData.length);
@@ -721,17 +698,15 @@ const Profile: React.FC = () => {
     formData.append('photo', file);
 
     try {
-      const token = localStorage.getItem('token');
       console.log("Début de l'upload...");
-      const response = await fetch('http://localhost:3000/api/user/profile/photo', {
-        method: 'POST',
+      // Utilisation directe de axiosSecured.post avec FormData
+      const response = await axiosSecured.post('/user/profile/photo', formData, {
         headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        body: formData
+          'Content-Type': 'multipart/form-data'
+        }
       });
 
-      const data = await response.json();
+      const data = response.data;
       console.log("Réponse du serveur:", data);
       
       if (data.success) {
@@ -755,22 +730,13 @@ const Profile: React.FC = () => {
 
   const handleFieldSave = async (fieldName: string, value: string) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/user/profile', {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          user: {
-            [fieldName]: value
-          }
-        })
+      const response = await axiosSecured.patch('/user/profile', {
+        user: {
+          [fieldName]: value
+        }
       });
 
-      const data = await response.json();
+      const data = response.data;
       
       if (data.success) {
         setUserData(prev => prev ? {
@@ -801,16 +767,9 @@ const Profile: React.FC = () => {
 
   const handleDeleteAccountRequest = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/user/request_deletion', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
-        }
-      });
-
-      const data = await response.json();
+      const response = await axiosSecured.post('/user/request_deletion');
+      
+      const data = response.data;
       
       if (data.success) {
         toast.success('Votre demande de suppression a été enregistrée');
@@ -949,23 +908,14 @@ const Profile: React.FC = () => {
                     }
 
                     try {
-                      const token = localStorage.getItem('token');
-                      const response = await fetch('http://localhost:3000/api/user/profile', {
-                        method: 'PATCH',
-                        headers: {
-                          'Authorization': `Bearer ${token}`,
-                          'Content-Type': 'application/json',
-                          'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({
-                          user: {
-                            nom: userData.personal_info.nom,
-                            prenom: userData.personal_info.prenom
-                          }
-                        })
+                      const response = await axiosSecured.patch('/user/profile', {
+                        user: {
+                          nom: userData.personal_info.nom,
+                          prenom: userData.personal_info.prenom
+                        }
                       });
 
-                      const data = await response.json();
+                      const data = response.data;
                       if (data.success) {
                         setEditingFields({});
                         toast.success('Nom et prénom mis à jour avec succès');

@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import styled from 'styled-components';
 import BackgroundLayout from '../components/layout/BackgroundLayout';
 import WhiteContainer from '../components/layout/WhiteContainer';
+import axiosSecured from '../services/apiService';
 
 const Header = styled.div`
   display: flex;
@@ -392,65 +393,28 @@ const CompleteProfil: React.FC = () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
-      
-      if (!token) {
-        toast.error('Session expirée, veuillez vous reconnecter');
-        navigate('/login');
-        return;
-      }
-
-      const response = await fetch('http://localhost:3000/api/update_profile', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({ profile: formData })
+      const response = await axiosSecured.post('/update_profile', {
+        profile: formData
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = response.data;
       console.log('Update profile response:', data);
 
       if (data.success) {
         toast.success('Profil mis à jour avec succès');
         
         // Vérifier l'état de l'utilisateur
-        const statusResponse = await fetch('http://localhost:3000/api/authenticated-page', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json'
-          }
-        });
-
-        if (!statusResponse.ok) {
-          throw new Error(`HTTP error! status: ${statusResponse.status}`);
-        }
-        
-        const statusData = await statusResponse.json();
+        const statusResponse = await axiosSecured.get('/authenticated-page');
+        const statusData = statusResponse.data;
         console.log('Status response:', statusData);
         
         navigate(statusData.redirect_to);
       } else {
         toast.error(data.message || 'Une erreur est survenue');
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Erreur lors de la mise à jour du profil:', error);
-      if (error.response?.data?.errors) {
-        error.response.data.errors.forEach((err: string) => toast.error(err));
-      } else {
-        toast.error('Une erreur est survenue lors de la mise à jour du profil');
-      }
-      
-      if (error.response?.status === 401) {
-        localStorage.removeItem('token');
-        navigate('/login');
-      }
+      toast.error('Une erreur est survenue lors de la mise à jour du profil');
     } finally {
       setLoading(false);
     }
