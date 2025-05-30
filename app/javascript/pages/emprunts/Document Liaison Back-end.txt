@@ -6,9 +6,9 @@ par rapport à la partie front déjà existante (il existe déjà un système fr
 
 Pour remplacer les données mockées par une liaison back-end nous devons déjà définir les comportements attendues : 
 
-Lorsque l'utilisateur (connecté) arrive sur la page de réservation de véhicules, la page doit aller requêter le back-end et la DB avec une requête qui va sélectionner les voitures qui sont rattachés au même site que l'utilisateur : méthode envisagée, récuperer le site de l'utilisateur, et aller requêter les voitures ayant le même site_id (champ site_id en base de données)
+Lorsque l'utilisateur (connecté) arrive sur la page de réservation de véhicules, la page doit aller requêter le back-end et la DB avec une requête qui va sélectionner les voitures qui sont rattachés au même site que l'utilisateur : méthode envisagée, récuperer le site de l'utilisateur, et aller requêter les voitures ayant le même site_id (champ site_id en base de données) ainsi que le même entreprise_id
 
-Il ne faudra afficher que les voitures qui sont du même site de l'utilisateur c'est pourquoi la requête doit bien interroger les voitures du même site que l'utilisateur, sinon l'utilisateur serait capable de créer des emprunts avec des voitures d'un site auquel il n'est pas rattaché, ce n'est pas un comportement que l'on souhaite.
+Il ne faudra afficher que les voitures qui sont du même site et de la même entreprise que l'utilisateur c'est pourquoi la requête doit bien interroger les voitures du même site que l'utilisateur et de la même entreprise, sinon l'utilisateur serait capable de créer des emprunts avec des voitures d'un site auquel il n'est pas rattaché, ce n'est pas un comportement que l'on souhaite.
 
 Lorsque le planning s'affiche, il faut ensuite aller pour chaque voiture du site (et donc affiché à l'écran) aller faire une requête pour vérifier les emprunts en cours. Il faut aller chercher dans la table emprunt, les emprunts qui ont le même voiture_id et qui ont une date de début et une date de fin qui est compris entre la période que l'utilisateur affiche à son écran : 
 
@@ -16,8 +16,10 @@ Exemple si un emprunt d'une voiture avec l'id 1 est crée et validé pour le 15 
 
 A chaque selecteur de date, que ce soit par le selecteur rapide (+1 et -1 en jour), aujourd'hui ou le selecteur de date plus précis, il faut qu'a chaque fois que l'on change de date, on réexecute la requête pour afficher les changements, à chaque nouvelle date, on actualise les données, mais sans recharger la page !
 
-Liste des status disponible ( à gérer avec le champ statut_emprunt dans la table emprunt) : 
+Il faudrait aussi faire en sorte de diminuer la largeur des colonnes, ou réaliser un changement permettant d'avoir un affichage sans dézoomer ou zoomer pour voir les créneaux lointains, il faudrait très probablement avoir un affichage avec une structure particulière uniformément intégrés à l'écran et pas très large.
 
+Liste des status disponible ( à gérer avec le champ statut_emprunt dans la table emprunt) : 
+(Il faudra modifier la légende de la partie réservation)
 Disponible (Couleur Grise ) : Aucun emprunt est en cours ou en brouillon par l'utilisateur ou un autre utilisateur sur la période visible : L'utilisateur peut réserver
 
 Brouillon (Couleur Orange claire): L'utilisateur ou un autre peut créer une demande d'emprunt, sans pour autant qu'elle soit validé, elle devra être validé par un administrateur, pour autant lorsqu'il a inscrit un brouillon, personne d'autres ne devraient pouvoir réserver pendant son créneau, le créneau restera bloquée.
@@ -26,5 +28,17 @@ Validé (Couleur Verte claire): L'utilisateur a fait sa demande et son emprunt e
 
 En cours (Couleur Rouge clair) : L'emprunt est validé mais il est affiché en couleur rouge car l'horaire à l'instant T correspond à un emprunt qui se déroule.
 
-Point important à considérer : il faudra un changement du front end
+Point important à considérer : il faudra un changement du front end pour afficher lorsque nous créeons un emprunt il faut que la pop up affiche un nom d'emprunt à remplir (nom_emprunt table emprunt), une description également à remplir (champ description table emprunt), laisser les dates à inscrire dans date_début et date_fin de la table emprunt. Il faut également un champ ou l'utilisateur peut choisir la clé de la voiture (il faudra requêter les informations de la table clé par rapport à l'id de la voiture), inscrire qui emprunte avec l'ID de l'utilisateur de la voiture. Pour terminer, dans toujours la même pop-up, l'utilisateur doit pouvoir ajouter des passagers en cliquant sur un bouton Ajouter passager (il devra également pouvoir les retirer). Lorsqu'il ajoute un passager il va créer une liste passager et associés l'id d'un utilisateur (il faudra afficher les informations des utilisateurs de son site à l'écran et qu'il puisse choisir un utilisateur). 
+
+Pour terminer il pourra ajouter, choisir, supprimer et choisir une localisation et la rattaché à cet emprunt. 
+
+Subtilité, si un emprunt est validé ou en brouillon qui n'est pas de l'utilisateur en question, tu n'affiches que les informations de l'emprunt et ne laisse pas la possibilité à l'utilisateur de la modifier. 
+
+
+Méthode conseillé : Travailler toujours la partie front-end dans le dossier emprunt uniquement.
+Pour la partie back-end, veuillez consulter d'abords les models de données pour prendre connaissances du schéma de données et des champs des tables, puis je recommande d'utiliser les controlleurs ruby, créer si non existant les controllers, tel que liste_passager controller etc. Si un controller est déjà existant, par exemple voiture_controller, tu ne le crée pas une deuxième fois et tu l'utilises. Attention à bien faire la partie controlleur qui fais des requêtes au services associées, si pour un emprunt tu as besoin des informations d'une voiture tu appelleras le service voiture et la méthode associées, on utilise les services concernant les bons objets à créer.
+
+De même tu feras en sorte d'utiliser les services associés et de les créer si nécessaires.
+Fait également Attention au route pour bien lier les parties front, back et DB ensemble.
+Je te conseille fortement d'aller voir ces dossiers et d'étudier les interactions entre ses fichiers pour bien voir la logique dans son ensemble et structure pour réfléchir en cohérence du processus et ne pas créer de processus différent avec des services différents etc. (Il faut utiliser axiosSecured)
 

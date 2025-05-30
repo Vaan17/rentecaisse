@@ -30,10 +30,210 @@ class EmpruntsUserController < ApplicationController
 
         render json: emprunts_user
     end
+    
     def fetch_all
         emprunts = Emprunt.all
     
         render json: emprunts
     end
     
+    # Récupérer les emprunts pour une voiture et une période donnée
+    def get_emprunts_par_voiture
+        voiture_id = params[:voiture_id]
+        date_debut = params[:date_debut]
+        date_fin = params[:date_fin]
+        
+        # Vérifier que tous les paramètres sont présents
+        if voiture_id.blank? || date_debut.blank? || date_fin.blank?
+            return render json: { error: "Paramètres manquants" }, status: :bad_request
+        end
+        
+        # Convertir les dates
+        begin
+            date_debut = DateTime.parse(date_debut)
+            date_fin = DateTime.parse(date_fin)
+        rescue ArgumentError
+            return render json: { error: "Format de date invalide" }, status: :bad_request
+        end
+        
+        # Rechercher les emprunts pour cette voiture et cette période
+        emprunts = Emprunt.where(voiture_id: voiture_id)
+                        .where("(date_debut <= ? AND date_fin >= ?) OR (date_debut >= ? AND date_fin <= ?)", 
+                              date_fin, date_debut, date_debut, date_fin)
+        
+        # Date actuelle pour vérifier si un emprunt est en cours
+        now = DateTime.now
+        
+        # Transformer les emprunts au format attendu par le front
+        emprunts_formattees = emprunts.map do |emprunt|
+            status = if emprunt.statut_emprunt == "validé"
+                        # Vérifier si l'emprunt est en cours
+                        if now >= emprunt.date_debut && now <= emprunt.date_fin
+                            "en_cours"
+                        else
+                            "confirmed" 
+                        end
+                     elsif emprunt.statut_emprunt == "brouillon"
+                        "draft"
+                     else
+                        "empty"
+                     end
+            
+            {
+                id: emprunt.id,
+                carId: emprunt.voiture_id,
+                startTime: emprunt.date_debut,
+                endTime: emprunt.date_fin,
+                status: status,
+                utilisateur_id: emprunt.utilisateur_demande_id,
+                nom_emprunt: emprunt.nom_emprunt,
+                description: emprunt.description,
+                cle_id: emprunt.cle_id,
+                liste_passager_id: emprunt.liste_passager_id,
+                localisation_id: emprunt.localisation_id
+            }
+        end
+        
+        render json: emprunts_formattees
+    end
+    
+    # Créer un nouvel emprunt
+    def create
+        # Vérifier l'utilisateur connecté
+        current_user_id = params[:user_id]
+        
+        # Valider les paramètres requis
+        if params[:voiture_id].blank? || params[:date_debut].blank? || params[:date_fin].blank? || 
+           params[:nom_emprunt].blank? || params[:description].blank?
+            return render json: { error: "Paramètres requis manquants" }, status: :bad_request
+        end
+        
+        # Créer un nouvel emprunt avec le statut "brouillon"
+        emprunt = Emprunt.new(
+            voiture_id: params[:voiture_id],
+            date_debut: params[:date_debut],
+            date_fin: params[:date_fin],
+            nom_emprunt: params[:nom_emprunt],
+            description: params[:description],
+            statut_emprunt: "brouillon",
+            utilisateur_demande_id: current_user_id,
+            cle_id: params[:cle_id],
+            localisation_id: params[:localisation_id],
+            date_creation_emprunt: DateTime.now,
+            date_modification_emprunt: DateTime.now
+        )
+        
+        # Créer une liste de passagers si des passagers sont spécifiés
+        if params[:passagers].present? && params[:passagers].any?
+            # Prendre le premier passager pour créer la liste
+            premier_passager_id = params[:passagers].first
+            
+            liste_passager = ListePassager.create!(
+                utilisateur_id: premier_passager_id,
+                date_creation_liste: DateTime.now,
+                date_modification_liste: DateTime.now
+            )
+            
+            # Associer la liste de passagers à l'emprunt
+            emprunt.liste_passager_id = liste_passager.id
+        end
+        
+        if emprunt.save
+            render json: emprunt, status: :created
+        else
+            render json: { error: emprunt.errors.full_messages }, status: :unprocessable_entity
+        end
+    end
+    
+    # Mettre à jour un emprunt existant
+    def update
+        emprunt = Emprunt.find(params[:id])
+        current_user_id = params[:user_id]
+        
+        # Vérifier que l'utilisateur actuel est bien le créateur de l'emprunt
+        if emprunt.utilisateur_demande_id != current_user_id
+            return render json: { error: "Vous n'êtes pas autorisé à modifier cet emprunt" }, status: :forbidden
+        end
+        
+        # Si l'emprunt était validé, le repasser en brouillon
+        if emprunt.statut_emprunt == "validé"
+            emprunt.statut_emprunt = "brouillon"
+        end
+        
+        # Mettre à jour les champs de l'emprunt
+        emprunt.date_debut = params[:date_debut] if params[:date_debut].present?
+        emprunt.date_fin = params[:date_fin] if params[:date_fin].present?
+        emprunt.nom_emprunt = params[:nom_emprunt] if params[:nom_emprunt].present?
+        emprunt.description = params[:description] if params[:description].present?
+        emprunt.cle_id = params[:cle_id] if params[:cle_id].present?
+        emprunt.localisation_id = params[:localisation_id] if params[:localisation_id].present?
+        emprunt.date_modification_emprunt = DateTime.now
+        
+        # Mettre à jour la liste des passagers si nécessaire
+        if params[:passagers].present? && params[:passagers].any?
+            # Supprimer l'ancienne liste si elle existe
+            if emprunt.liste_passager.present?
+                emprunt.liste_passager.destroy
+            end
+            
+            # Prendre le premier passager pour créer la nouvelle liste
+            premier_passager_id = params[:passagers].first
+            
+            # Créer une nouvelle liste
+            liste_passager = ListePassager.create!(
+                utilisateur_id: premier_passager_id,
+                date_creation_liste: DateTime.now,
+                date_modification_liste: DateTime.now
+            )
+            
+            # Associer la nouvelle liste à l'emprunt
+            emprunt.liste_passager_id = liste_passager.id
+        end
+        
+        if emprunt.save
+            render json: emprunt
+        else
+            render json: { error: emprunt.errors.full_messages }, status: :unprocessable_entity
+        end
+    end
+    
+    # Supprimer un emprunt
+    def destroy
+        emprunt = Emprunt.find(params[:id])
+        current_user_id = params[:user_id]
+        
+        # Vérifier que l'utilisateur actuel est bien le créateur de l'emprunt
+        if emprunt.utilisateur_demande_id != current_user_id
+            return render json: { error: "Vous n'êtes pas autorisé à supprimer cet emprunt" }, status: :forbidden
+        end
+        
+        # Supprimer l'emprunt
+        if emprunt.destroy
+            render json: { message: "Emprunt supprimé avec succès" }
+        else
+            render json: { error: "Impossible de supprimer l'emprunt" }, status: :unprocessable_entity
+        end
+    end
+    
+    # Valider un emprunt (pour les administrateurs)
+    def valider
+        emprunt = Emprunt.find(params[:id])
+        current_user_id = params[:user_id]
+        current_user = Utilisateur.find(current_user_id)
+        
+        # Vérifier que l'utilisateur est un administrateur
+        unless current_user.admin_entreprise || current_user.admin_rentecaisse
+            return render json: { error: "Vous n'êtes pas autorisé à valider cet emprunt" }, status: :forbidden
+        end
+        
+        # Mettre à jour le statut de l'emprunt
+        emprunt.statut_emprunt = "validé"
+        emprunt.date_modification_emprunt = DateTime.now
+        
+        if emprunt.save
+            render json: emprunt
+        else
+            render json: { error: emprunt.errors.full_messages }, status: :unprocessable_entity
+        end
+    end
 end

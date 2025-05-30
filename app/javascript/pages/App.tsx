@@ -102,7 +102,7 @@ const App = () => {
 											<Route path="/voitures" element={<Voitures />} />
 											<Route path="/voitures/:id" element={<VoitureDetails />} />
 											<Route path="/profile" element={<Profile />} />
-                      <Route path="/reservations-voitures" element={<ReservationVoiturePage />} />
+                      <Route path="/emprunts" element={<ReservationVoiturePage />} />
 											<Route path="*" element={<Navigate to="/home" replace />} />
 										</Routes>
 									</AppSubContainer>
