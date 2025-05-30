@@ -1,5 +1,6 @@
 class EmpruntsUserController < ApplicationController
-      
+    before_action :verify_authentication
+
     def get_emprunts_users
         Rails.logger.info "Début de get_emprunts_users"
         listeEmprunts = Emprunt.all.map do |emprunt|
@@ -99,24 +100,35 @@ class EmpruntsUserController < ApplicationController
     
     # Créer un nouvel emprunt
     def create
-        # Vérifier l'utilisateur connecté
-        current_user_id = params[:user_id]
-        
         # Valider les paramètres requis
         if params[:voiture_id].blank? || params[:date_debut].blank? || params[:date_fin].blank? || 
            params[:nom_emprunt].blank? || params[:description].blank?
             return render json: { error: "Paramètres requis manquants" }, status: :bad_request
         end
         
+        # Vérifier s'il y a des chevauchements avec d'autres emprunts
+        voiture_id = params[:voiture_id]
+        date_debut = params[:date_debut]
+        date_fin = params[:date_fin]
+        
+        chevauchements = verifier_chevauchements(voiture_id, date_debut, date_fin)
+        
+        if chevauchements.any?
+            return render json: { 
+                error: "Il existe déjà un emprunt pour cette voiture sur ce créneau horaire",
+                emprunts_en_conflit: chevauchements.map { |e| e.id }
+            }, status: :conflict
+        end
+        
         # Créer un nouvel emprunt avec le statut "brouillon"
         emprunt = Emprunt.new(
-            voiture_id: params[:voiture_id],
-            date_debut: params[:date_debut],
-            date_fin: params[:date_fin],
+            voiture_id: voiture_id,
+            date_debut: date_debut,
+            date_fin: date_fin,
             nom_emprunt: params[:nom_emprunt],
             description: params[:description],
             statut_emprunt: "brouillon",
-            utilisateur_demande_id: current_user_id,
+            utilisateur_demande_id: @current_user.id,
             cle_id: params[:cle_id],
             localisation_id: params[:localisation_id],
             date_creation_emprunt: DateTime.now,
@@ -148,16 +160,31 @@ class EmpruntsUserController < ApplicationController
     # Mettre à jour un emprunt existant
     def update
         emprunt = Emprunt.find(params[:id])
-        current_user_id = params[:user_id]
         
         # Vérifier que l'utilisateur actuel est bien le créateur de l'emprunt
-        if emprunt.utilisateur_demande_id != current_user_id
+        if emprunt.utilisateur_demande_id != @current_user.id
             return render json: { error: "Vous n'êtes pas autorisé à modifier cet emprunt" }, status: :forbidden
         end
         
-        # Si l'emprunt était validé, le repasser en brouillon
-        if emprunt.statut_emprunt == "validé"
-            emprunt.statut_emprunt = "brouillon"
+        # Vérifier que l'emprunt est en brouillon
+        if emprunt.statut_emprunt != "brouillon"
+            return render json: { error: "Seuls les emprunts en brouillon peuvent être modifiés" }, status: :forbidden
+        end
+        
+        # Vérifier s'il y a des chevauchements avec d'autres emprunts
+        if params[:date_debut].present? || params[:date_fin].present?
+            voiture_id = emprunt.voiture_id
+            date_debut = params[:date_debut] || emprunt.date_debut
+            date_fin = params[:date_fin] || emprunt.date_fin
+            
+            chevauchements = verifier_chevauchements(voiture_id, date_debut, date_fin, emprunt.id)
+            
+            if chevauchements.any?
+                return render json: { 
+                    error: "Il existe déjà un emprunt pour cette voiture sur ce créneau horaire",
+                    emprunts_en_conflit: chevauchements.map { |e| e.id }
+                }, status: :conflict
+            end
         end
         
         # Mettre à jour les champs de l'emprunt
@@ -200,11 +227,15 @@ class EmpruntsUserController < ApplicationController
     # Supprimer un emprunt
     def destroy
         emprunt = Emprunt.find(params[:id])
-        current_user_id = params[:user_id]
         
         # Vérifier que l'utilisateur actuel est bien le créateur de l'emprunt
-        if emprunt.utilisateur_demande_id != current_user_id
+        if emprunt.utilisateur_demande_id != @current_user.id
             return render json: { error: "Vous n'êtes pas autorisé à supprimer cet emprunt" }, status: :forbidden
+        end
+        
+        # Vérifier que l'emprunt est en brouillon
+        if emprunt.statut_emprunt != "brouillon"
+            return render json: { error: "Seuls les emprunts en brouillon peuvent être supprimés" }, status: :forbidden
         end
         
         # Supprimer l'emprunt
@@ -218,8 +249,7 @@ class EmpruntsUserController < ApplicationController
     # Valider un emprunt (pour les administrateurs)
     def valider
         emprunt = Emprunt.find(params[:id])
-        current_user_id = params[:user_id]
-        current_user = Utilisateur.find(current_user_id)
+        current_user = @current_user
         
         # Vérifier que l'utilisateur est un administrateur
         unless current_user.admin_entreprise || current_user.admin_rentecaisse
@@ -235,5 +265,24 @@ class EmpruntsUserController < ApplicationController
         else
             render json: { error: emprunt.errors.full_messages }, status: :unprocessable_entity
         end
+    end
+    
+    private
+    
+    # Vérifier s'il y a des chevauchements avec d'autres emprunts
+    def verifier_chevauchements(voiture_id, date_debut, date_fin, emprunt_id = nil)
+        # Convertir les dates si nécessaire
+        date_debut = DateTime.parse(date_debut) if date_debut.is_a?(String)
+        date_fin = DateTime.parse(date_fin) if date_fin.is_a?(String)
+        
+        # Rechercher les emprunts qui se chevauchent
+        query = Emprunt.where(voiture_id: voiture_id)
+                     .where("(date_debut <= ? AND date_fin >= ?) OR (date_debut >= ? AND date_fin <= ?) OR (date_debut <= ? AND date_fin >= ?)", 
+                           date_fin, date_debut, date_debut, date_fin, date_debut, date_debut)
+        
+        # Exclure l'emprunt en cours de modification s'il est spécifié
+        query = query.where.not(id: emprunt_id) if emprunt_id.present?
+        
+        query
     end
 end

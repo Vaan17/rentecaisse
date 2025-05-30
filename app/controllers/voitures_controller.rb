@@ -1,4 +1,5 @@
 class VoituresController < ApplicationController
+  before_action :verify_authentication
   def fetch_all
     voitures = Voiture.all
 

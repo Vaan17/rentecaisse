@@ -1,4 +1,5 @@
 class SitesController < ApplicationController
+  before_action :verify_authentication
   def fetch_all
     sites = Site.all
 

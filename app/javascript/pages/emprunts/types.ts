@@ -22,6 +22,7 @@ export enum ReservationStatus {
   CONFIRMED = 'confirmed',
   DRAFT = 'draft',
   IN_PROGRESS = 'en_cours',
+  COMPLETED = 'completed',
   EMPTY = 'empty'
 }
 

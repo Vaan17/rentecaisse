@@ -57,13 +57,41 @@ const ReservationVoiturePage: React.FC = () => {
     if (storedUser) {
       try {
         const user = JSON.parse(storedUser);
+        console.log('ID utilisateur récupéré du localStorage:', user.id);
         return user.id;
       } catch (e) {
         console.error('Erreur lors de la récupération de l\'ID utilisateur:', e);
       }
     }
+    console.warn('Aucun utilisateur trouvé dans le localStorage, utilisation de la valeur par défaut');
     return 1; // Valeur par défaut pour le développement
   });
+
+  // Mettre à jour l'ID utilisateur si le localStorage change
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          const user = JSON.parse(storedUser);
+          console.log('ID utilisateur mis à jour depuis le localStorage:', user.id);
+          setUserId(user.id);
+        } catch (e) {
+          console.error('Erreur lors de la mise à jour de l\'ID utilisateur:', e);
+        }
+      }
+    };
+
+    // Écouter les changements de localStorage
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Vérifier au chargement si l'utilisateur est présent dans le localStorage
+    handleStorageChange();
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   // Vérifier si l'écran est petit avec un thème fourni
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
@@ -208,8 +236,20 @@ const ReservationVoiturePage: React.FC = () => {
     
     setSelectedReservation(reservation);
     
-    // Vérifier si l'utilisateur est le créateur de la réservation
-    setIsReadOnly(reservation.utilisateur_id !== userId);
+    // Vérifier si l'utilisateur est le créateur de la réservation et si l'emprunt est en brouillon
+    const isCreator = reservation.utilisateur_id === userId;
+    const isDraft = reservation.status === ReservationStatus.DRAFT;
+    
+    console.log('Vérification de propriété de l\'emprunt:', {
+      'ID utilisateur connecté': userId,
+      'ID utilisateur de l\'emprunt': reservation.utilisateur_id,
+      'Est créateur?': isCreator,
+      'Est brouillon?': isDraft,
+      'Statut de l\'emprunt': reservation.status
+    });
+    
+    // L'utilisateur peut modifier l'emprunt seulement s'il en est le créateur ET si l'emprunt est en brouillon
+    setIsReadOnly(!isCreator || !isDraft);
     
     // Charger les clés disponibles pour cette voiture
     try {

@@ -3,6 +3,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import axios from "axios";
+import axiosSecured from "../services/apiService";
 
 const Container = styled.div`
   padding: 2rem;
@@ -181,7 +182,7 @@ const Home = () => {
 		const fetchEmprunts = async () => {
 			try {
 				console.log("Début de la récupération des emprunts...");
-				const response = await axios.get("/api/emprunts");
+				const response = await axiosSecured.get("/api/emprunts");
 				if (response.status !== 200) {
 					throw new Error(`Erreur HTTP: ${response.status}`);
 				}

@@ -1,4 +1,5 @@
 class LocalisationsController < ApplicationController
+  before_action :verify_authentication
   # Récupérer toutes les localisations
   def fetch_all
     localisations = Localisation.all

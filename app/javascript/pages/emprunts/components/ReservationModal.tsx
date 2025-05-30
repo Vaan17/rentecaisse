@@ -16,13 +16,19 @@ import {
   MenuItem,
   Chip,
   OutlinedInput,
-  SelectChangeEvent
+  SelectChangeEvent,
+  Alert,
+  Dialog as ConfirmDialog,
+  DialogContent as ConfirmDialogContent,
+  DialogActions as ConfirmDialogActions,
+  DialogTitle as ConfirmDialogTitle
 } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
 import { ReservationModalProps, ReservationStatus } from '../types';
-import { createEmprunt, updateEmprunt } from '../services/empruntService';
+import { createEmprunt, updateEmprunt, deleteEmprunt } from '../services/empruntService';
 
 const ReservationModal: React.FC<ReservationModalProps> = ({
   open,
@@ -42,6 +48,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
   const [start, setStart] = useState<dayjs.Dayjs | null>(startTime ? dayjs(startTime) : null);
   const [end, setEnd] = useState<dayjs.Dayjs | null>(endTime ? dayjs(endTime) : null);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState<boolean>(false);
   
   // États pour les nouveaux champs
   const [nomEmprunt, setNomEmprunt] = useState<string>('');
@@ -50,6 +57,30 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
   const [selectedLocationId, setSelectedLocationId] = useState<number | ''>('');
   const [selectedPassengers, setSelectedPassengers] = useState<number[]>([]);
   
+  // Vérifier si l'emprunt peut être supprimé (appartient à l'utilisateur et est en brouillon)
+  const canDelete = existingReservation && 
+                    existingReservation.utilisateur_id === userId && 
+                    existingReservation.status === ReservationStatus.DRAFT;
+                    
+  // Vérifier si l'emprunt peut être modifié (appartient à l'utilisateur et est en brouillon)
+  const canEdit = existingReservation && 
+                  existingReservation.utilisateur_id === userId && 
+                  existingReservation.status === ReservationStatus.DRAFT;
+                  
+  // Logger les informations pour le débogage
+  useEffect(() => {
+    if (existingReservation) {
+      console.log('Vérification des permissions dans ReservationModal:', {
+        'ID utilisateur connecté': userId,
+        'ID utilisateur de l\'emprunt': existingReservation.utilisateur_id,
+        'Peut supprimer?': canDelete,
+        'Peut éditer?': canEdit,
+        'Est en lecture seule?': isReadOnly,
+        'Statut de l\'emprunt': existingReservation.status
+      });
+    }
+  }, [existingReservation, userId, canDelete, canEdit, isReadOnly]);
+
   // Mettre à jour les états lorsque les props changent
   useEffect(() => {
     if (open) {
@@ -153,10 +184,13 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
     }
     
     try {
+      const dateDebut = start.toISOString();
+      const dateFin = end.toISOString();
+      
       const reservationData = {
         voiture_id: car.id,
-        date_debut: start.toISOString(),
-        date_fin: end.toISOString(),
+        date_debut: dateDebut,
+        date_fin: dateFin,
         nom_emprunt: nomEmprunt,
         description: description,
         cle_id: selectedKeyId || undefined,
@@ -166,10 +200,10 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
       
       if (existingReservation) {
         // Mettre à jour un emprunt existant
-        await updateEmprunt(existingReservation.id, userId, reservationData);
+        await updateEmprunt(existingReservation.id, reservationData);
       } else {
         // Créer un nouvel emprunt
-        await createEmprunt(userId, reservationData);
+        await createEmprunt(reservationData);
       }
       
       // Notifier le composant parent
@@ -187,202 +221,304 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
       onClose();
     } catch (error) {
       console.error('Erreur lors de la soumission de l\'emprunt:', error);
-      setError('Une erreur est survenue lors de la soumission de l\'emprunt');
+      if (error.response && error.response.status === 409) {
+        // Code 409 Conflict - il y a un chevauchement
+        setError('Ce véhicule est déjà réservé sur cette période. Veuillez choisir une autre période ou un autre véhicule.');
+      } else {
+        setError('Une erreur est survenue lors de la soumission de l\'emprunt');
+      }
     }
   };
 
+  // Gérer la suppression d'un emprunt
+  const handleDelete = async () => {
+    if (!existingReservation) return;
+    
+    try {
+      await deleteEmprunt(existingReservation.id);
+      
+      // Fermer la boîte de dialogue de confirmation
+      closeDeleteConfirm();
+      
+      // Notifier le composant parent pour rafraîchir les données
+      onSave({
+        carId: car?.id || 0,
+        startTime: new Date(),
+        endTime: new Date(),
+        status: ReservationStatus.EMPTY
+      });
+      
+      // Fermer la modale
+      onClose();
+    } catch (error) {
+      console.error('Erreur lors de la suppression de l\'emprunt:', error);
+      if (error.response && error.response.status === 403) {
+        setError('Vous n\'êtes pas autorisé à supprimer cet emprunt');
+      } else {
+        setError('Une erreur est survenue lors de la suppression de l\'emprunt');
+      }
+      // Fermer la boîte de dialogue de confirmation même en cas d'erreur
+      closeDeleteConfirm();
+    }
+  };
+  
+  // Ouvrir la boîte de dialogue de confirmation de suppression
+  const openDeleteConfirm = () => {
+    setConfirmDeleteOpen(true);
+  };
+  
+  // Fermer la boîte de dialogue de confirmation de suppression
+  const closeDeleteConfirm = () => {
+    setConfirmDeleteOpen(false);
+  };
+
   return (
-    <Dialog 
-      open={open} 
-      onClose={onClose}
-      maxWidth="md"
-      fullWidth
-    >
-      <DialogTitle>
-        {existingReservation ? 'Modifier la réservation' : 'Réserver un véhicule'}
-      </DialogTitle>
-      
-      <Divider />
-      
-      <DialogContent>
-        {car && (
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
-              Véhicule sélectionné
-            </Typography>
-            <Box 
-              sx={{ 
-                p: 2, 
-                backgroundColor: 'grey.100', 
-                borderRadius: 1,
-                display: 'flex',
-                alignItems: 'center'
-              }}
-            >
-              <Box>
-                <Typography variant="body1">{car.name}</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {car.licensePlate} • {car.seats} places • {car.doors} portes • {car.transmission}
-                </Typography>
+    <>
+      <Dialog 
+        open={open} 
+        onClose={onClose}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          <Typography variant="h6">
+            {existingReservation ? 'Modifier la réservation' : 'Réserver un véhicule'}
+          </Typography>
+        </DialogTitle>
+        
+        <Divider />
+        
+        <DialogContent>
+          {car && (
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
+                Véhicule sélectionné
+              </Typography>
+              <Box 
+                sx={{ 
+                  p: 2, 
+                  backgroundColor: 'grey.100', 
+                  borderRadius: 1,
+                  display: 'flex',
+                  alignItems: 'center'
+                }}
+              >
+                <Box>
+                  <Typography variant="body1">{car.name}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {car.licensePlate} • {car.seats} places • {car.doors} portes • {car.transmission}
+                  </Typography>
+                </Box>
               </Box>
             </Box>
-          </Box>
-        )}
-        
-        <Stack spacing={3}>
-          {/* Nom de l'emprunt */}
-          <TextField
-            label="Nom de l'emprunt"
-            fullWidth
-            value={nomEmprunt}
-            onChange={(e) => setNomEmprunt(e.target.value)}
-            required
-            disabled={isReadOnly}
-            error={!nomEmprunt && !!error}
-          />
+          )}
           
-          {/* Description */}
-          <TextField
-            label="Description"
-            fullWidth
-            multiline
-            rows={3}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            required
-            disabled={isReadOnly}
-            error={!description && !!error}
-          />
-          
-          {/* Dates */}
-          <DateTimePicker
-            label="Date et heure de début"
-            value={start}
-            onChange={handleStartChange}
-            ampm={false}
-            slotProps={{
-              textField: {
-                fullWidth: true,
-                variant: 'outlined',
-                error: !!error && !start,
-                disabled: isReadOnly
+          {isReadOnly && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              {existingReservation && existingReservation.utilisateur_id !== userId 
+                ? "Vous consultez un emprunt créé par un autre utilisateur. Vous ne pouvez pas le modifier."
+                : existingReservation && existingReservation.status !== ReservationStatus.DRAFT
+                ? "Cet emprunt n'est plus en statut brouillon. Seuls les emprunts en brouillon peuvent être modifiés."
+                : "Vous ne pouvez pas modifier cet emprunt."
               }
-            }}
-            views={['year', 'month', 'day', 'hours', 'minutes']}
-          />
+            </Alert>
+          )}
           
-          <DateTimePicker
-            label="Date et heure de fin"
-            value={end}
-            onChange={handleEndChange}
-            ampm={false}
-            slotProps={{
-              textField: {
-                fullWidth: true,
-                variant: 'outlined',
-                error: !!error && !end,
-                disabled: isReadOnly
-              }
-            }}
-            views={['year', 'month', 'day', 'hours', 'minutes']}
-          />
-          
-          {/* Sélection de clé */}
-          <FormControl fullWidth disabled={isReadOnly}>
-            <InputLabel id="key-select-label">Clé</InputLabel>
-            <Select
-              labelId="key-select-label"
-              value={selectedKeyId}
-              onChange={handleKeyChange}
-              label="Clé"
-            >
-              <MenuItem value="">
-                <em>Aucune</em>
-              </MenuItem>
-              {keys.map((key) => (
-                <MenuItem key={key.id} value={key.id}>
-                  Clé {key.id} - {key.statut_cle}
+          <Stack spacing={3}>
+            {/* Nom de l'emprunt */}
+            <TextField
+              label="Nom de l'emprunt"
+              fullWidth
+              value={nomEmprunt}
+              onChange={(e) => setNomEmprunt(e.target.value)}
+              required
+              disabled={isReadOnly}
+              error={!nomEmprunt && !!error}
+            />
+            
+            {/* Description */}
+            <TextField
+              label="Description"
+              fullWidth
+              multiline
+              rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              required
+              disabled={isReadOnly}
+              error={!description && !!error}
+            />
+            
+            {/* Dates */}
+            <DateTimePicker
+              label="Date et heure de début"
+              value={start}
+              onChange={handleStartChange}
+              ampm={false}
+              slotProps={{
+                textField: {
+                  fullWidth: true,
+                  variant: 'outlined',
+                  error: !!error && !start,
+                  disabled: isReadOnly
+                }
+              }}
+              views={['year', 'month', 'day', 'hours', 'minutes']}
+            />
+            
+            <DateTimePicker
+              label="Date et heure de fin"
+              value={end}
+              onChange={handleEndChange}
+              ampm={false}
+              slotProps={{
+                textField: {
+                  fullWidth: true,
+                  variant: 'outlined',
+                  error: !!error && !end,
+                  disabled: isReadOnly
+                }
+              }}
+              views={['year', 'month', 'day', 'hours', 'minutes']}
+            />
+            
+            {/* Sélection de clé */}
+            <FormControl fullWidth disabled={isReadOnly}>
+              <InputLabel id="key-select-label">Clé</InputLabel>
+              <Select
+                labelId="key-select-label"
+                value={selectedKeyId}
+                onChange={handleKeyChange}
+                label="Clé"
+              >
+                <MenuItem value="">
+                  <em>Aucune</em>
                 </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          
-          {/* Sélection de localisation */}
-          <FormControl fullWidth disabled={isReadOnly}>
-            <InputLabel id="location-select-label">Destination</InputLabel>
-            <Select
-              labelId="location-select-label"
-              value={selectedLocationId}
-              onChange={handleLocationChange}
-              label="Destination"
-            >
-              <MenuItem value="">
-                <em>Aucune</em>
-              </MenuItem>
-              {locations.map((location) => (
-                <MenuItem key={location.id} value={location.id}>
-                  {location.nom_localisation} - {location.ville}
+                {keys.map((key) => (
+                  <MenuItem key={key.id} value={key.id}>
+                    Clé {key.id} - {key.statut_cle}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            
+            {/* Sélection de localisation */}
+            <FormControl fullWidth disabled={isReadOnly}>
+              <InputLabel id="location-select-label">Destination</InputLabel>
+              <Select
+                labelId="location-select-label"
+                value={selectedLocationId}
+                onChange={handleLocationChange}
+                label="Destination"
+              >
+                <MenuItem value="">
+                  <em>Aucune</em>
                 </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+                {locations.map((location) => (
+                  <MenuItem key={location.id} value={location.id}>
+                    {location.nom_localisation} - {location.ville}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            
+            {/* Sélection de passagers */}
+            <FormControl fullWidth disabled={isReadOnly}>
+              <InputLabel id="passengers-select-label">Passagers</InputLabel>
+              <Select
+                labelId="passengers-select-label"
+                multiple
+                value={selectedPassengers}
+                onChange={handlePassengersChange}
+                input={<OutlinedInput id="select-multiple-passengers" label="Passagers" />}
+                renderValue={(selected) => (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {selected.map((passengerId) => {
+                      const passenger = passengers.find(p => p.id === passengerId);
+                      return (
+                        <Chip key={passengerId} label={passenger ? `${passenger.prenom} ${passenger.nom}` : `Passager ${passengerId}`} />
+                      );
+                    })}
+                  </Box>
+                )}
+              >
+                {passengers.map((passenger) => (
+                  <MenuItem key={passenger.id} value={passenger.id}>
+                    {passenger.prenom} {passenger.nom} ({passenger.email})
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Stack>
           
-          {/* Sélection de passagers */}
-          <FormControl fullWidth disabled={isReadOnly}>
-            <InputLabel id="passengers-select-label">Passagers</InputLabel>
-            <Select
-              labelId="passengers-select-label"
-              multiple
-              value={selectedPassengers}
-              onChange={handlePassengersChange}
-              input={<OutlinedInput id="select-multiple-passengers" label="Passagers" />}
-              renderValue={(selected) => (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                  {selected.map((passengerId) => {
-                    const passenger = passengers.find(p => p.id === passengerId);
-                    return (
-                      <Chip key={passengerId} label={passenger ? `${passenger.prenom} ${passenger.nom}` : `Passager ${passengerId}`} />
-                    );
-                  })}
-                </Box>
-              )}
-            >
-              {passengers.map((passenger) => (
-                <MenuItem key={passenger.id} value={passenger.id}>
-                  {passenger.prenom} {passenger.nom} ({passenger.email})
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Stack>
+          {error && (
+            <Box sx={{ mt: 2 }}>
+              <Alert severity="error">
+                {error}
+              </Alert>
+            </Box>
+          )}
+        </DialogContent>
         
-        {error && (
-          <Typography 
-            color="error" 
-            variant="body2" 
-            sx={{ mt: 2 }}
-          >
-            {error}
-          </Typography>
-        )}
-      </DialogContent>
-      
-      <DialogActions sx={{ px: 3, pb: 3 }}>
-        <Button onClick={onClose} variant="outlined">
-          Annuler
-        </Button>
-        {!isReadOnly && (
-          <Button 
-            onClick={handleSubmit} 
-            variant="contained" 
-            color="primary"
-            disabled={!!error || !start || !end || !car || !nomEmprunt || !description}
-          >
-            {existingReservation ? 'Mettre à jour' : 'Valider'}
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button onClick={onClose} variant="outlined">
+            Annuler
           </Button>
-        )}
-      </DialogActions>
-    </Dialog>
+          {canDelete && (
+            <Button 
+              onClick={openDeleteConfirm}
+              variant="contained"
+              color="error"
+              startIcon={<DeleteIcon />}
+            >
+              Supprimer
+            </Button>
+          )}
+          {!isReadOnly && canEdit && existingReservation ? (
+            <Button 
+              onClick={handleSubmit} 
+              variant="contained" 
+              color="primary"
+              disabled={!!error || !start || !end || !car || !nomEmprunt || !description}
+            >
+              Mettre à jour
+            </Button>
+          ) : !isReadOnly && !existingReservation ? (
+            <Button 
+              onClick={handleSubmit} 
+              variant="contained" 
+              color="primary"
+              disabled={!!error || !start || !end || !car || !nomEmprunt || !description}
+            >
+              Valider
+            </Button>
+          ) : null}
+        </DialogActions>
+      </Dialog>
+      
+      {/* Boîte de dialogue de confirmation de suppression */}
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        onClose={closeDeleteConfirm}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <ConfirmDialogTitle id="alert-dialog-title">
+          Confirmer la suppression
+        </ConfirmDialogTitle>
+        <ConfirmDialogContent>
+          <Typography variant="body1" id="alert-dialog-description">
+            Êtes-vous sûr de vouloir supprimer cet emprunt ? Cette action est irréversible.
+          </Typography>
+        </ConfirmDialogContent>
+        <ConfirmDialogActions>
+          <Button onClick={closeDeleteConfirm} variant="outlined">Annuler</Button>
+          <Button onClick={handleDelete} variant="contained" color="error" autoFocus>
+            Supprimer
+          </Button>
+        </ConfirmDialogActions>
+      </ConfirmDialog>
+    </>
   );
 };
 

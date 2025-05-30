@@ -26,6 +26,12 @@ const statuses = [
     label: 'En cours',
     color: 'rgba(244, 67, 54, 0.3)',
     description: 'Emprunt validé et actuellement en cours.'
+  },
+  {
+    id: 'terminé',
+    label: 'Terminé',
+    color: 'rgba(33, 150, 243, 0.3)',
+    description: 'Emprunt terminé et véhicule retourné.'
   }
 ];
 
