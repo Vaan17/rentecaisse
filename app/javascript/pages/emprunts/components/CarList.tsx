@@ -78,12 +78,16 @@ const CarList: React.FC<CarListProps> = ({ cars, selectedCar, onSelectCar }) => 
                 <ListItemAvatar>
                   <Avatar 
                     alt={car.name} 
-                    src={car.image}
+                    src={car.image !== "/images/car-placeholder.png" ? car.image : undefined}
+                    variant="rounded"
                     sx={{ 
-                      bgcolor: car.image ? 'transparent' : 'secondary.main' 
+                      width: 60,
+                      height: 60,
+                      mr: 1,
+                      bgcolor: car.image !== "/images/car-placeholder.png" ? 'transparent' : 'secondary.main' 
                     }}
                   >
-                    {!car.image && <DirectionsCarIcon />}
+                    {(car.image === "/images/car-placeholder.png" || !car.image) && <DirectionsCarIcon fontSize="large" />}
                   </Avatar>
                 </ListItemAvatar>
                 <ListItemText 

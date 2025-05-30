@@ -20,13 +20,15 @@ class VoituresController < ApplicationController
     
     # Transformer les données pour les rendre compatibles avec le front-end
     voitures_formattees = voitures.map do |voiture|
-      {
+      # Données de base de la voiture
+      voiture_data = {
         id: voiture.id,
         name: "#{voiture.marque} #{voiture.modele}",
         seats: voiture.nombre_places,
         doors: voiture.nombre_portes,
         transmission: voiture.type_boite,
         licensePlate: voiture.immatriculation,
+        # Par défaut, utiliser l'image placeholder
         image: "/images/car-placeholder.png",
         # Ajout des données complètes pour le back-end
         marque: voiture.marque,
@@ -37,6 +39,15 @@ class VoituresController < ApplicationController
         puissance: voiture.puissance,
         statut_voiture: voiture.statut_voiture
       }
+      
+      # Récupérer l'image de la voiture si disponible
+      image_data = VoitureService.get_voiture_image(voiture.id)
+      if image_data
+        # Remplacer l'image placeholder par l'URL data en base64
+        voiture_data[:image] = "data:#{image_data[:content_type]};base64,#{image_data[:image_data]}"
+      end
+      
+      voiture_data
     end
     
     render json: voitures_formattees

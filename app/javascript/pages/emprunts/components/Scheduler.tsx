@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Paper, Typography, Grid, Divider } from '@mui/material';
-import { format, addHours, startOfDay, endOfDay } from 'date-fns';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Box, Paper, Typography, Grid, Divider, Tooltip } from '@mui/material';
+import { format, addHours, startOfDay, endOfDay, differenceInMinutes, differenceInHours, isWithinInterval } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { SchedulerProps, TimeSlot, Reservation, ReservationStatus } from '../types';
 
@@ -22,90 +22,300 @@ const generateTimeSlots = (date: Date): TimeSlot[] => {
   return slots;
 };
 
-// Fonction pour déterminer si un créneau est réservé
-const getReservationForSlot = (carId: number, slotTime: Date, reservations: Reservation[]): Reservation | null => {
-  // Convertir slotTime en timestamp pour faciliter la comparaison
-  const slotTimestamp = slotTime.getTime();
-  
-  // Trouver une réservation qui couvre ce créneau
-  return reservations.find(reservation => 
-    reservation.carId === carId && 
-    new Date(reservation.startTime).getTime() <= slotTimestamp && 
-    new Date(reservation.endTime).getTime() > slotTimestamp
-  ) || null;
-};
-
 // Fonction pour obtenir la couleur de fond basée sur le statut de réservation
 const getStatusColor = (status: ReservationStatus | null): string => {
   switch (status) {
     case ReservationStatus.CONFIRMED:
-      return 'rgba(76, 175, 80, 0.3)'; // vert clair
+      return 'rgba(76, 175, 80, 0.7)'; // vert
     case ReservationStatus.DRAFT:
-      return 'rgba(255, 152, 0, 0.3)'; // orange clair
+      return 'rgba(255, 152, 0, 0.7)'; // orange
     case ReservationStatus.IN_PROGRESS:
-      return 'rgba(244, 67, 54, 0.3)'; // rouge clair
+      return 'rgba(244, 67, 54, 0.7)'; // rouge
+    case ReservationStatus.COMPLETED:
+      return 'rgba(33, 150, 243, 0.7)'; // bleu
     default:
-      return 'transparent'; // aucune réservation
+      return 'transparent';
   }
 };
 
-// Composant pour représenter un créneau horaire dans le planificateur
-const Slot: React.FC<{
-  car: { id: number; name: string };
-  time: Date;
-  reservation: Reservation | null;
-  onClick: () => void;
-  onReservationClick?: (reservation: Reservation) => void;
-}> = ({ car, time, reservation, onClick, onReservationClick }) => {
-  const handleClick = () => {
-    if (reservation && onReservationClick) {
-      onReservationClick(reservation);
-    } else {
-      onClick();
-    }
-  };
+// Fonction pour obtenir le texte du statut
+const getStatusText = (status: ReservationStatus | null): string => {
+  switch (status) {
+    case ReservationStatus.CONFIRMED:
+      return 'Validé';
+    case ReservationStatus.DRAFT:
+      return 'Brouillon';
+    case ReservationStatus.IN_PROGRESS:
+      return 'En cours';
+    case ReservationStatus.COMPLETED:
+      return 'Terminé';
+    default:
+      return 'Disponible';
+  }
+};
 
+// Interface pour une piste de réservation
+interface ReservationTrack {
+  trackIndex: number;
+  reservations: Reservation[];
+}
+
+// Fonction pour organiser les réservations en pistes pour éviter les chevauchements
+const organizeReservationsInTracks = (reservations: Reservation[]): ReservationTrack[] => {
+  // Trier les réservations par heure de début
+  const sortedReservations = [...reservations].sort(
+    (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+  );
+  
+  const tracks: ReservationTrack[] = [];
+  
+  // Parcourir chaque réservation et l'ajouter à une piste existante ou créer une nouvelle piste
+  sortedReservations.forEach(reservation => {
+    // Chercher une piste où la réservation peut être placée sans chevauchement
+    const trackIndex = tracks.findIndex(track => {
+      // Vérifier s'il y a un chevauchement avec une réservation déjà dans la piste
+      return !track.reservations.some(existingReservation => {
+        const start1 = new Date(reservation.startTime);
+        const end1 = new Date(reservation.endTime);
+        const start2 = new Date(existingReservation.startTime);
+        const end2 = new Date(existingReservation.endTime);
+        
+        // Deux réservations se chevauchent si la fin de l'une est après le début de l'autre
+        // et le début de l'une est avant la fin de l'autre
+        return (start1 < end2 && start2 < end1);
+      });
+    });
+    
+    if (trackIndex !== -1) {
+      // Ajouter à une piste existante
+      tracks[trackIndex].reservations.push(reservation);
+    } else {
+      // Créer une nouvelle piste
+      tracks.push({
+        trackIndex: tracks.length,
+        reservations: [reservation]
+      });
+    }
+  });
+  
+  return tracks;
+};
+
+// Composant pour représenter une réservation dans la timeline
+const ReservationBar: React.FC<{
+  reservation: Reservation;
+  dayStart: Date;
+  dayEnd: Date;
+  onClick: (reservation: Reservation) => void;
+}> = ({ reservation, dayStart, dayEnd, onClick }) => {
+  const startTime = new Date(reservation.startTime);
+  const endTime = new Date(reservation.endTime);
+  
+  // Calculer la position et la largeur en pourcentage de la journée
+  const dayDurationMinutes = differenceInMinutes(dayEnd, dayStart);
+  const startOffsetMinutes = differenceInMinutes(startTime, dayStart);
+  const durationMinutes = differenceInMinutes(endTime, startTime);
+  
+  const startPercent = Math.max(0, (startOffsetMinutes / dayDurationMinutes) * 100);
+  const widthPercent = Math.min(100 - startPercent, (durationMinutes / dayDurationMinutes) * 100);
+  
+  // Formater les heures pour l'affichage
+  const formatTimeDisplay = (date: Date) => {
+    return format(date, 'HH:mm');
+  };
+  
+  // Déterminer si la réservation est assez large pour afficher le texte
+  const isWideEnough = widthPercent > 10;
+  
+  // Handler pour empêcher la propagation du clic
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Empêche que le clic ne se propage à la timeline en arrière-plan
+    onClick(reservation);
+  };
+  
   return (
-    <Box
-      sx={{
-        height: 40,
-        border: '1px solid rgba(0, 0, 0, 0.1)',
-        backgroundColor: getStatusColor(reservation?.status || null),
-        cursor: 'pointer',
-        '&:hover': {
-          backgroundColor: reservation 
-            ? (reservation.status === ReservationStatus.CONFIRMED 
-              ? 'rgba(76, 175, 80, 0.5)' 
-              : reservation.status === ReservationStatus.DRAFT 
-                ? 'rgba(255, 152, 0, 0.5)' 
-                : reservation.status === ReservationStatus.IN_PROGRESS 
-                  ? 'rgba(244, 67, 54, 0.5)' 
-                  : 'rgba(0, 0, 0, 0.1)')
-            : 'rgba(0, 0, 0, 0.1)',
-        },
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'relative'
-      }}
-      onClick={handleClick}
+    <Tooltip
+      title={
+        <Box>
+          <Typography variant="subtitle2">{reservation.nom_emprunt || 'Sans nom'}</Typography>
+          <Typography variant="body2">
+            {formatTimeDisplay(startTime)} - {formatTimeDisplay(endTime)}
+          </Typography>
+          <Typography variant="body2">
+            Statut: {getStatusText(reservation.status)}
+          </Typography>
+        </Box>
+      }
+      arrow
     >
-      {reservation && (
-        <Typography variant="caption" sx={{ fontSize: '0.7rem', textAlign: 'center' }}>
-          {reservation.nom_emprunt || 'Réservé'}
-        </Typography>
-      )}
-    </Box>
+      <Box
+        onClick={handleClick}
+        sx={{
+          position: 'absolute',
+          left: `${startPercent}%`,
+          width: `${widthPercent}%`,
+          height: '25px',
+          backgroundColor: getStatusColor(reservation.status),
+          borderRadius: '4px',
+          border: '1px solid rgba(0, 0, 0, 0.2)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          paddingLeft: '4px',
+          paddingRight: '4px',
+          overflow: 'hidden',
+          whiteSpace: 'nowrap',
+          textOverflow: 'ellipsis',
+          cursor: 'pointer',
+          zIndex: 10, // Valeur élevée pour s'assurer que l'emprunt est au-dessus de tout
+          boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+          '&:hover': {
+            filter: 'brightness(0.9)',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+            zIndex: 11 // Encore plus haut quand survolé
+          }
+        }}
+      >
+        {isWideEnough && (
+          <Typography variant="caption" sx={{ fontWeight: 'medium', fontSize: '0.75rem' }}>
+            {reservation.nom_emprunt || 'Réservé'}
+          </Typography>
+        )}
+      </Box>
+    </Tooltip>
+  );
+};
+
+// Composant pour représenter une ligne de voiture avec ses réservations
+const CarTimeline: React.FC<{
+  car: { id: number; name: string };
+  reservations: Reservation[];
+  dayStart: Date;
+  dayEnd: Date;
+  timeSlots: TimeSlot[];
+  onSlotClick: (carId: number, time: Date) => void;
+  onReservationClick: (reservation: Reservation) => void;
+}> = ({ car, reservations, dayStart, dayEnd, timeSlots, onSlotClick, onReservationClick }) => {
+  // Filtrer les réservations pour cette voiture
+  const carReservations = reservations.filter(res => res.carId === car.id);
+  
+  // Organiser les réservations en pistes pour éviter les chevauchements visuels
+  const reservationTracks = organizeReservationsInTracks(carReservations);
+  
+  // Hauteur dynamique basée sur le nombre de pistes
+  const trackHeight = 28; // hauteur en pixels pour chaque piste
+  const timelineHeight = Math.max(trackHeight, reservationTracks.length * trackHeight);
+  
+  return (
+    <React.Fragment>
+      <Grid item xs={2}>
+        <Box sx={{ 
+          height: timelineHeight, 
+          display: 'flex', 
+          alignItems: 'center', 
+          pl: 1,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis'
+        }}>
+          {car.name}
+        </Box>
+      </Grid>
+      <Grid item xs={10}>
+        <Box 
+          sx={{ 
+            position: 'relative', 
+            height: timelineHeight,
+            backgroundColor: 'rgba(0, 0, 0, 0.02)',
+            borderRadius: '4px',
+            '&:hover': {
+              backgroundColor: 'rgba(0, 0, 0, 0.04)'
+            }
+          }}
+          onClick={(e) => {
+            // Calculer l'heure approximative basée sur la position du clic
+            const rect = e.currentTarget.getBoundingClientRect();
+            const clickPositionPercent = (e.clientX - rect.left) / rect.width;
+            const dayDurationMs = dayEnd.getTime() - dayStart.getTime();
+            const clickTimeMs = dayStart.getTime() + (clickPositionPercent * dayDurationMs);
+            const clickTime = new Date(clickTimeMs);
+            
+            // Trouver le créneau horaire le plus proche
+            const nearestSlot = timeSlots.reduce((nearest, slot) => {
+              const currentDiff = Math.abs(slot.time.getTime() - clickTimeMs);
+              const nearestDiff = Math.abs(nearest.time.getTime() - clickTimeMs);
+              return currentDiff < nearestDiff ? slot : nearest;
+            }, timeSlots[0]);
+            
+            onSlotClick(car.id, nearestSlot.time);
+          }}
+        >
+          {/* Lignes de grille verticales pour les heures */}
+          {timeSlots.map((slot, index) => {
+            const offsetPercent = (index / timeSlots.length) * 100;
+            return (
+              <Box 
+                key={`grid-${index}`} 
+                sx={{
+                  position: 'absolute',
+                  left: `${offsetPercent}%`,
+                  height: '100%',
+                  width: '1px',
+                  backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                  zIndex: 1 // z-index bas pour les lignes de grille
+                }}
+              />
+            );
+          })}
+          
+          {/* Réservations organisées par pistes */}
+          {reservationTracks.map((track, trackIndex) => (
+            <Box 
+              key={`track-${trackIndex}`}
+              sx={{
+                position: 'absolute',
+                top: trackIndex * trackHeight,
+                left: 0,
+                right: 0,
+                height: trackHeight,
+                zIndex: 5 // z-index plus élevé pour les pistes
+              }}
+            >
+              {track.reservations.map((reservation, index) => (
+                <ReservationBar
+                  key={`res-${reservation.id}-${index}`}
+                  reservation={reservation}
+                  dayStart={dayStart}
+                  dayEnd={dayEnd}
+                  onClick={onReservationClick}
+                />
+              ))}
+            </Box>
+          ))}
+        </Box>
+      </Grid>
+    </React.Fragment>
   );
 };
 
 const Scheduler: React.FC<SchedulerProps> = ({ cars, reservations, selectedDate, onSlotClick, onReservationClick }) => {
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
-
+  
+  // Calculer le début et la fin de la journée
+  const dayStart = useMemo(() => startOfDay(selectedDate), [selectedDate]);
+  const dayEnd = useMemo(() => endOfDay(selectedDate), [selectedDate]);
+  
   // Générer les créneaux horaires lorsque la date sélectionnée change
   useEffect(() => {
     setTimeSlots(generateTimeSlots(selectedDate));
   }, [selectedDate]);
+  
+  // S'assurer que onReservationClick est défini
+  const handleReservationClick = (reservation: Reservation) => {
+    if (onReservationClick) {
+      onReservationClick(reservation);
+    }
+  };
 
   return (
     <Paper elevation={2} sx={{ height: '100%', overflowX: 'auto' }}>
@@ -118,69 +328,88 @@ const Scheduler: React.FC<SchedulerProps> = ({ cars, reservations, selectedDate,
         
         <Box sx={{ flex: 1, overflowY: 'auto' }}>
           <Grid container>
-            {/* En-tête des heures */}
+            {/* En-tête des heures - Toutes les heures sur une seule ligne */}
             <Grid item xs={2}>
               <Box sx={{ height: 40, display: 'flex', alignItems: 'center', fontWeight: 'bold', pl: 1 }}>
                 Voiture
               </Box>
             </Grid>
             <Grid item xs={10}>
-              <Grid container>
-                {timeSlots.map((slot) => (
-                  <Grid item xs={1} key={slot.hour}>
-                    <Box sx={{ 
-                      height: 40, 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center',
-                      fontWeight: 'bold',
-                      fontSize: '0.8rem'
-                    }}>
+              <Box sx={{ 
+                position: 'relative', 
+                height: 40, 
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+              }}>
+                {/* Afficher les marqueurs d'heures tous les 2 heures pour économiser l'espace */}
+                {timeSlots.filter((_, index) => index % 2 === 0).map((slot, index) => {
+                  const offsetPercent = (slot.hour / 24) * 100;
+                  return (
+                    <Box 
+                      key={`hour-${index}`}
+                      sx={{
+                        position: 'absolute',
+                        left: `${offsetPercent}%`,
+                        transform: 'translateX(-50%)',
+                        fontWeight: 'bold',
+                        fontSize: '0.75rem',
+                        color: 'text.secondary',
+                        width: '40px',
+                        textAlign: 'center'
+                      }}
+                    >
                       {slot.label}
                     </Box>
-                  </Grid>
-                ))}
-              </Grid>
+                  );
+                })}
+                {/* Lignes de graduation pour toutes les heures */}
+                {timeSlots.map((slot, index) => {
+                  const offsetPercent = (slot.hour / 24) * 100;
+                  return (
+                    <Box 
+                      key={`tick-${index}`}
+                      sx={{
+                        position: 'absolute',
+                        left: `${offsetPercent}%`,
+                        height: '8px',
+                        width: '1px',
+                        bottom: 0,
+                        backgroundColor: 'rgba(0, 0, 0, 0.3)'
+                      }}
+                    />
+                  );
+                })}
+                {/* Ligne horizontale du bas */}
+                <Box 
+                  sx={{
+                    position: 'absolute',
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    height: '1px',
+                    backgroundColor: 'rgba(0, 0, 0, 0.2)'
+                  }}
+                />
+              </Box>
             </Grid>
             
             <Grid item xs={12}>
               <Divider />
             </Grid>
             
-            {/* Lignes pour chaque voiture */}
+            {/* Lignes pour chaque voiture avec timeline */}
             {cars.map((car) => (
               <React.Fragment key={car.id}>
-                <Grid item xs={2}>
-                  <Box sx={{ 
-                    height: 40, 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    pl: 1,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis'
-                  }}>
-                    {car.name}
-                  </Box>
-                </Grid>
-                <Grid item xs={10}>
-                  <Grid container>
-                    {timeSlots.map((slot) => {
-                      const reservation = getReservationForSlot(car.id, slot.time, reservations);
-                      return (
-                        <Grid item xs={1} key={`${car.id}-${slot.hour}`}>
-                          <Slot
-                            car={car}
-                            time={slot.time}
-                            reservation={reservation}
-                            onClick={() => onSlotClick(car.id, slot.time)}
-                            onReservationClick={onReservationClick}
-                          />
-                        </Grid>
-                      );
-                    })}
-                  </Grid>
-                </Grid>
+                <CarTimeline
+                  car={car}
+                  reservations={reservations}
+                  dayStart={dayStart}
+                  dayEnd={dayEnd}
+                  timeSlots={timeSlots}
+                  onSlotClick={onSlotClick}
+                  onReservationClick={handleReservationClick}
+                />
                 <Grid item xs={12}>
                   <Divider />
                 </Grid>

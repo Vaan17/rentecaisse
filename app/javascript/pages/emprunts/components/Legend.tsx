@@ -12,25 +12,25 @@ const statuses = [
   {
     id: 'brouillon',
     label: 'Brouillon',
-    color: 'rgba(255, 152, 0, 0.3)',
+    color: 'rgba(255, 152, 0, 0.7)',
     description: 'Demande d\'emprunt en attente de validation par un administrateur.'
   },
   {
     id: 'validé',
     label: 'Validé',
-    color: 'rgba(76, 175, 80, 0.3)',
+    color: 'rgba(76, 175, 80, 0.7)',
     description: 'Emprunt validé par un administrateur.'
   },
   {
     id: 'en_cours',
     label: 'En cours',
-    color: 'rgba(244, 67, 54, 0.3)',
+    color: 'rgba(244, 67, 54, 0.7)',
     description: 'Emprunt validé et actuellement en cours.'
   },
   {
     id: 'terminé',
     label: 'Terminé',
-    color: 'rgba(33, 150, 243, 0.3)',
+    color: 'rgba(33, 150, 243, 0.7)',
     description: 'Emprunt terminé et véhicule retourné.'
   }
 ];
