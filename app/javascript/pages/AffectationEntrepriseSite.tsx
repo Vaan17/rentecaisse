@@ -6,6 +6,7 @@ import BackgroundLayout from '../components/layout/BackgroundLayout';
 import WhiteContainer from '../components/layout/WhiteContainer';
 import { Card } from '@mui/material';
 import { Flex } from '../components/style/flex';
+import axiosSecured from '../services/apiService';
 
 const Header = styled.div`
   display: flex;
@@ -241,23 +242,15 @@ const AffectationEntrepriseSite = () => {
 
   const fetchEntreprises = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/get_entreprises', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
+      const response = await axiosSecured.get('/get_entreprises');
+
+      if (response.status === 200) {
+        const data = response.data;
+        console.log('Entreprises response:', data);
+
+        if (data.success) {
+          setEntreprises(data.entreprises);
         }
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('Entreprises response:', data);
-
-      if (data.success) {
-        setEntreprises(data.entreprises);
       }
     } catch (error) {
       console.error('Erreur lors du chargement des entreprises:', error);
@@ -267,23 +260,15 @@ const AffectationEntrepriseSite = () => {
 
   const fetchSites = async (enterpriseId: number) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/get_sites?enterprise_id=${enterpriseId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
+      const response = await axiosSecured.get(`/get_sites?enterprise_id=${enterpriseId}`);
+
+      if (response.status === 200) {
+        const data = response.data;
+        console.log('Sites response:', data);
+
+        if (data.success) {
+          setSites(data.entreprise.sites);
         }
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('Sites response:', data);
-
-      if (data.success) {
-        setSites(data.entreprise.sites);
       }
     } catch (error) {
       console.error('Erreur lors du chargement des sites:', error);
@@ -321,21 +306,12 @@ const AffectationEntrepriseSite = () => {
     setCodeError('');
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/verify_and_affect_user', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          enterprise_id: selectedEntreprise.id,
-          code: code
-        })
+      const response = await axiosSecured.post('/verify_and_affect_user', {
+        enterprise_id: selectedEntreprise.id,
+        code: code
       });
 
-      const data = await response.json();
+      const data = response.data;
       if (data.success) {
         setIsEnterpriseVerified(true);
         await fetchSites(selectedEntreprise.id);
@@ -349,11 +325,6 @@ const AffectationEntrepriseSite = () => {
       const errorMessage = error.message || 'Erreur lors de la vérification';
       setCodeError(errorMessage);
       toast.error(errorMessage);
-
-      if (error.response?.status === 401) {
-        localStorage.removeItem('token');
-        navigate('/login');
-      }
     } finally {
       setLoading(false);
     }
@@ -367,22 +338,13 @@ const AffectationEntrepriseSite = () => {
     setCodeError('');
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/verify_and_affect_user', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          enterprise_id: selectedEntreprise.id,
-          site_id: selectedSite.id,
-          code: code
-        })
+      const response = await axiosSecured.post('/verify_and_affect_user', {
+        enterprise_id: selectedEntreprise.id,
+        site_id: selectedSite.id,
+        code: code
       });
 
-      const data = await response.json();
+      const data = response.data;
       if (data.success) {
         toast.success('Affectation réussie');
         navigate(data.redirect_to);
@@ -391,15 +353,10 @@ const AffectationEntrepriseSite = () => {
         toast.error(data.message || 'Une erreur est survenue');
       }
     } catch (error: any) {
-      console.error('Erreur lors de l&apos;affectation:', error);
-      const errorMessage = error.message || 'Erreur lors de l&apos;affectation';
+      console.error('Erreur lors de l\'affectation:', error);
+      const errorMessage = error.message || 'Erreur lors de l\'affectation';
       setCodeError(errorMessage);
       toast.error(errorMessage);
-
-      if (error.response?.status === 401) {
-        localStorage.removeItem('token');
-        navigate('/login');
-      }
     } finally {
       setLoading(false);
     }

@@ -48,4 +48,33 @@ class UserMailer < ApplicationMailer
 
     puts response.body
   end
+
+  def account_deletion_confirmation(email)
+    uri = URI.parse('https://api.brevo.com/v3/smtp/email')
+    request = Net::HTTP::Post.new(uri)
+    request['accept'] = 'application/json'
+    request['api-key'] = ENV['API_KEY_BREVO']
+    request['content-type'] = 'application/json'
+    request.body = {
+      sender: { name: ENV['SENDER_NAME'], email: ENV['EMAIL_SENDER'] },
+      to: [{ email: email }],
+      subject: 'Confirmation de suppression de votre compte',
+      htmlContent: "<html><head></head><body>
+                    <p>Bonjour,</p>
+                    <p>Nous vous confirmons que votre compte a bien été supprimé de notre plateforme conformément à votre demande.</p>
+                    <p>Toutes vos données personnelles ont été anonymisées conformément à notre politique de confidentialité.</p>
+                    <p>Nous vous remercions pour la confiance que vous nous avez accordée et espérons vous revoir bientôt.</p>
+                    <p>Cordialement,<br>L'équipe RenteCaisse</p>
+                    </body></html>"
+    }.to_json
+
+    response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+      http.request(request)
+    end
+
+    puts response.body
+    Rails.logger.info "Email de confirmation de suppression envoyé à #{email}"
+  rescue => e
+    Rails.logger.error "Erreur lors de l'envoi de l'email de confirmation de suppression à #{email}: #{e.message}"
+  end
 end

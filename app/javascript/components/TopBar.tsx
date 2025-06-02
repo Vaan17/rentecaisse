@@ -8,6 +8,7 @@ import { isDesktop } from 'react-device-detect';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LogoutIcon from '@mui/icons-material/Logout';
 import DescriptionIcon from '@mui/icons-material/Description';
+import axiosSecured from '../services/apiService';
 
 const TopBarContainer = styled(Flex)`
 	max-width: 100%;
@@ -68,9 +69,10 @@ const ItemSubtitle = styled.div`
 `
 
 interface UserInfo {
-	prenom: string;
-	nom: string;
-	email: string;
+  id: number;
+  prenom: string;
+  nom: string;
+  email: string;
 }
 
 const TopBar = () => {
@@ -89,52 +91,36 @@ const TopBar = () => {
 		setAnchorEl(null);
 	};
 
-	useEffect(() => {
-		fetchUserInfo();
-		fetchUserImage();
-	}, []);
+  useEffect(() => {
+    fetchUserInfo();
+  }, []);
+
+  useEffect(() => {
+    if (userInfo) {
+      fetchUserImage();
+    }
+  }, [userInfo]);
 
 	const fetchUserInfo = async () => {
 		try {
-			const token = localStorage.getItem("token");
-			const response = await fetch(
-				"http://localhost:3000/api/authenticated-page",
-				{
-					headers: {
-						Authorization: `Bearer ${token}`,
-						Accept: "application/json",
-					},
-				},
-			);
-			if (response.ok) {
-				const data = await response.json();
+			const response = await axiosSecured.get("/authenticated-page");
+			if (response.status === 200) {
+				const data = response.data;
 				if (data.success) {
 					setUserInfo(data.user);
 				}
 			}
 		} catch (error) {
-			console.error(
-				"Erreur lors du chargement des informations utilisateur:",
-				error,
-			);
+			console.error("Erreur lors du chargement des informations utilisateur:", error);
 		}
 	};
 
 	const fetchUserImage = async () => {
 		try {
-			const token = localStorage.getItem("token");
-			const response = await fetch(
-				"http://localhost:3000/api/users/profile-image",
-				{
-					headers: {
-						Authorization: `Bearer ${token}`,
-						Accept: "application/json",
-					},
-				},
-			);
+			const response = await axiosSecured.get(`/users/profile-image?user_id=${userInfo?.id}`);
 
-			if (response.ok) {
-				const data = await response.json();
+			if (response.status === 200) {
+				const data = response.data;
 				if (data.success) {
 					const binaryData = atob(data.image_data);
 					const bytes = new Uint8Array(binaryData.length);

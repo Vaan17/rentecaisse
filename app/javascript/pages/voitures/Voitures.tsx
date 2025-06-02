@@ -6,6 +6,8 @@ import CustomFilter from "../../components/CustomFilter"
 import { useNavigate } from "react-router-dom"
 import axios from "axios"
 import useCars from "../../hook/useCars"
+import axiosSecured from '../../services/apiService'
+import { Flex } from "../../components/style/flex"
 
 const CardContainer = styled.div`
     display: flex;

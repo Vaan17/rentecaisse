@@ -14,7 +14,6 @@ import CGVPage from './CGVPage'
 import CGUPage from './CGUPage'
 import MentionsLegalesPage from './MentionsLegalesPage'
 import ConfirmEmailPage from './ConfirmEmailPage'
-import FirstConnexionPage from './FirstConnexionPage'
 import ForgottenPasswordPage from './ForgottenPasswordPage'
 import ResetPasswordPage from './ResetPasswordPage'
 import CompleteProfil from './CompleteProfil'
@@ -33,6 +32,7 @@ import Home from "../components/Home.tsx"
 import AdminVoitures from "./admin/AdminVoitures.tsx"
 import { ToastContainer } from "react-toastify"
 import ReduxSync from "../redux/ReduxSync.tsx"
+import CancellationAccountDeletion from './CancellationAccountDeletion'
 
 const AppContainer = styled.div`
 	width: 100vw;
@@ -83,10 +83,11 @@ const App = () => {
 							<Route path="/mentions_legales" element={<MentionsLegalesPage />} />
 							<Route path="/confirm_email" element={<ConfirmEmailPage />} />
 							{/* Routes authentifiées (plus de wrapper RequireAuth) */}
-						// Todo NOLAN : Check them and decide which ones to keep, and delete the other
-							<Route path="/first-connexion" element={<FirstConnexionPage />} /> //! currently unused
-							<Route path="/complete-profil" element={<CompleteProfil />} /> //* currently used
-							// Todo NOLAN : ==============================================================
+							<Route
+								path="/cancellation-account"
+								element={<CancellationAccountDeletion />}
+							/>
+							<Route path="/complete-profil" element={<CompleteProfil />} />
 							<Route
 								path="/affectation-entreprise"
 								element={<AffectationEntrepriseSite />}

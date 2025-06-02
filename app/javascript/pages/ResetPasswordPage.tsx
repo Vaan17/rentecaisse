@@ -5,6 +5,7 @@ import WhiteContainer from '../components/layout/WhiteContainer';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent } from '@mui/material';
 import { Flex } from '../components/style/flex';
+import axios from 'axios';
 
 const Header = styled.div`
   display: flex;
@@ -318,28 +319,21 @@ const ResetPasswordPage = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:3000/api/auth/reset-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          user: {
-            token,
-            password
-          }
-        }),
+      const response = await axios.post('/api/auth/reset-password', {
+        user: {
+          token,
+          password
+        }
       });
 
-      if (response.ok) {
-        setIsSubmitted(true);
-        setError('');
-      } else {
-        const data = await response.json();
-        setError(data.message || 'Une erreur est survenue');
-      }
+      setIsSubmitted(true);
+      setError('');
     } catch (err) {
-      setError('Une erreur est survenue lors de la connexion au serveur');
+      if (err.response && err.response.data) {
+        setError(err.response.data.message || 'Une erreur est survenue');
+      } else {
+        setError('Une erreur est survenue lors de la connexion au serveur');
+      }
     }
   };
 

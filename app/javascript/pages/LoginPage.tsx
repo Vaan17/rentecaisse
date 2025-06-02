@@ -4,6 +4,8 @@ import BackgroundLayout from '../components/layout/BackgroundLayout';
 import WhiteContainer from '../components/layout/WhiteContainer';
 import { Card, CardContent } from '@mui/material';
 import { Flex } from '../components/style/flex';
+import axios from 'axios';
+import axiosSecured from '../services/apiService';
 
 const Logo = styled.img`
   width: 64px;
@@ -274,39 +276,25 @@ const LoginPage = () => {
         }
       };
 
-      const loginResponse = await fetch('http://localhost:3000/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (!loginResponse.ok) {
-        throw new Error(`HTTP error! status: ${loginResponse.status}`);
-      }
-
-      const loginData = await loginResponse.json();
+      // Utilisation d'axios directement ici car nous ne voulons pas ajouter le token pour le login
+      const loginResponse = await axios.post('/api/auth/login', formData);
+      const loginData = loginResponse.data;
       console.log('Login response:', loginData);
 
       if (loginData.success) {
         // Stocker le token de session au lieu du token simple
         localStorage.setItem('token', loginData.session_token);
 
-        // Vérifier l'état de l'utilisateur
-        const statusResponse = await fetch('http://localhost:3000/api/authenticated-page', {
-          headers: {
-            'Authorization': `Bearer ${loginData.session_token}`,
-            'Accept': 'application/json'
-          }
-        });
-
-        if (!statusResponse.ok) {
-          throw new Error(`HTTP error! status: ${statusResponse.status}`);
+        // Vérifier si une redirection est déjà spécifiée dans la réponse de login
+        if (loginData.redirect_to) {
+          console.log('Redirection depuis login:', loginData.redirect_to);
+          window.location.href = loginData.redirect_to;
+          return;
         }
 
-        const statusData = await statusResponse.json();
+        // Vérifier l'état de l'utilisateur avec axiosSecured
+        const statusResponse = await axiosSecured.get('/authenticated-page');
+        const statusData = statusResponse.data;
         console.log('Status response:', statusData);
 
         if (statusData.success) {

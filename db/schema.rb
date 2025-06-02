@@ -147,6 +147,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_29_103341) do
     t.string "session_token"
     t.datetime "session_token_expires_at"
     t.boolean "confirmation_entreprise", default: false
+    t.boolean "desactive", default: false
+    t.datetime "date_demande_suppression"
     t.index ["confirmation_token"], name: "index_utilisateurs_on_confirmation_token", unique: true
     t.index ["email"], name: "index_utilisateurs_on_email", unique: true
     t.index ["entreprise_id"], name: "index_utilisateurs_on_entreprise_id"
