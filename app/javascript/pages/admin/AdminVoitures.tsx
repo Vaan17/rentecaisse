@@ -20,6 +20,7 @@ const AdminVoitures = () => {
     const navigate = useNavigate()
     const cars = useCars()
 
+    const [selectedCar, setSelectedCar] = useState<IVoiture | undefined>(undefined)
     const [filterProperties, setFilterProperties] = useState({ filterBy: undefined, searchValue: "" })
     const [isOpen, setIsOpen] = useState(false)
     const [selected, setSelected] = useState<string[]>([])
@@ -139,7 +140,10 @@ const AdminVoitures = () => {
                                         <TableCell padding='none'>{car.type_boite}</TableCell>
                                         <TableCell padding='none'>
                                             <Tooltip title="Modifier" arrow>
-                                                <IconButton onClick={() => null}>
+                                                <IconButton onClick={() => {
+                                                    setSelectedCar(car)
+                                                    setIsOpen(true)
+                                                }}>
                                                     <EditIcon />
                                                 </IconButton>
                                             </Tooltip>
@@ -180,8 +184,11 @@ const AdminVoitures = () => {
                 />
                 <AdminVoitureModal
                     isOpen={isOpen}
-                    isNew={true}
-                    onClose={() => setIsOpen(false)}
+                    selectedCar={selectedCar}
+                    onClose={() => {
+                        setIsOpen(false)
+                        setSelectedCar(undefined)
+                    }}
                 />
             </Flex>
         </>

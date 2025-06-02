@@ -1,5 +1,5 @@
-import React from 'react'
-import { Button, IconButton, Modal, TextField } from '@mui/material'
+import React, { useEffect } from 'react'
+import { Button, IconButton, Modal } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close';
 import { Flex } from '../components/style/flex';
 import styled from 'styled-components';
@@ -9,11 +9,11 @@ import Yup from "../utils/yup"
 import FText from '../utils/form/FText';
 import FNumber from '../utils/form/FNumber';
 import FSelect from '../utils/form/FSelect';
-import axios from 'axios';
 import _ from 'lodash';
 import VoitureAPI from "../redux/data/voiture/VoitureAPI"
 import { useDispatch } from 'react-redux';
 import { addCar } from '../redux/data/voiture/voitureReducer';
+import type { IVoiture } from '../pages/voitures/Voitures';
 
 const ModalContent = styled(Flex)`
     position: absolute;
@@ -49,6 +49,7 @@ const ModalTitle = styled.div`
 `
 
 const schema = Yup.object().shape({
+    id: Yup.number().nullable(),
     immatriculation: Yup.string().required("Champ requis."),
     modele: Yup.string().required("Champ requis."),
     marque: Yup.string().required("Champ requis."),
@@ -65,54 +66,66 @@ const schema = Yup.object().shape({
     nombre_places: Yup.number().required("Champ requis."),
     type_boite: Yup.string().required("Champ requis."),
     site_id: Yup.number().required("Champ requis."),
-    lien_image_voiture: Yup.string(),
+    lien_image_voiture: Yup.string().nullable(),
+    updated_at: Yup.string().nullable(),
 })
 
 const AdminVoitureModal = ({
     isOpen,
-    isNew,
+    selectedCar,
     onClose,
 }: {
     isOpen: boolean
-    isNew: boolean
+    selectedCar: IVoiture | undefined
     onClose: () => void
 }) => {
     const dispatch = useDispatch()
 
     const methods = useForm({
         resolver: yupResolver(schema),
-        defaultValues: isNew
-            ? {
-                statut_voiture: "Fonctionnelle",
-            }
-            : {},
-        mode: "onChange",
     })
+
+    useEffect(() => {
+        if (selectedCar) {
+            methods.reset(selectedCar)
+        } else {
+            methods.reset({
+                statut_voiture: "Fonctionnelle",
+            })
+        }
+    }, [selectedCar]);
+
+    const handleClose = () => {
+        onClose()
+    }
 
     const onSubmit = async (values) => {
         const { key, ...formValues } = values
 
-        if (isNew) {
+        if (!selectedCar) {
+            // Create
             const voiture = await VoitureAPI.createVoiture(formValues)
             dispatch(addCar(voiture))
         } else {
-            debugger
+            // Update
+            const voiture = await VoitureAPI.editVoiture(formValues)
+            dispatch(addCar(voiture))
         }
-        onClose()
+
+        handleClose()
     }
 
     return (
         <FormProvider {...methods}>
             <Modal
                 open={isOpen}
-                onClose={onClose}
                 aria-labelledby="modal-modal-title"
                 aria-describedby="modal-modal-description"
             >
                 <ModalContent directionColumn alignItemsInitial gap=".5em">
                     <ModalHeader fullWidth spaceBetween>
-                        <ModalTitle>{isNew ? "Ajouter une voiture" : "Éditer une voiture"}</ModalTitle>
-                        <IconButton onClick={onClose}>
+                        <ModalTitle>{!selectedCar ? "Ajouter une voiture" : "Éditer une voiture"}</ModalTitle>
+                        <IconButton onClick={handleClose}>
                             <CloseIcon />
                         </IconButton>
                     </ModalHeader>
@@ -133,9 +146,9 @@ const AdminVoitureModal = ({
                     </ModalBody>
                     <ModalFooter fullWidth directionReverse gap>
                         <Button variant="contained" color="primary" onClick={methods.handleSubmit(onSubmit)}>
-                            {isNew ? "Créer" : "Enregistrer"}
+                            {!selectedCar ? "Créer" : "Enregistrer"}
                         </Button>
-                        <Button variant="text" color="primary" onClick={onClose}>
+                        <Button variant="text" color="primary" onClick={handleClose}>
                             Annuler
                         </Button>
                     </ModalFooter>
