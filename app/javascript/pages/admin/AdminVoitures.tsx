@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Flex } from '../../components/style/flex'
 import CustomFilter from '../../components/CustomFilter'
-import { Alert, Button, Checkbox, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Tooltip } from '@mui/material'
+import { Alert, Button, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Tooltip } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import type { IVoiture } from '../voitures/Voitures'
-import axios from 'axios'
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete'
 import styled from 'styled-components'
@@ -22,16 +21,14 @@ const SButton = styled(Button)`
 
 const AdminVoitures = () => {
     const dispatch = useDispatch()
-    const navigate = useNavigate()
     const cars = useCars()
 
     const [selectedCar, setSelectedCar] = useState<IVoiture | undefined>(undefined)
     const [filterProperties, setFilterProperties] = useState({ filterBy: undefined, searchValue: "" })
     const [isOpen, setIsOpen] = useState(false)
     const [isOpenConfirmModal, setIsOpenConfirmModal] = useState(false)
-    const [selected, setSelected] = useState<string[]>([])
     const [page, setPage] = useState(0)
-    const [rowsPerPage, setRowsPerPage] = useState(5)
+    const [rowsPerPage, setRowsPerPage] = useState(10)
     const isAdmin = true // Replacer par une vérification réelle de l'utilisateur
 
     const filterOptions = [
@@ -82,6 +79,10 @@ const AdminVoitures = () => {
         setSelectedCar(undefined)
     }
 
+    const visibleRows = useMemo(() => {
+        return filteredCars.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+    }, [filteredCars, page, rowsPerPage]);
+
     if (!isAdmin) {
         return <Flex>Vous n'avez pas accès à cette page.</Flex>
     }
@@ -104,13 +105,6 @@ const AdminVoitures = () => {
                     >
                         <TableHead>
                             <TableRow>
-                                <TableCell padding="checkbox">
-                                    <Checkbox
-                                        color="primary"
-                                        checked={false}
-                                        onChange={(event) => null}
-                                    />
-                                </TableCell>
                                 {headCells.map((headCell) => (
                                     <TableCell
                                         key={headCell.id}
@@ -123,8 +117,7 @@ const AdminVoitures = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {filteredCars.map((car, index) => {
-                                const isItemSelected = selected.includes(car.immatriculation);
+                            {visibleRows.map((car, index) => {
                                 const labelId = `enhanced-table-checkbox-${index}`;
 
                                 return (
@@ -132,17 +125,9 @@ const AdminVoitures = () => {
                                         key={car.immatriculation}
                                         hover
                                         onClick={(event) => null}
-                                        aria-checked={isItemSelected}
                                         tabIndex={-1}
-                                        selected={isItemSelected}
                                         sx={{ cursor: 'pointer' }}
                                     >
-                                        <TableCell padding="none">
-                                            <Checkbox
-                                                color="primary"
-                                                checked={isItemSelected}
-                                            />
-                                        </TableCell>
                                         <TableCell
                                             id={labelId}
                                             scope="row"
@@ -188,7 +173,7 @@ const AdminVoitures = () => {
                     </Table>
                 </TableContainer>
                 <TablePagination
-                    rowsPerPageOptions={[5, 10, 25]}
+                    rowsPerPageOptions={[5, 10, 25, 50]}
                     component="div"
                     count={filteredCars.length}
                     rowsPerPage={rowsPerPage}

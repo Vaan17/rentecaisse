@@ -15,6 +15,11 @@ class VoituresController < ApplicationController
     attributes = params["data"].to_h
     attributes["entreprise_id"] = 1 # use @current_user["entreprise_id"] instead of 1
 
+    if Voiture.exists?(immatriculation: attributes["immatriculation"])
+      render json: { error: "Immatriculation already exists" }, status: :unprocessable_entity
+      return
+    end
+
     newCar = Voiture.create(attributes)
 
     render json: newCar.to_format
@@ -25,6 +30,11 @@ class VoituresController < ApplicationController
     params["data"].permit!
 
     attributes = params["data"].to_h
+
+    if Voiture.exists?(immatriculation: attributes["immatriculation"])
+      render json: { error: "Immatriculation already exists" }, status: :unprocessable_entity
+      return
+    end
 
     Voiture.find(attributes["id"]).update(attributes)
     updatedCar = Voiture.find(attributes["id"])

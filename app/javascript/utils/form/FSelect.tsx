@@ -2,18 +2,21 @@ import React, { useState } from 'react'
 import { Autocomplete, TextField } from '@mui/material'
 import { Flex } from '../../components/style/flex'
 import { useController, useFormContext } from 'react-hook-form'
+import _ from 'lodash'
 
 const FSelect = ({
     name,
     label,
     options,
+    getOptionLabel = (option) => option,
     placeholder = "",
     multiple = false,
     disabled = false,
 }: {
     name: string
     label: string
-    options: string[]
+    options: string[] | number[]
+    getOptionLabel?: (option) => string
     placeholder?: string
     multiple?: boolean
     disabled?: boolean
@@ -59,12 +62,11 @@ const FSelect = ({
                 </Flex>
             )}
             options={options}
+            getOptionLabel={getOptionLabel}
             value={correctedValue}
-            // getOptionLabel={getOptionLabel}
-            onChange={(event, newValue) => {
-                onChange(newValue)
+            onChange={(event, option) => {
+                onChange(option)
             }}
-        // renderOption={renderOption}
         />
     )
 }

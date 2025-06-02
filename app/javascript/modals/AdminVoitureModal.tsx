@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Button, IconButton, Modal } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close';
 import { Flex } from '../components/style/flex';
@@ -14,6 +14,7 @@ import VoitureAPI from "../redux/data/voiture/VoitureAPI"
 import { useDispatch } from 'react-redux';
 import { addCar } from '../redux/data/voiture/voitureReducer';
 import type { IVoiture } from '../pages/voitures/Voitures';
+import axios from 'axios';
 
 const ModalContent = styled(Flex)`
     position: absolute;
@@ -56,14 +57,26 @@ const schema = Yup.object().shape({
     statut_voiture: Yup.string().required("Champ requis."),
     année_fabrication: Yup.number().required("Champ requis.").test(
         "numeric_value",
-        "Format invalide",
-        (value) => _.isInteger(value)
+        "La valeur doit être un nombre positif.",
+        (value) => _.isNumber(value) && value > 0
     ),
     carburant: Yup.string().required("Champ requis."),
     couleur: Yup.string().required("Champ requis."),
-    puissance: Yup.number().required("Champ requis."),
-    nombre_portes: Yup.number().required("Champ requis."),
-    nombre_places: Yup.number().required("Champ requis."),
+    puissance: Yup.number().required("Champ requis.").test(
+        "numeric_value",
+        "La valeur doit être un nombre positif.",
+        (value) => _.isNumber(value) && value > 0
+    ),
+    nombre_portes: Yup.number().required("Champ requis.").test(
+        "numeric_value",
+        "La valeur doit être un nombre positif.",
+        (value) => _.isNumber(value) && value > 0
+    ),
+    nombre_places: Yup.number().required("Champ requis.").test(
+        "numeric_value",
+        "La valeur doit être un nombre positif.",
+        (value) => _.isNumber(value) && value > 0
+    ),
     type_boite: Yup.string().required("Champ requis."),
     site_id: Yup.number().required("Champ requis."),
     lien_image_voiture: Yup.string().nullable(),
@@ -79,6 +92,7 @@ const AdminVoitureModal = ({
     selectedCar: IVoiture | undefined
     onClose: () => void
 }) => {
+    const [sites, setSites] = useState([])
     const dispatch = useDispatch()
 
     const methods = useForm({
@@ -94,6 +108,21 @@ const AdminVoitureModal = ({
             })
         }
     }, [selectedCar]);
+
+    useEffect(() => {
+        const fetchSites = async () => {
+            const res = await axios.get("http://localhost:3000/api/sites")
+            setSites(res.data)
+        }
+        fetchSites()
+    }, [])
+
+    const siteOptions = useMemo(() => {
+        return sites.reduce<{ [key: number]: any }>((acc, site: any) => {
+            acc[site.id] = site
+            return acc
+        }, {})
+    }, [sites])
 
     const handleClose = () => {
         onClose()
@@ -139,7 +168,12 @@ const AdminVoitureModal = ({
                         <FNumber name="nombre_portes" label="Nombre de portes" />
                         <FNumber name="nombre_places" label="Nombre de places assises" />
                         <FSelect name="type_boite" label="Type de boite" options={["Manuelle", "Automatique"]} />
-                        <FNumber name="site_id" label="Site rattaché" />
+                        <FSelect
+                            name="site_id"
+                            label="Site rattaché"
+                            options={Object.keys(siteOptions)}
+                            getOptionLabel={(option) => siteOptions[option].nom_site}
+                        />
                         <FText name="lien_image_voiture" label="Image" disabled />
                     </ModalBody>
                     <ModalFooter fullWidth directionReverse gap>
