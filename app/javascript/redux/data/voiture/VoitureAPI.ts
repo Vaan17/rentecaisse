@@ -36,8 +36,22 @@ const editVoiture = async (voitureData) => {
 	}
 };
 
+const deleteVoiture = async (voitureId) => {
+	try {
+		const res = await axios.delete(
+			`http://localhost:3000/api/voitures/${voitureId}`,
+		);
+
+		toast.success("La voiture à bien été supprimée !");
+		return res.data;
+	} catch (error) {
+		toast.error("Erreur lors de la suppression de la voiture.");
+	}
+};
+
 export default {
 	fetchAll,
 	createVoiture,
 	editVoiture,
+	deleteVoiture,
 };

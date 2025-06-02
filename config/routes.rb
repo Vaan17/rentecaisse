@@ -32,6 +32,7 @@ Rails.application.routes.draw do
   get "/api/voitures" => "voitures#fetch_all"
   post "/api/voitures" => "voitures#create"
   put "/api/voitures" => "voitures#update"
+  delete "/api/voitures/:id" => "voitures#delete"
 
   # Routes pour les entreprises
   get "/api/entreprises" => "entreprises#fetch_all"

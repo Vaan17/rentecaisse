@@ -103,11 +103,9 @@ const AdminVoitureModal = ({
         const { key, ...formValues } = values
 
         if (!selectedCar) {
-            // Create
             const voiture = await VoitureAPI.createVoiture(formValues)
             dispatch(addCar(voiture))
         } else {
-            // Update
             const voiture = await VoitureAPI.editVoiture(formValues)
             dispatch(addCar(voiture))
         }

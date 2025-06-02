@@ -27,7 +27,6 @@ class VoituresController < ApplicationController
     attributes = params["data"].to_h
 
     Voiture.find(attributes["id"]).update(attributes)
-    binding.pry
     updatedCar = Voiture.find(attributes["id"])
 
     render json: updatedCar.to_format
@@ -35,7 +34,8 @@ class VoituresController < ApplicationController
 
   def delete
     # Todo later : add verification to check is user is entreprise, else, return.
+    Voiture.find(params["id"]).delete
 
-
+    render json: { "id" => params["id"] }
   end
 end

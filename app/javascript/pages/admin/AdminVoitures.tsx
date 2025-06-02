@@ -10,6 +10,10 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import styled from 'styled-components'
 import AdminVoitureModal from '../../modals/AdminVoitureModal'
 import useCars from '../../hook/useCars'
+import ConfirmationModal from '../../utils/components/ConfirmationModal'
+import VoitureAPI from '../../redux/data/voiture/VoitureAPI'
+import { useDispatch } from 'react-redux'
+import { removeCar } from '../../redux/data/voiture/voitureReducer'
 
 const SButton = styled(Button)`
     min-width: fit-content !important;
@@ -17,12 +21,14 @@ const SButton = styled(Button)`
 `
 
 const AdminVoitures = () => {
+    const dispatch = useDispatch()
     const navigate = useNavigate()
     const cars = useCars()
 
     const [selectedCar, setSelectedCar] = useState<IVoiture | undefined>(undefined)
     const [filterProperties, setFilterProperties] = useState({ filterBy: undefined, searchValue: "" })
     const [isOpen, setIsOpen] = useState(false)
+    const [isOpenConfirmModal, setIsOpenConfirmModal] = useState(false)
     const [selected, setSelected] = useState<string[]>([])
     const [page, setPage] = useState(0)
     const [rowsPerPage, setRowsPerPage] = useState(5)
@@ -65,6 +71,16 @@ const AdminVoitures = () => {
         if (!filterProperties.filterBy || !filterProperties.searchValue) return true
         return car[filterProperties.filterBy]?.toString()?.toLowerCase().includes(filterProperties.searchValue.toLowerCase())
     })
+
+    const handleDelete = async () => {
+        if (!selectedCar) return
+
+        const res = await VoitureAPI.deleteVoiture(selectedCar.id)
+        dispatch(removeCar(res))
+
+        setIsOpenConfirmModal(false)
+        setSelectedCar(undefined)
+    }
 
     if (!isAdmin) {
         return <Flex>Vous n'avez pas accès à cette page.</Flex>
@@ -150,7 +166,10 @@ const AdminVoitures = () => {
                                         </TableCell>
                                         <TableCell padding='none' >
                                             <Tooltip title="Supprimer" arrow>
-                                                <IconButton onClick={() => null}>
+                                                <IconButton onClick={() => {
+                                                    setSelectedCar(car)
+                                                    setIsOpenConfirmModal(true)
+                                                }}>
                                                     <DeleteIcon />
                                                 </IconButton>
                                             </Tooltip>
@@ -189,6 +208,16 @@ const AdminVoitures = () => {
                         setIsOpen(false)
                         setSelectedCar(undefined)
                     }}
+                />
+                <ConfirmationModal
+                    isOpen={isOpenConfirmModal}
+                    message="Êtes-vous sûr de vouloir supprimer cette voiture ?"
+                    onConfirm={() => handleDelete()}
+                    onClose={() => {
+                        setIsOpenConfirmModal(false)
+                        setSelectedCar(undefined)
+                    }}
+                    onConfirmName="Supprimer"
                 />
             </Flex>
         </>
