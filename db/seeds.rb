@@ -26,8 +26,6 @@ entreprise1 = Entreprise.create!(
   capital_social: 100000,
   lien_image_entreprise: 'https://www.techinnov.fr/logo.png',
   code_entreprise: 'TECH123',
-  date_creation_entreprise: '2023-01-01',
-  date_modification_entreprise: '2025-01-14'
 )
 
 entreprise2 = Entreprise.create!(
@@ -47,8 +45,6 @@ entreprise2 = Entreprise.create!(
   capital_social: 500000,
   lien_image_entreprise: 'https://www.greensolutions.fr/logo.png',
   code_entreprise: 'GREEN123',
-  date_creation_entreprise: '2020-06-15',
-  date_modification_entreprise: '2025-01-14'
 )
 
 # Création des sites
@@ -63,8 +59,6 @@ site1 = Site.create!(
   site_web: 'https://www.techinnov.fr',
   lien_image_site: 'https://www.techinnov.fr/site_paris.png',
   entreprise: entreprise1,
-  date_creation_site: '2023-01-01',
-  date_modification_site: '2025-01-14'
 )
 
 site2 = Site.create!(
@@ -78,8 +72,6 @@ site2 = Site.create!(
   site_web: 'https://www.greensolutions.fr',
   lien_image_site: 'https://www.greensolutions.fr/site_marseille.png',
   entreprise: entreprise2,
-  date_creation_site: '2020-06-15',
-  date_modification_site: '2025-01-14'
 )
 
 # Création des utilisateurs
@@ -100,8 +92,6 @@ user1 = Utilisateur.create!(
   lien_image_utilisateur: 'https://www.techinnov.fr/jean.png',
   entreprise: entreprise1,
   site: site1,
-  date_creation_utilisateur: '2023-01-01',
-  date_modification_utilisateur: '2025-01-14'
 )
 
 user2 = Utilisateur.create!(
@@ -121,8 +111,6 @@ user2 = Utilisateur.create!(
   lien_image_utilisateur: 'https://www.greensolutions.fr/lucie.png',
   entreprise: entreprise2,
   site: site2,
-  date_creation_utilisateur: '2020-06-15',
-  date_modification_utilisateur: '2025-01-14'
 )
 
 # Création des voitures
@@ -166,8 +154,6 @@ cle1 = Cle.create!(
   voiture: voiture1,
   utilisateur: user1,
   site: site1,
-  date_creation_cle: '2023-01-01',
-  date_modification_cle: '2025-01-14'
 )
 
 cle2 = Cle.create!(
@@ -175,21 +161,15 @@ cle2 = Cle.create!(
   voiture: voiture2,
   utilisateur: user2,
   site: site2,
-  date_creation_cle: '2020-06-15',
-  date_modification_cle: '2025-01-14'
 )
 
 # Création des listes de passagers
 liste1 = ListePassager.create!(
   utilisateur: user1,
-  date_creation_liste: '2023-01-01',
-  date_modification_liste: '2025-01-14'
 )
 
 liste2 = ListePassager.create!(
   utilisateur: user2,
-  date_creation_liste: '2020-06-15',
-  date_modification_liste: '2025-01-14'
 )
 
 # Création des localisations
@@ -203,8 +183,6 @@ loc1 = Localisation.create!(
   email: 'contact@techinnov.fr',
   site_web: 'https://www.techinnov.fr',
   added_by_sql: true,
-  date_creation_localisation: '2023-01-01',
-  date_modification_localisation: '2025-01-14'
 )
 
 loc2 = Localisation.create!(
@@ -217,8 +195,6 @@ loc2 = Localisation.create!(
   email: 'contact@greensolutions.fr',
   site_web: 'https://www.greensolutions.fr',
   added_by_sql: true,
-  date_creation_localisation: '2020-06-15',
-  date_modification_localisation: '2025-01-14'
 )
 
 # Création des emprunts
@@ -233,8 +209,6 @@ Emprunt.create!(
   description: 'Utilisation pour réunion externe',
   liste_passager: liste1,
   localisation: loc1,
-  date_creation_emprunt: '2023-01-01',
-  date_modification_emprunt: '2025-01-14'
 )
 
 Emprunt.create!(
@@ -248,6 +222,4 @@ Emprunt.create!(
   description: 'Mission pour client',
   liste_passager: liste2,
   localisation: loc2,
-  date_creation_emprunt: '2020-06-15',
-  date_modification_emprunt: '2025-01-14'
 )

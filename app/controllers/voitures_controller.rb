@@ -1,19 +1,18 @@
 class VoituresController < ApplicationController
-  # Todo later : before_action: verify_authentication
+  before_action :verify_authentication
 
   def fetch_all
-    voitures = Voiture.all
+    voitures = Voiture.all.where(entreprise_id: @current_user.entreprise_id)
     voitures = voitures.map(&:to_format)
 
     render json: voitures
   end
 
   def create
-    # Todo later : add verification to check is user is entreprise, else, return.
     params["data"].permit!
 
     attributes = params["data"].to_h
-    attributes["entreprise_id"] = 1 # use @current_user["entreprise_id"] instead of 1
+    attributes["entreprise_id"] = @current_user["entreprise_id"]
 
     if Voiture.exists?(immatriculation: attributes["immatriculation"])
       render json: { error: "Immatriculation already exists" }, status: :unprocessable_entity
@@ -26,7 +25,6 @@ class VoituresController < ApplicationController
   end
 
   def update
-    # Todo later : add verification to check is user is entreprise, else, return.
     params["data"].permit!
 
     attributes = params["data"].to_h
@@ -43,7 +41,6 @@ class VoituresController < ApplicationController
   end
 
   def delete
-    # Todo later : add verification to check is user is entreprise, else, return.
     Voiture.find(params["id"]).delete
 
     render json: { "id" => params["id"] }

@@ -24,8 +24,6 @@ interface IEntreprise {
     capital_social: number
     lien_image_entreprise: string
     code_entreprise: string
-    date_creation_entreprise: Date
-    date_modification_entreprise: Date
 }
 
 const SiteDetails = () => {

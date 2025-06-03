@@ -19,6 +19,4 @@ class Entreprise < ApplicationRecord
   validates :effectif, presence: true, numericality: { greater_than: 0 }
   validates :capital_social, presence: true, numericality: { greater_than: 0 }
   validates :code_entreprise, presence: true
-  validates :date_creation_entreprise, presence: true
-  validates :date_modification_entreprise, presence: true
 end 

@@ -25,8 +25,6 @@ export interface ISite {
     site_web: string
     lien_image_site: string
     entreprise_id: number
-    date_creation_site: Date
-    date_modification_site: Date
 }
 
 const Sites = () => {

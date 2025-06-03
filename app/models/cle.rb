@@ -7,6 +7,4 @@ class Cle < ApplicationRecord
 
   # Validations
   validates :statut_cle, presence: true
-  validates :date_creation_cle, presence: true
-  validates :date_modification_cle, presence: true
 end 

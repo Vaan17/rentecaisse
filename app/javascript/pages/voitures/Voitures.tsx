@@ -29,8 +29,6 @@ export interface IVoiture {
     lien_image_voiture: string
     entreprise_id: number
     site_id: number
-    date_creation_voiture: Date
-    date_modification_voiture: Date
 }
 
 const Voitures = () => {

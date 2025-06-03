@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_04_29_103341) do
+ActiveRecord::Schema[7.2].define(version: 2025_06_03_095149) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -20,8 +20,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_29_103341) do
     t.bigint "voiture_id", null: false
     t.bigint "utilisateur_id"
     t.bigint "site_id", null: false
-    t.date "date_creation_cle", null: false
-    t.date "date_modification_cle", null: false
+    t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.index ["site_id"], name: "index_cles_on_site_id"
     t.index ["utilisateur_id"], name: "index_cles_on_utilisateur_id"
     t.index ["voiture_id"], name: "index_cles_on_voiture_id"
@@ -38,8 +38,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_29_103341) do
     t.string "description", null: false
     t.bigint "liste_passager_id"
     t.bigint "localisation_id"
-    t.date "date_creation_emprunt", null: false
-    t.date "date_modification_emprunt", null: false
+    t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.index ["cle_id"], name: "index_emprunts_on_cle_id"
     t.index ["liste_passager_id"], name: "index_emprunts_on_liste_passager_id"
     t.index ["localisation_id"], name: "index_emprunts_on_localisation_id"
@@ -64,8 +64,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_29_103341) do
     t.integer "capital_social", null: false
     t.string "lien_image_entreprise"
     t.string "code_entreprise", null: false
-    t.date "date_creation_entreprise", null: false
-    t.date "date_modification_entreprise", null: false
+    t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.index ["numero_siret"], name: "index_entreprises_on_numero_siret", unique: true
     t.check_constraint "capital_social > 0", name: "check_capital_social"
     t.check_constraint "effectif > 0", name: "check_effectif"
@@ -81,8 +81,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_29_103341) do
 
   create_table "liste_passagers", force: :cascade do |t|
     t.bigint "utilisateur_id", null: false
-    t.date "date_creation_liste", null: false
-    t.date "date_modification_liste", null: false
+    t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.index ["utilisateur_id"], name: "index_liste_passagers_on_utilisateur_id"
   end
 
@@ -96,8 +96,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_29_103341) do
     t.string "email"
     t.string "site_web"
     t.boolean "added_by_sql"
-    t.date "date_creation_localisation", null: false
-    t.date "date_modification_localisation", null: false
+    t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
   end
 
   create_table "sites", force: :cascade do |t|
@@ -111,8 +111,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_29_103341) do
     t.string "site_web", null: false
     t.string "lien_image_site"
     t.bigint "entreprise_id", null: false
-    t.date "date_creation_site", null: false
-    t.date "date_modification_site", null: false
+    t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.index ["entreprise_id"], name: "index_sites_on_entreprise_id"
   end
 
@@ -137,8 +137,6 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_29_103341) do
     t.boolean "premiere_connexion", default: true, null: false
     t.bigint "entreprise_id"
     t.bigint "site_id"
-    t.date "date_creation_utilisateur", null: false
-    t.date "date_modification_utilisateur", null: false
     t.datetime "derniere_connexion"
     t.datetime "token_created_at"
     t.string "reset_password_token"
@@ -149,6 +147,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_29_103341) do
     t.boolean "confirmation_entreprise", default: false
     t.boolean "desactive", default: false
     t.datetime "date_demande_suppression"
+    t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.index ["confirmation_token"], name: "index_utilisateurs_on_confirmation_token", unique: true
     t.index ["email"], name: "index_utilisateurs_on_email", unique: true
     t.index ["entreprise_id"], name: "index_utilisateurs_on_entreprise_id"

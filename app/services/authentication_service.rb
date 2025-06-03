@@ -112,8 +112,6 @@ class AuthenticationService
       admin_entreprise: false,
       admin_rentecaisse: false,
       premiere_connexion: true,
-      date_creation_utilisateur: Time.current,
-      date_modification_utilisateur: Time.current
     )
 
     if user.save
