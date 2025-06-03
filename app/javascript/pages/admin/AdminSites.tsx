@@ -2,28 +2,27 @@ import React, { useMemo, useState } from 'react'
 import { Flex } from '../../components/style/flex'
 import CustomFilter from '../../components/CustomFilter'
 import { Alert, Button, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Tooltip } from '@mui/material'
-import { useNavigate } from 'react-router-dom'
-import type { IVoiture } from '../voitures/Voitures'
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete'
 import styled from 'styled-components'
-import AdminVoitureModal from '../../modals/AdminVoitureModal'
-import useCars from '../../hook/useCars'
+import useSites from '../../hook/useSites'
 import ConfirmationModal from '../../utils/components/ConfirmationModal'
-import VoitureAPI from '../../redux/data/voiture/VoitureAPI'
+import SiteAPI from '../../redux/data/site/SiteAPI'
 import { useDispatch } from 'react-redux'
-import { removeCar } from '../../redux/data/voiture/voitureReducer'
+import type { ISite } from '../sites/Sites';
+import AdminSiteModal from '../../modals/AdminSiteModal';
+import { removeSite } from '../../redux/data/site/siteReducer';
 
 const SButton = styled(Button)`
     min-width: fit-content !important;
     padding: .5em 1em !important;
 `
 
-const AdminVoitures = () => {
+const AdminSites = () => {
     const dispatch = useDispatch()
-    const cars = useCars()
+    const sites = useSites()
 
-    const [selectedCar, setSelectedCar] = useState<IVoiture | undefined>(undefined)
+    const [selectedSite, setSelectedSite] = useState<ISite | undefined>(undefined)
     const [filterProperties, setFilterProperties] = useState({ filterBy: undefined, searchValue: "" })
     const [isOpen, setIsOpen] = useState(false)
     const [isOpenConfirmModal, setIsOpenConfirmModal] = useState(false)
@@ -33,55 +32,50 @@ const AdminVoitures = () => {
 
     const filterOptions = [
         {
-            value: "immatriculation",
-            label: "Immatriculation",
+            value: "nom_site",
+            label: "Nom",
         },
         {
-            value: "modele",
-            label: "Modèle",
+            value: "adresse",
+            label: "Adresse",
         },
         {
-            value: "marque",
-            label: "Marque",
+            value: "code_postal",
+            label: "Code postal",
         },
         {
-            value: "nombre_places",
-            label: "Nombre de places",
-        },
-        {
-            value: "type_boite",
-            label: "Type de boite",
+            value: "ville",
+            label: "Ville",
         },
     ]
 
     const headCells = [
-        { id: 'immatriculation', label: 'Immatriculation' },
-        { id: 'modele', label: 'Modèle' },
-        { id: 'marque', label: 'Marque' },
-        { id: 'nombre_places', label: 'Nombre de places' },
-        { id: 'type_boite', label: 'Type de boite' },
+        { id: 'nom_site', label: 'Nom' },
+        { id: 'adresse', label: 'Adresse' },
+        { id: 'code_postal', label: 'Code postal' },
+        { id: 'ville', label: 'Ville' },
         { id: 'edit', label: '', colWidth: 50 },
         { id: 'delete', label: '', colWidth: 50 },
     ]
 
-    const filteredCars = Object.values(cars).filter(car => {
+    const filteredSites = Object.values(sites).filter(site => {
         if (!filterProperties.filterBy || !filterProperties.searchValue) return true
-        return car[filterProperties.filterBy]?.toString()?.toLowerCase().includes(filterProperties.searchValue.toLowerCase())
+        return site[filterProperties.filterBy]?.toString()?.toLowerCase().includes(filterProperties.searchValue.toLowerCase())
     })
 
     const handleDelete = async () => {
-        if (!selectedCar) return
+        if (!selectedSite) return
 
-        const res = await VoitureAPI.deleteVoiture(selectedCar.id)
-        dispatch(removeCar(res))
+        const res = await SiteAPI.deleteSite(selectedSite.id)
+        dispatch(removeSite(res))
 
         setIsOpenConfirmModal(false)
-        setSelectedCar(undefined)
+        setSelectedSite(undefined)
     }
 
     const visibleRows = useMemo(() => {
-        return filteredCars.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-    }, [filteredCars, page, rowsPerPage]);
+        return filteredSites.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+    }, [filteredSites, page, rowsPerPage]);
 
     if (!isAdmin) {
         return <Flex>Vous n'avez pas accès à cette page.</Flex>
@@ -95,7 +89,7 @@ const AdminVoitures = () => {
                         (filterBy, searchValue) => { setFilterProperties({ filterBy, searchValue }) }
                     } />
                     <SButton variant="contained" onClick={() => setIsOpen(true)}>
-                        Ajouter une voiture
+                        Ajouter un site
                     </SButton>
                 </Flex>
                 <TableContainer>
@@ -117,12 +111,12 @@ const AdminVoitures = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {visibleRows.map((car, index) => {
+                            {visibleRows.map((site, index) => {
                                 const labelId = `enhanced-table-checkbox-${index}`;
 
                                 return (
                                     <TableRow
-                                        key={car.immatriculation}
+                                        key={site.id}
                                         hover
                                         onClick={(event) => null}
                                         tabIndex={-1}
@@ -133,16 +127,15 @@ const AdminVoitures = () => {
                                             scope="row"
                                             padding="none"
                                         >
-                                            {car.immatriculation}
+                                            {site.nom_site}
                                         </TableCell>
-                                        <TableCell padding='none'>{car.modele}</TableCell>
-                                        <TableCell padding='none'>{car.marque}</TableCell>
-                                        <TableCell padding='none'>{car.nombre_places}</TableCell>
-                                        <TableCell padding='none'>{car.type_boite}</TableCell>
+                                        <TableCell padding='none'>{site.adresse}</TableCell>
+                                        <TableCell padding='none'>{site.code_postal}</TableCell>
+                                        <TableCell padding='none'>{site.ville}</TableCell>
                                         <TableCell padding='none'>
                                             <Tooltip title="Modifier" arrow>
                                                 <IconButton onClick={() => {
-                                                    setSelectedCar(car)
+                                                    setSelectedSite(site)
                                                     setIsOpen(true)
                                                 }}>
                                                     <EditIcon />
@@ -152,7 +145,7 @@ const AdminVoitures = () => {
                                         <TableCell padding='none' >
                                             <Tooltip title="Supprimer" arrow>
                                                 <IconButton onClick={() => {
-                                                    setSelectedCar(car)
+                                                    setSelectedSite(site)
                                                     setIsOpenConfirmModal(true)
                                                 }}>
                                                     <DeleteIcon />
@@ -162,7 +155,7 @@ const AdminVoitures = () => {
                                     </TableRow>
                                 );
                             })}
-                            {filteredCars.length === 0 && (
+                            {filteredSites.length === 0 && (
                                 <TableRow>
                                     <TableCell colSpan={headCells.length + 1} align="center">
                                         <Alert severity={
@@ -183,7 +176,7 @@ const AdminVoitures = () => {
                 <TablePagination
                     rowsPerPageOptions={[5, 10, 25, 50]}
                     component="div"
-                    count={filteredCars.length}
+                    count={filteredSites.length}
                     rowsPerPage={rowsPerPage}
                     onRowsPerPageChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                         setRowsPerPage(parseInt(event.target.value, 10))
@@ -194,21 +187,21 @@ const AdminVoitures = () => {
                         setPage(newPage)
                     }}
                 />
-                <AdminVoitureModal
+                <AdminSiteModal
                     isOpen={isOpen}
-                    selectedCar={selectedCar}
+                    selectedSite={selectedSite}
                     onClose={() => {
                         setIsOpen(false)
-                        setSelectedCar(undefined)
+                        setSelectedSite(undefined)
                     }}
                 />
                 <ConfirmationModal
                     isOpen={isOpenConfirmModal}
-                    message="Êtes-vous sûr de vouloir supprimer cette voiture ?"
+                    message="Êtes-vous sûr de vouloir supprimer ce site ?"
                     onConfirm={() => handleDelete()}
                     onClose={() => {
                         setIsOpenConfirmModal(false)
-                        setSelectedCar(undefined)
+                        setSelectedSite(undefined)
                     }}
                     onConfirmName="Supprimer"
                 />
@@ -217,4 +210,4 @@ const AdminVoitures = () => {
     )
 }
 
-export default AdminVoitures
+export default AdminSites

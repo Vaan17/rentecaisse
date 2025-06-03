@@ -27,6 +27,9 @@ Rails.application.routes.draw do
   # Routes pour les sites
   get "/api/sites" => "sites#fetch_all"
   get "/api/sites/:id" => "sites#fetch"
+  post "/api/sites" => "sites#create"
+  put "/api/sites" => "sites#update"
+  delete "/api/sites/:id" => "sites#delete"
 
   # Routes pour les voitures
   get "/api/voitures" => "voitures#fetch_all"
