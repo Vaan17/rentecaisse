@@ -24,6 +24,9 @@ Rails.application.routes.draw do
   post "/api/cancel_affectation", to: "authenticated_page#cancel_affectation"
   get "/api/users/profile-image", to: "authenticated_page#get_profile_image"
 
+  # Routes pour les utilisateurs
+  get "/api/user/self" => "utilisateurs#fetch_self"
+
   # Routes pour les sites
   get "/api/sites" => "sites#fetch_all"
   get "/api/sites/:id" => "sites#fetch"

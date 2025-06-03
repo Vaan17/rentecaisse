@@ -21,4 +21,30 @@ class Utilisateur < ApplicationRecord
   validates :code_postal, length: { is: 5 }, allow_nil: true
   validates :ville, length: { minimum: 3 }, allow_nil: true
   validates :pays, length: { minimum: 5 }, allow_nil: true
-end 
+
+  def to_format
+    {
+      id:,
+      nom:,
+      prenom:,
+      email:,
+      genre:,
+      date_naissance:,
+      adresse:,
+      code_postal:,
+      ville:,
+      pays:,
+      telephone:,
+      categorie_permis:,
+      lien_image_utilisateur:,
+      entreprise_id:,
+      site_id:,
+      admin_entreprise:,
+      admin_rentecaisse:,
+      derniere_connexion:,
+      desactive:,
+      date_demande_suppression:,
+      updated_at:
+    }
+  end
+end

@@ -63,42 +63,43 @@ const App = () => {
 					console.error('Infos :', info);
 				}}
 			>
-				<ReduxSync>
-					<BrowserRouter>
-						<ToastContainer
-							position="bottom-left"
-							autoClose={5000}
-							pauseOnFocusLoss={false}
-							theme="colored"
-							newestOnTop
+
+				<BrowserRouter>
+					<ToastContainer
+						position="bottom-left"
+						autoClose={5000}
+						pauseOnFocusLoss={false}
+						theme="colored"
+						newestOnTop
+					/>
+					<Routes>
+						{/* Routes publiques */}
+						<Route path="/login" element={<LoginPage />} />
+						<Route path="/register" element={<RegisterPage />} />
+						<Route path="/register-success" element={<RegisterSuccessPage />} />
+						<Route path="/forgot-password" element={<ForgottenPasswordPage />} />
+						<Route path="/reset-password" element={<ResetPasswordPage />} />
+						<Route path="/cgv" element={<CGVPage />} />
+						<Route path="/cgu" element={<CGUPage />} />
+						<Route path="/mentions_legales" element={<MentionsLegalesPage />} />
+						<Route path="/confirm_email" element={<ConfirmEmailPage />} />
+						{/* Routes authentifiées (plus de wrapper RequireAuth) */}
+						<Route
+							path="/cancellation-account"
+							element={<CancellationAccountDeletion />}
 						/>
-						<Routes>
-							{/* Routes publiques */}
-							<Route path="/login" element={<LoginPage />} />
-							<Route path="/register" element={<RegisterPage />} />
-							<Route path="/register-success" element={<RegisterSuccessPage />} />
-							<Route path="/forgot-password" element={<ForgottenPasswordPage />} />
-							<Route path="/reset-password" element={<ResetPasswordPage />} />
-							<Route path="/cgv" element={<CGVPage />} />
-							<Route path="/cgu" element={<CGUPage />} />
-							<Route path="/mentions_legales" element={<MentionsLegalesPage />} />
-							<Route path="/confirm_email" element={<ConfirmEmailPage />} />
-							{/* Routes authentifiées (plus de wrapper RequireAuth) */}
-							<Route
-								path="/cancellation-account"
-								element={<CancellationAccountDeletion />}
-							/>
-							<Route path="/complete-profil" element={<CompleteProfil />} />
-							<Route
-								path="/affectation-entreprise"
-								element={<AffectationEntrepriseSite />}
-							/>
-							<Route
-								path="/statut-affectation"
-								element={<StatutAffectationEnAttente />}
-							/>
-							{/* Routes principales avec le layout standard */}
-							<Route path="/*" element={
+						<Route path="/complete-profil" element={<CompleteProfil />} />
+						<Route
+							path="/affectation-entreprise"
+							element={<AffectationEntrepriseSite />}
+						/>
+						<Route
+							path="/statut-affectation"
+							element={<StatutAffectationEnAttente />}
+						/>
+						{/* Routes principales avec le layout standard */}
+						<Route path="/*" element={
+							<ReduxSync>
 								<AppContainer>
 									<TopBar />
 									<ApplicationWrapper>
@@ -124,10 +125,10 @@ const App = () => {
 										</AppSubContainer>
 									</ApplicationWrapper>
 								</AppContainer>
-							} />
-						</Routes>
-					</BrowserRouter>
-				</ReduxSync>
+							</ReduxSync>
+						} />
+					</Routes>
+				</BrowserRouter>
 			</ErrorBoundary>
 		</Provider>
 	);
