@@ -14,7 +14,7 @@ import VoitureAPI from "../redux/data/voiture/VoitureAPI"
 import { useDispatch } from 'react-redux';
 import { addCar } from '../redux/data/voiture/voitureReducer';
 import type { IVoiture } from '../pages/voitures/Voitures';
-import axios from 'axios';
+import axiosSecured from '../services/apiService';
 
 const ModalContent = styled(Flex)`
     position: absolute;
@@ -111,7 +111,7 @@ const AdminVoitureModal = ({
 
     useEffect(() => {
         const fetchSites = async () => {
-            const res = await axios.get("http://localhost:3000/api/sites")
+            const res = await axiosSecured.get("/api/sites")
             setSites(res.data)
         }
         fetchSites()

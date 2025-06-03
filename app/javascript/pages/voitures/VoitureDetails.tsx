@@ -15,7 +15,7 @@ const VoitureDetails = () => {
 
     useEffect(() => {
         const fetchVoitures = async () => {
-            const res = await axiosSecured.get("/voitures")
+            const res = await axiosSecured.get("/api/voitures")
             setVoitures(res.data)
         }
         fetchVoitures()
@@ -29,7 +29,7 @@ const VoitureDetails = () => {
     useEffect(() => {
         const fetchSite = async () => {
             if (selectedVoiture.site_id) {
-                const res = await axiosSecured.get(`/sites/${selectedVoiture.site_id}`)
+                const res = await axiosSecured.get(`/api/sites/${selectedVoiture.site_id}`)
                 setSite(res.data)
             }
         }

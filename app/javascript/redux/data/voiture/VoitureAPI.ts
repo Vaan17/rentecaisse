@@ -1,9 +1,10 @@
 import axios from "axios";
 import { toast } from "react-toastify";
+import axiosSecured from "../../../services/apiService";
 
 const fetchAll = async () => {
 	try {
-		const res = await axios.get("http://localhost:3000/api/voitures");
+		const res = await axiosSecured.get("/api/voitures");
 		return res.data;
 	} catch (error) {
 		toast.error("Erreur lors de la récupération des voitures.");
@@ -12,7 +13,7 @@ const fetchAll = async () => {
 
 const createVoiture = async (voitureData) => {
 	try {
-		const res = await axios.post("http://localhost:3000/api/voitures", {
+		const res = await axiosSecured.post("/api/voitures", {
 			data: voitureData,
 		});
 
@@ -25,7 +26,7 @@ const createVoiture = async (voitureData) => {
 
 const editVoiture = async (voitureData) => {
 	try {
-		const res = await axios.put("http://localhost:3000/api/voitures", {
+		const res = await axiosSecured.put("/api/voitures", {
 			data: voitureData,
 		});
 
@@ -38,9 +39,7 @@ const editVoiture = async (voitureData) => {
 
 const deleteVoiture = async (voitureId) => {
 	try {
-		const res = await axios.delete(
-			`http://localhost:3000/api/voitures/${voitureId}`,
-		);
+		const res = await axiosSecured.delete(`/api/voitures/${voitureId}`);
 
 		toast.success("La voiture à bien été supprimée !");
 		return res.data;

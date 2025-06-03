@@ -242,7 +242,7 @@ const AffectationEntrepriseSite = () => {
 
   const fetchEntreprises = async () => {
     try {
-      const response = await axiosSecured.get('/get_entreprises');
+      const response = await axiosSecured.get('/api/get_entreprises');
 
       if (response.status === 200) {
         const data = response.data;
@@ -260,7 +260,7 @@ const AffectationEntrepriseSite = () => {
 
   const fetchSites = async (enterpriseId: number) => {
     try {
-      const response = await axiosSecured.get(`/get_sites?enterprise_id=${enterpriseId}`);
+      const response = await axiosSecured.get(`/api/get_sites?enterprise_id=${enterpriseId}`);
 
       if (response.status === 200) {
         const data = response.data;
@@ -306,7 +306,7 @@ const AffectationEntrepriseSite = () => {
     setCodeError('');
 
     try {
-      const response = await axiosSecured.post('/verify_and_affect_user', {
+      const response = await axiosSecured.post('/api/verify_and_affect_user', {
         enterprise_id: selectedEntreprise.id,
         code: code
       });
@@ -338,7 +338,7 @@ const AffectationEntrepriseSite = () => {
     setCodeError('');
 
     try {
-      const response = await axiosSecured.post('/verify_and_affect_user', {
+      const response = await axiosSecured.post('/api/verify_and_affect_user', {
         enterprise_id: selectedEntreprise.id,
         site_id: selectedSite.id,
         code: code

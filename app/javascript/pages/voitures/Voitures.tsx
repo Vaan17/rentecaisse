@@ -1,13 +1,10 @@
-import React, { useEffect, useState } from "react"
+import { useState } from "react"
 import Card from "@mui/material/Card"
 import { Alert, Button, CardActions, CardContent, CardHeader } from "@mui/material"
 import styled from "styled-components"
 import CustomFilter from "../../components/CustomFilter"
 import { useNavigate } from "react-router-dom"
-import axios from "axios"
 import useCars from "../../hook/useCars"
-import axiosSecured from '../../services/apiService'
-import { Flex } from "../../components/style/flex"
 
 const CardContainer = styled.div`
     display: flex;

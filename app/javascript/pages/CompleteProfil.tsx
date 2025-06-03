@@ -249,11 +249,11 @@ const validateAge = (birthDate: string): boolean => {
   const birth = new Date(birthDate);
   const age = today.getFullYear() - birth.getFullYear();
   const monthDiff = today.getMonth() - birth.getMonth();
-  
+
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
     return age - 1 >= 18;
   }
-  
+
   return age >= 18;
 };
 
@@ -384,7 +384,7 @@ const CompleteProfil: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!isFormValid()) {
       toast.error('Veuillez corriger les erreurs dans le formulaire');
       return;
@@ -393,7 +393,7 @@ const CompleteProfil: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await axiosSecured.post('/update_profile', {
+      const response = await axiosSecured.post('/api/update_profile', {
         profile: formData
       });
 
@@ -402,12 +402,12 @@ const CompleteProfil: React.FC = () => {
 
       if (data.success) {
         toast.success('Profil mis à jour avec succès');
-        
+
         // Vérifier l'état de l'utilisateur
-        const statusResponse = await axiosSecured.get('/authenticated-page');
+        const statusResponse = await axiosSecured.get('/api/authenticated-page');
         const statusData = statusResponse.data;
         console.log('Status response:', statusData);
-        
+
         navigate(statusData.redirect_to);
       } else {
         toast.error(data.message || 'Une erreur est survenue');

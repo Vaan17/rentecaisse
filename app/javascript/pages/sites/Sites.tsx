@@ -36,7 +36,7 @@ const Sites = () => {
 
     useEffect(() => {
         const fetchSites = async () => {
-            const res = await axiosSecured.get("/sites")
+            const res = await axiosSecured.get("/api/sites")
             setSites(res.data)
         }
         fetchSites()
