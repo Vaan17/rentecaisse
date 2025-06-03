@@ -293,7 +293,7 @@ const LoginPage = () => {
         }
 
         // Vérifier l'état de l'utilisateur avec axiosSecured
-        const statusResponse = await axiosSecured.get('/authenticated-page');
+        const statusResponse = await axiosSecured.get('/api/authenticated-page');
         const statusData = statusResponse.data;
         console.log('Status response:', statusData);
 

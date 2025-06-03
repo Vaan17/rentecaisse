@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_03_25_150720) do
+ActiveRecord::Schema[7.2].define(version: 2025_04_29_103341) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -170,8 +170,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_25_150720) do
     t.string "lien_image_voiture"
     t.bigint "entreprise_id", null: false
     t.bigint "site_id", null: false
-    t.date "date_creation_voiture", null: false
-    t.date "date_modification_voiture", null: false
+    t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.index ["entreprise_id"], name: "index_voitures_on_entreprise_id"
     t.index ["immatriculation"], name: "index_voitures_on_immatriculation", unique: true
     t.index ["site_id"], name: "index_voitures_on_site_id"

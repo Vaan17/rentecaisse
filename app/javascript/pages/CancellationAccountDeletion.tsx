@@ -186,7 +186,7 @@ const CancellationAccountDeletion: React.FC = () => {
   const fetchDeletionDetails = async () => {
     setFetchingDetails(true);
     try {
-      const response = await axiosSecured.get('/user/deletion_details');
+      const response = await axiosSecured.get('/api/user/deletion_details');
 
       if (response.data.success) {
         setDeletionDetails(response.data.deletion_request);
@@ -218,7 +218,7 @@ const CancellationAccountDeletion: React.FC = () => {
   const handleCancelDeletion = async () => {
     setLoading(true);
     try {
-      const response = await axiosSecured.post('/user/cancel_deletion');
+      const response = await axiosSecured.post('/api/user/cancel_deletion');
 
       const data = response.data;
       if (data.success) {
@@ -246,7 +246,7 @@ const CancellationAccountDeletion: React.FC = () => {
 
         <ContentContainer>
           <InfoText>Votre demande de suppression de compte a été enregistrée.</InfoText>
-          
+
           {fetchingDetails ? (
             <div>Chargement des informations...</div>
           ) : deletionDetails ? (
@@ -281,7 +281,7 @@ const CancellationAccountDeletion: React.FC = () => {
           <Button onClick={handleLogout} style={{ backgroundColor: '#f0f0f0', marginTop: '1rem' }}>
             Se déconnecter
           </Button>
-          
+
           <DateInfo>
             Tous vos accès seront bloqués jusqu&apos;à l&apos;annulation de cette demande.
           </DateInfo>

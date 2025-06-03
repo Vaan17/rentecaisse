@@ -141,8 +141,6 @@ voiture1 = Voiture.create!(
   lien_image_voiture: 'https://www.techinnov.fr/tesla_model3.png',
   entreprise: entreprise1,
   site: site1,
-  date_creation_voiture: '2023-01-01',
-  date_modification_voiture: '2025-01-14'
 )
 
 voiture2 = Voiture.create!(
@@ -160,8 +158,6 @@ voiture2 = Voiture.create!(
   lien_image_voiture: 'https://www.greensolutions.fr/renault_clio.png',
   entreprise: entreprise2,
   site: site2,
-  date_creation_voiture: '2020-06-15',
-  date_modification_voiture: '2025-01-14'
 )
 
 # Création des clés

@@ -30,22 +30,25 @@ Rails.application.routes.draw do
 
   # Routes pour les voitures
   get "/api/voitures" => "voitures#fetch_all"
+  post "/api/voitures" => "voitures#create"
+  put "/api/voitures" => "voitures#update"
+  delete "/api/voitures/:id" => "voitures#delete"
 
   # Routes pour les entreprises
   get "/api/entreprises" => "entreprises#fetch_all"
   get "/api/entreprises/:id" => "entreprises#fetch"
 
   # Routes pour le profil utilisateur
-  get '/api/user/profile', to: 'authenticated_page#get_user_profile'
-  patch '/api/user/profile', to: 'authenticated_page#update_user_profile'
-  post '/api/user/profile/photo', to: 'authenticated_page#update_profile_photo'
+  get "/api/user/profile", to: "authenticated_page#get_user_profile"
+  patch "/api/user/profile", to: "authenticated_page#update_user_profile"
+  post "/api/user/profile/photo", to: "authenticated_page#update_profile_photo"
 
   # Routes pour les emprunts
   get "/api/emprunts" => "emprunts_user#get_emprunts_users"
-  get '/api/emprunts/:id', to: 'emprunts_user#get_emprunts_user_by_id'
-  
+  get "/api/emprunts/:id", to: "emprunts_user#get_emprunts_user_by_id"
+
   # Routes pour la gestion de suppression de compte
-  post '/api/user/request_deletion', to: 'authenticated_page#request_account_deletion'
-  post '/api/user/cancel_deletion', to: 'authenticated_page#cancel_deletion_request'
-  get '/api/user/deletion_details', to: 'authenticated_page#get_deletion_details'
+  post "/api/user/request_deletion", to: "authenticated_page#request_account_deletion"
+  post "/api/user/cancel_deletion", to: "authenticated_page#cancel_deletion_request"
+  get "/api/user/deletion_details", to: "authenticated_page#get_deletion_details"
 end

@@ -17,6 +17,24 @@ class Voiture < ApplicationRecord
   validates :nombre_places, presence: true, numericality: { only_integer: true, greater_than: 0 }
   validates :type_boite, presence: true
   validates :statut_voiture, presence: true
-  validates :date_creation_voiture, presence: true
-  validates :date_modification_voiture, presence: true
-end 
+
+  def to_format
+    {
+      id:,
+      site_id:,
+      immatriculation:,
+      modele:,
+      marque:,
+      statut_voiture:,
+      année_fabrication:,
+      carburant:,
+      couleur:,
+      puissance:,
+      nombre_portes:,
+      nombre_places:,
+      type_boite:,
+      lien_image_voiture:,
+      updated_at:
+    }
+  end
+end

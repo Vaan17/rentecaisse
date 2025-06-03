@@ -1,6 +1,8 @@
 class SitesController < ApplicationController
+  before_action :verify_authentication
+
   def fetch_all
-    sites = Site.all
+    sites = Site.all.where(entreprise_id: @current_user.entreprise_id)
 
     render json: sites
   end

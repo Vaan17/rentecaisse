@@ -69,10 +69,10 @@ const ItemSubtitle = styled.div`
 `
 
 interface UserInfo {
-  id: number;
-  prenom: string;
-  nom: string;
-  email: string;
+	id: number;
+	prenom: string;
+	nom: string;
+	email: string;
 }
 
 const TopBar = () => {
@@ -91,19 +91,19 @@ const TopBar = () => {
 		setAnchorEl(null);
 	};
 
-  useEffect(() => {
-    fetchUserInfo();
-  }, []);
+	useEffect(() => {
+		fetchUserInfo();
+	}, []);
 
-  useEffect(() => {
-    if (userInfo) {
-      fetchUserImage();
-    }
-  }, [userInfo]);
+	useEffect(() => {
+		if (userInfo) {
+			fetchUserImage();
+		}
+	}, [userInfo]);
 
 	const fetchUserInfo = async () => {
 		try {
-			const response = await axiosSecured.get("/authenticated-page");
+			const response = await axiosSecured.get("/api/authenticated-page");
 			if (response.status === 200) {
 				const data = response.data;
 				if (data.success) {
@@ -117,7 +117,7 @@ const TopBar = () => {
 
 	const fetchUserImage = async () => {
 		try {
-			const response = await axiosSecured.get(`/users/profile-image?user_id=${userInfo?.id}`);
+			const response = await axiosSecured.get(`/api/users/profile-image?user_id=${userInfo?.id}`);
 
 			if (response.status === 200) {
 				const data = response.data;

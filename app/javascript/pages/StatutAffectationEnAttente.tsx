@@ -113,11 +113,11 @@ const StatutAffectationEnAttente = () => {
   const handleRefresh = async () => {
     setLoading(true);
     try {
-      const response = await axiosSecured.get('/authenticated-page');
+      const response = await axiosSecured.get('/api/authenticated-page');
       const data = response.data;
-      
+
       console.log('Response data:', data);
-      
+
       if (data.success) {
         // Si l'utilisateur est maintenant validé, rediriger vers la page principale
         navigate(data.redirect_to || '/home');
@@ -146,14 +146,14 @@ const StatutAffectationEnAttente = () => {
   const handleCancelAffectation = async () => {
     setLoading(true);
     try {
-      const response = await axiosSecured.post('/cancel_affectation');
+      const response = await axiosSecured.post('/api/cancel_affectation');
       const data = response.data;
-      
+
       if (data.success) {
         toast.success("Demande d'affectation annulée");
 
         // Vérifier l'état après l'annulation
-        const statusResponse = await axiosSecured.get('/authenticated-page');
+        const statusResponse = await axiosSecured.get('/api/authenticated-page');
         const statusData = statusResponse.data;
         navigate(statusData.redirect_to);
       }
