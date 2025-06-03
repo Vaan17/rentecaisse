@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { getVoitures } from './data/voiture/voitureResources'
+import { getSites } from './data/site/siteResources'
 
 const ReduxSync = ({ children }) => {
     const dispatch = useDispatch()
@@ -10,6 +11,7 @@ const ReduxSync = ({ children }) => {
         const hydrateReduxStore = async () => {
             await Promise.all([
                 dispatch(getVoitures()),
+                dispatch(getSites()),
             ])
         }
 

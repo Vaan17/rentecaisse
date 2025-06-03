@@ -33,6 +33,7 @@ import AdminVoitures from "./admin/AdminVoitures.tsx"
 import { ToastContainer } from "react-toastify"
 import ReduxSync from "../redux/ReduxSync.tsx"
 import CancellationAccountDeletion from './CancellationAccountDeletion'
+import AdminSites from "./admin/AdminSites.tsx"
 
 const AppContainer = styled.div`
 	width: 100vw;
@@ -116,6 +117,7 @@ const App = () => {
 												<Route path="/profile" element={<Profile />} />
 												{/* Routes admin */}
 												<Route path="/admin/voitures" element={<AdminVoitures />} />
+												<Route path="/admin/sites" element={<AdminSites />} />
 												{/* Fallback */}
 												<Route path="*" element={<Navigate to="/home" replace />} />
 											</Routes>

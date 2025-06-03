@@ -50,7 +50,6 @@ const ModalTitle = styled.div`
 `
 
 const schema = Yup.object().shape({
-    id: Yup.number().nullable(),
     immatriculation: Yup.string().required("Champ requis."),
     modele: Yup.string().required("Champ requis."),
     marque: Yup.string().required("Champ requis."),
@@ -80,7 +79,6 @@ const schema = Yup.object().shape({
     type_boite: Yup.string().required("Champ requis."),
     site_id: Yup.number().required("Champ requis."),
     lien_image_voiture: Yup.string().nullable(),
-    updated_at: Yup.string().nullable(),
 })
 
 const AdminVoitureModal = ({
