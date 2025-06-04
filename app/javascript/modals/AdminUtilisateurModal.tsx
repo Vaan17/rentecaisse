@@ -7,13 +7,13 @@ import { FormProvider, useForm } from "react-hook-form"
 import { yupResolver } from "@hookform/resolvers/yup"
 import Yup from "../utils/yup"
 import FText from '../utils/form/FText';
-import FNumber from '../utils/form/FNumber';
-import FSelect from '../utils/form/FSelect';
 import _ from 'lodash';
 import { useDispatch } from 'react-redux';
-import type { ISite } from '../pages/sites/Sites';
-import { addSite } from '../redux/data/site/siteReducer';
-import SiteAPI from '../redux/data/site/SiteAPI';
+import type { IUser } from '../hook/useUser';
+import FSelect from '../utils/form/FSelect';
+import useSites from '../hook/useSites';
+import UserAPI from '../redux/data/user/UserAPI';
+import { addUser } from '../redux/data/user/userReducer';
 
 const ModalContent = styled(Flex)`
     position: absolute;
@@ -48,54 +48,59 @@ const ModalTitle = styled.div`
     font-weight: 700;
 `
 
-const schema = Yup.object().shape({
-    nom_site: Yup.string().required("Champ requis."),
-    adresse: Yup.string().required("Champ requis."),
-    code_postal: Yup.string().required("Champ requis."),
-    ville: Yup.string().required("Champ requis."),
-    pays: Yup.string().required("Champ requis."),
-    telephone: Yup.string().required("Champ requis."),
-    email: Yup.string().email("Email invalide.").required("Champ requis."),
-    site_web: Yup.string().url("URL invalide.").nullable(),
-    lien_image_site: Yup.string().url("URL invalide.").nullable(),
+const inviteSchema = Yup.object().shape({
+    email: Yup.string().email("Format d'email invalide").required("L'email est requis"),
 })
 
-const AdminSiteModal = ({
+const editSchema = Yup.object().shape({
+    site_id: Yup.number().required("Le site est requis"),
+})
+
+const AdminUtilisateurModal = ({
     isOpen,
-    selectedSite,
+    selectedUser,
     onClose,
 }: {
     isOpen: boolean
-    selectedSite: ISite | undefined
+    selectedUser: IUser | undefined
     onClose: () => void
 }) => {
     const dispatch = useDispatch()
+    const sites = useSites()
 
+    type FormValues = { email: string } | { site_id: number };
+
+    const schema = selectedUser ? editSchema : inviteSchema as Yup.ObjectSchema<FormValues>;
     const methods = useForm({
         resolver: yupResolver(schema),
     })
 
     useEffect(() => {
-        if (selectedSite) {
-            methods.reset(selectedSite)
+        if (selectedUser) {
+            methods.reset({
+                site_id: selectedUser.site_id,
+            })
         } else {
             methods.reset({})
         }
-    }, [selectedSite, methods]);
+    }, [selectedUser, methods]);
 
     const handleClose = () => {
         onClose()
     }
 
     const onSubmit = async (values) => {
-        const { key, ...formValues } = values
-
-        if (!selectedSite) {
-            const site = await SiteAPI.createSite(formValues)
-            dispatch(addSite(site))
+        if (!selectedUser) {
+            const user = await UserAPI.inviteUser(values)
+            dispatch(addUser(user))
         } else {
-            const site = await SiteAPI.editSite(formValues)
-            dispatch(addSite(site))
+            const enhancedValues = {
+                ...values,
+                id: selectedUser.id,
+            }
+
+            const user = await UserAPI.editUser(enhancedValues)
+            dispatch(addUser(user))
         }
 
         handleClose()
@@ -110,25 +115,22 @@ const AdminSiteModal = ({
             >
                 <ModalContent directionColumn alignItemsInitial gap=".5em">
                     <ModalHeader fullWidth spaceBetween>
-                        <ModalTitle>{!selectedSite ? "Ajouter un site" : "Éditer un site"}</ModalTitle>
+                        <ModalTitle>{!selectedUser ? "Inviter un membre" : "Éditer un membre"}</ModalTitle>
                         <IconButton onClick={handleClose}>
                             <CloseIcon />
                         </IconButton>
                     </ModalHeader>
                     <ModalBody>
-                        <FText name="nom_site" label="Nom" />
-                        <FText name="adresse" label="Adresse" />
-                        <FText name="code_postal" label="Code postal" />
-                        <FText name="ville" label="Ville" />
-                        <FText name="pays" label="Pays" />
-                        <FText name="telephone" label="Téléphone" />
-                        <FText name="email" label="Email" />
-                        <FText name="site_web" label="URL site web" />
-                        <FText name="lien_image_site" label="Image" disabled />
+                        {!selectedUser && (
+                            <FText name="email" label="Email" placeholder="Email du membre" />
+                        )}
+                        {selectedUser && (
+                            <FSelect name="site_id" label="Site de rattachement" options={Object.keys(sites)} getOptionLabel={(option) => sites[option]?.nom_site} />
+                        )}
                     </ModalBody>
                     <ModalFooter fullWidth directionReverse gap>
                         <Button variant="contained" color="primary" onClick={methods.handleSubmit(onSubmit)}>
-                            {!selectedSite ? "Créer" : "Enregistrer"}
+                            {!selectedUser ? "Inviter" : "Enregistrer"}
                         </Button>
                         <Button variant="text" color="primary" onClick={handleClose}>
                             Annuler
@@ -140,4 +142,4 @@ const AdminSiteModal = ({
     )
 }
 
-export default AdminSiteModal
+export default AdminUtilisateurModal
