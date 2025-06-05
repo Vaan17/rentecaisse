@@ -127,8 +127,8 @@ const SideBar = () => {
 	const adminMenuItems: MenuItem[] = [
 		{
 			icon: <PeopleAltIcon />,
-			title: "Administration des utilisateurs",
-			subtitle: "Permet de gérer les utilisateurs",
+			title: "Administration des membres",
+			subtitle: "Permet de gérer les membres",
 			path: "/admin/utilisateurs",
 		},
 		{

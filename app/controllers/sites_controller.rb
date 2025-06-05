@@ -22,7 +22,6 @@ class SitesController < ApplicationController
     attributes["entreprise_id"] = @current_user["entreprise_id"]
 
     newSite = Site.create(attributes)
-    binding.pry
 
     render json: newSite.to_format
   end

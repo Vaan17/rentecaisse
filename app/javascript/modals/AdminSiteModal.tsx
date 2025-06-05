@@ -79,9 +79,11 @@ const AdminSiteModal = ({
         if (selectedSite) {
             methods.reset(selectedSite)
         } else {
-            methods.reset({})
+            methods.reset({
+                nom_site: ""
+            })
         }
-    }, [selectedSite, methods]);
+    }, [selectedSite]);
 
     const handleClose = () => {
         onClose()
@@ -90,7 +92,6 @@ const AdminSiteModal = ({
     const onSubmit = async (values) => {
         const { key, ...formValues } = values
 
-        debugger
         if (!selectedSite) {
             const site = await SiteAPI.createSite(formValues)
             dispatch(addSite(site))
