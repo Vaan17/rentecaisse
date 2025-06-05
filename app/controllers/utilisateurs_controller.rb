@@ -26,7 +26,28 @@ class UtilisateursController < ApplicationController
     end
 
     newUser = Utilisateur.create!(attributes)
-    UserMailer.confirmation_email(newUser).deliver_later # envoi d'un mail pour confirmer l'email
+    confirmation_url = "#{ENV['URL_SITE']}/confirm_email?token=#{newUser.confirmation_token}"
+    UserMailer.send_mail(
+      email: newUser.email,
+      subject: "Invitation sur rentecaisse",
+      htmlContent: "
+        <html>
+          <head></head>
+          <body>
+            <p>Bonjour,</p>
+            <p>On vous invite à rejoindre rentecaisse, cliquez ici : <a href='#{confirmation_url}'>#{confirmation_url}</a></p>
+            <br/>
+            <p>Voici vos identifiants de connexion :</p>
+            <i>( Ces identifiants sont valides pendant une durée de 48h, au delà, ils seront supprimés)</i>
+            <p><b>Email :</b> #{params["data"]["email"]}</p>
+            <p><b>Mot de passe :</b> #{params["data"]["password"]}</p>
+            <br/>
+            <p>Cordialement,</p>
+            <p>L'équipe Rentecaisse</p>
+          </body>
+        </html>
+      "
+    ).deliver_later # envoi d'un mail pour confirmer l'email
 
     render json: newUser.to_format
   end

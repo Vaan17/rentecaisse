@@ -139,10 +139,13 @@ const TableUtilisateur = () => {
                                         </TableCell>
                                         <TableCell padding='none' >
                                             <Tooltip title="Exclure" arrow>
-                                                <IconButton onClick={() => {
-                                                    setSelectedUser(user)
-                                                    setIsOpenConfirmModal(true)
-                                                }}>
+                                                <IconButton
+                                                    onClick={() => {
+                                                        setSelectedUser(user)
+                                                        setIsOpenConfirmModal(true)
+                                                    }}
+                                                    disabled={user.admin_entreprise}
+                                                >
                                                     <BlockIcon />
                                                 </IconButton>
                                             </Tooltip>
