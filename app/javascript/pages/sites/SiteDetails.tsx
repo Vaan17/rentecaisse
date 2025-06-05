@@ -24,8 +24,6 @@ interface IEntreprise {
     capital_social: number
     lien_image_entreprise: string
     code_entreprise: string
-    date_creation_entreprise: Date
-    date_modification_entreprise: Date
 }
 
 const SiteDetails = () => {
@@ -36,7 +34,7 @@ const SiteDetails = () => {
 
     useEffect(() => {
         const fetchSites = async () => {
-            const res = await axiosSecured.get("/sites")
+            const res = await axiosSecured.get("/api/sites")
             setSites(res.data)
         }
         fetchSites()
@@ -50,7 +48,7 @@ const SiteDetails = () => {
     useEffect(() => {
         const fetchEntreprise = async () => {
             if (selectedSite.entreprise_id) {
-                const res = await axiosSecured.get(`/entreprises/${selectedSite.entreprise_id}`)
+                const res = await axiosSecured.get(`/api/entreprises/${selectedSite.entreprise_id}`)
                 setEntreprise(res.data)
             }
         }

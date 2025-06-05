@@ -24,12 +24,21 @@ Rails.application.routes.draw do
   post "/api/cancel_affectation", to: "authenticated_page#cancel_affectation"
   get "/api/users/profile-image", to: "authenticated_page#get_profile_image"
 
+  # Routes pour les utilisateurs
+  get "/api/user/self" => "utilisateurs#fetch_self"
+
   # Routes pour les sites
   get "/api/sites" => "sites#fetch_all"
   get "/api/sites/:id" => "sites#fetch"
+  post "/api/sites" => "sites#create"
+  put "/api/sites" => "sites#update"
+  delete "/api/sites/:id" => "sites#delete"
 
   # Routes pour les voitures
   get "/api/voitures" => "voitures#fetch_all"
+  post "/api/voitures" => "voitures#create"
+  put "/api/voitures" => "voitures#update"
+  delete "/api/voitures/:id" => "voitures#delete"
   get "/api/voitures/site/:user_id" => "voitures#fetch_voitures_site"
 
   # Routes pour les clés
@@ -53,9 +62,9 @@ Rails.application.routes.draw do
   get "/api/entreprises/:id" => "entreprises#fetch"
 
   # Routes pour le profil utilisateur
-  get '/api/user/profile', to: 'authenticated_page#get_user_profile'
-  patch '/api/user/profile', to: 'authenticated_page#update_user_profile'
-  post '/api/user/profile/photo', to: 'authenticated_page#update_profile_photo'
+  get "/api/user/profile", to: "authenticated_page#get_user_profile"
+  patch "/api/user/profile", to: "authenticated_page#update_user_profile"
+  post "/api/user/profile/photo", to: "authenticated_page#update_profile_photo"
 
   # Routes pour les emprunts
   get "/api/emprunts" => "emprunts_user#get_emprunts_users"
@@ -67,7 +76,7 @@ Rails.application.routes.draw do
   post '/api/emprunts/:id/valider', to: 'emprunts_user#valider'
   
   # Routes pour la gestion de suppression de compte
-  post '/api/user/request_deletion', to: 'authenticated_page#request_account_deletion'
-  post '/api/user/cancel_deletion', to: 'authenticated_page#cancel_deletion_request'
-  get '/api/user/deletion_details', to: 'authenticated_page#get_deletion_details'
+  post "/api/user/request_deletion", to: "authenticated_page#request_account_deletion"
+  post "/api/user/cancel_deletion", to: "authenticated_page#cancel_deletion_request"
+  get "/api/user/deletion_details", to: "authenticated_page#get_deletion_details"
 end

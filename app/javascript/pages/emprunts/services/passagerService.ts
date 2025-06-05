@@ -11,7 +11,7 @@ export interface Utilisateur {
 // Récupérer tous les utilisateurs du site pour sélection comme passagers
 export const getUtilisateursBySite = async (userId: number): Promise<Utilisateur[]> => {
   try {
-    const response = await axiosSecured.get(`/utilisateurs/site/${userId}`);
+    const response = await axiosSecured.get(`/api/utilisateurs/site/${userId}`);
     return response.data;
   } catch (error) {
     console.error('Erreur lors de la récupération des utilisateurs du site:', error);
@@ -22,7 +22,7 @@ export const getUtilisateursBySite = async (userId: number): Promise<Utilisateur
 // Récupérer les passagers d'une liste spécifique
 export const getPassagersByListe = async (listeId: number): Promise<Utilisateur[]> => {
   try {
-    const response = await axiosSecured.get(`/passagers/liste/${listeId}`);
+    const response = await axiosSecured.get(`/api/passagers/liste/${listeId}`);
     return response.data;
   } catch (error) {
     console.error(`Erreur lors de la récupération des passagers de la liste ${listeId}:`, error);

@@ -13,7 +13,22 @@ class Site < ApplicationRecord
   validates :pays, presence: true, length: { minimum: 5 }
   validates :telephone, presence: true
   validates :email, presence: true, format: { with: /\A[^@\s]+@[^@\s]+\.[^@\s]+\z/ }
-  validates :site_web, presence: true, format: { with: /\A(https?:\/\/)?(www\.[a-zA-Z0-9]+\.)+[a-zA-Z]{2,6}(\/[^\s]*)?\z/ }
-  validates :date_creation_site, presence: true
-  validates :date_modification_site, presence: true
-end 
+  validates :site_web, presence: true, format: { with: /\A(https?:\/\/)?([\w\-]+\.)+[\w\-]{2,}(?::\d{1,5})?(\/[^\s]*)?\z/, message: "value doesn't match with regex" }
+
+  def to_format
+    {
+      id:,
+      entreprise_id:,
+      nom_site:,
+      adresse:,
+      code_postal:,
+      ville:,
+      pays:,
+      telephone:,
+      email:,
+      site_web:,
+      lien_image_site:,
+      updated_at:
+    }
+  end
+end

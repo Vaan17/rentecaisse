@@ -17,6 +17,8 @@ import AirlineSeatReclineNormalIcon from '@mui/icons-material/AirlineSeatRecline
 import DoorFrontIcon from '@mui/icons-material/DoorFront';
 import SettingsIcon from '@mui/icons-material/Settings';
 import BadgeIcon from '@mui/icons-material/Badge';
+import InfoIcon from '@mui/icons-material/Info';
+import { Link } from 'react-router-dom';
 import { CarListProps } from '../types';
 
 const CarList: React.FC<CarListProps> = ({ cars, selectedCar, onSelectCar }) => {
@@ -79,7 +81,7 @@ const CarList: React.FC<CarListProps> = ({ cars, selectedCar, onSelectCar }) => 
                   <Avatar 
                     alt={car.name} 
                     src={car.image !== "/images/car-placeholder.png" ? car.image : undefined}
-                    variant="rounded"
+                    variant="circular"
                     sx={{ 
                       width: 60,
                       height: 60,
@@ -112,11 +114,26 @@ const CarList: React.FC<CarListProps> = ({ cars, selectedCar, onSelectCar }) => 
                           {car.doors} portes
                         </Typography>
                       </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
                         <SettingsIcon fontSize="small" sx={{ mr: 1 }} />
                         <Typography variant="body2" color="text.secondary">
                           {car.transmission}
                         </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
+                        <Link 
+                          to={`/voitures/${car.id}`} 
+                          style={{ textDecoration: 'none' }}
+                        >
+                          <Button 
+                            size="small" 
+                            startIcon={<InfoIcon />} 
+                            color="primary"
+                            variant="text"
+                          >
+                            Détails
+                          </Button>
+                        </Link>
                       </Box>
                     </Box>
                   } 

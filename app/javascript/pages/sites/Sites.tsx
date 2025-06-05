@@ -6,6 +6,7 @@ import CustomFilter from "../../components/CustomFilter"
 import { useNavigate } from "react-router-dom"
 import axiosSecured from '../../services/apiService'
 import { Flex } from "../../components/style/flex"
+import useSites from '../../hook/useSites'
 
 const CardContainer = styled.div`
     display: flex;
@@ -25,22 +26,12 @@ export interface ISite {
     site_web: string
     lien_image_site: string
     entreprise_id: number
-    date_creation_site: Date
-    date_modification_site: Date
 }
 
 const Sites = () => {
     const navigate = useNavigate()
     const [filterProperties, setFilterProperties] = useState({ filterBy: undefined, searchValue: "" })
-    const [sites, setSites] = useState<ISite[]>([])
-
-    useEffect(() => {
-        const fetchSites = async () => {
-            const res = await axiosSecured.get("/sites")
-            setSites(res.data)
-        }
-        fetchSites()
-    }, [])
+    const sites = useSites()
 
     const filterOptions = [
         {
@@ -61,7 +52,7 @@ const Sites = () => {
         },
     ]
 
-    const filteredSites = sites.filter(site => {
+    const filteredSites = Object.values(sites).filter(site => {
         if (!filterProperties.filterBy || !filterProperties.searchValue) return true
         return site[filterProperties.filterBy].toLowerCase().includes(filterProperties.searchValue.toLowerCase())
     })

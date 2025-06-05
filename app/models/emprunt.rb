@@ -12,8 +12,6 @@ class Emprunt < ApplicationRecord
   validates :date_fin, presence: true
   validates :statut_emprunt, presence: true
   validates :description, presence: true
-  validates :date_creation_emprunt, presence: true
-  validates :date_modification_emprunt, presence: true
 
   # Validation personnalisée pour s'assurer que la date de fin est après la date de début
   validate :date_fin_after_date_debut

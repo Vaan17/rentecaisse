@@ -26,7 +26,7 @@ export const getEmpruntsByVoitureAndDate = async (
   dateFin: string
 ): Promise<Reservation[]> => {
   try {
-    const response = await axiosSecured.get(`/emprunts/voiture/${voitureId}`, {
+    const response = await axiosSecured.get(`/api/emprunts/voiture/${voitureId}`, {
       params: {
         date_debut: dateDebut,
         date_fin: dateFin
@@ -44,7 +44,7 @@ export const createEmprunt = async (
   data: ReservationFormData
 ): Promise<any> => {
   try {
-    const response = await axiosSecured.post('/emprunts', data);
+    const response = await axiosSecured.post('/api/emprunts', data);
     return response.data;
   } catch (error) {
     console.error('Erreur lors de la création de l\'emprunt:', error);
@@ -58,7 +58,7 @@ export const updateEmprunt = async (
   data: Partial<ReservationFormData>
 ): Promise<any> => {
   try {
-    const response = await axiosSecured.put(`/emprunts/${empruntId}`, data);
+    const response = await axiosSecured.put(`/api/emprunts/${empruntId}`, data);
     return response.data;
   } catch (error) {
     console.error('Erreur lors de la mise à jour de l\'emprunt:', error);
@@ -69,7 +69,7 @@ export const updateEmprunt = async (
 // Supprimer un emprunt
 export const deleteEmprunt = async (empruntId: number): Promise<any> => {
   try {
-    const response = await axiosSecured.delete(`/emprunts/${empruntId}`);
+    const response = await axiosSecured.delete(`/api/emprunts/${empruntId}`);
     return response.data;
   } catch (error) {
     console.error('Erreur lors de la suppression de l\'emprunt:', error);
@@ -80,7 +80,7 @@ export const deleteEmprunt = async (empruntId: number): Promise<any> => {
 // Valider un emprunt (pour les administrateurs)
 export const validerEmprunt = async (empruntId: number): Promise<any> => {
   try {
-    const response = await axiosSecured.post(`/emprunts/${empruntId}/valider`);
+    const response = await axiosSecured.post(`/api/emprunts/${empruntId}/valider`);
     return response.data;
   } catch (error) {
     console.error('Erreur lors de la validation de l\'emprunt:', error);

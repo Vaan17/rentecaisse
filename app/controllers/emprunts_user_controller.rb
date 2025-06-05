@@ -76,6 +76,8 @@ class EmpruntsUserController < ApplicationController
                         end
                      elsif emprunt.statut_emprunt == "brouillon"
                         "draft"
+                     elsif emprunt.statut_emprunt == "completed"
+                        "completed"
                      else
                         "empty"
                      end

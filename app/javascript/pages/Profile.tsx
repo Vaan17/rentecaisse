@@ -362,11 +362,11 @@ const validateAge = (birthDate: string): boolean => {
   const birth = new Date(birthDate);
   const age = today.getFullYear() - birth.getFullYear();
   const monthDiff = today.getMonth() - birth.getMonth();
-  
+
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
     return age - 1 >= 18;
   }
-  
+
   return age >= 18;
 };
 
@@ -449,7 +449,7 @@ interface EditableInfoItemProps {
   onSave: (name: string, value: string) => void;
   onCancel: () => void;
   type?: string;
-  options?: Array<{value: string, label: string}>;
+  options?: Array<{ value: string, label: string }>;
 }
 
 const EditableInfoItem: React.FC<EditableInfoItemProps> = ({
@@ -532,8 +532,8 @@ const EditableInfoItem: React.FC<EditableInfoItemProps> = ({
           </InfoValue>
           <EditIcon onClick={onEdit}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
             </svg>
           </EditIcon>
         </div>
@@ -605,7 +605,7 @@ const validateImage = (file: File) => {
 
 const Profile: React.FC = () => {
   const [userData, setUserData] = useState<UserProfileData | null>(null);
-  const [editingFields, setEditingFields] = useState<{[key: string]: boolean}>({});
+  const [editingFields, setEditingFields] = useState<{ [key: string]: boolean }>({});
   const [userImage, setUserImage] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -626,14 +626,14 @@ const Profile: React.FC = () => {
   const fetchUserProfile = async () => {
     try {
       console.log('Envoi de la requête au profil...');
-      const response = await axiosSecured.get('/user/profile');
+      const response = await axiosSecured.get('/api/user/profile');
 
       console.log('Statut de la réponse:', response.status);
       console.log('Headers de la réponse:', response.headers);
 
       const data = response.data;
       console.log('Données reçues:', data);
-      
+
       setUserData(data);
       console.log('État userData mis à jour');
     } catch (error) {
@@ -649,7 +649,7 @@ const Profile: React.FC = () => {
     if (!userData) return; // Protection TypeScript
 
     try {
-      const response = await axiosSecured.get(`/users/profile-image?user_id=${userData.personal_info.id}`);
+      const response = await axiosSecured.get(`/api/users/profile-image?user_id=${userData.personal_info.id}`);
 
       if (response.status === 200) {
         const data = response.data;
@@ -673,7 +673,7 @@ const Profile: React.FC = () => {
     console.log("Début de handleImageUpload");
     setUploadError(null);
     const file = event.target.files?.[0];
-    
+
     if (!file) {
       console.log("Aucun fichier sélectionné");
       return;
@@ -700,7 +700,7 @@ const Profile: React.FC = () => {
     try {
       console.log("Début de l'upload...");
       // Utilisation directe de axiosSecured.post avec FormData
-      const response = await axiosSecured.post('/user/profile/photo', formData, {
+      const response = await axiosSecured.post('/api/user/profile/photo', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -708,7 +708,7 @@ const Profile: React.FC = () => {
 
       const data = response.data;
       console.log("Réponse du serveur:", data);
-      
+
       if (data.success) {
         console.log("Upload réussi");
         setUploadError(null);
@@ -730,14 +730,14 @@ const Profile: React.FC = () => {
 
   const handleFieldSave = async (fieldName: string, value: string) => {
     try {
-      const response = await axiosSecured.patch('/user/profile', {
+      const response = await axiosSecured.patch('/api/user/profile', {
         user: {
           [fieldName]: value
         }
       });
 
       const data = response.data;
-      
+
       if (data.success) {
         setUserData(prev => prev ? {
           ...prev,
@@ -767,10 +767,10 @@ const Profile: React.FC = () => {
 
   const handleDeleteAccountRequest = async () => {
     try {
-      const response = await axiosSecured.post('/user/request_deletion');
-      
+      const response = await axiosSecured.post('/api/user/request_deletion');
+
       const data = response.data;
-      
+
       if (data.success) {
         toast.success('Votre demande de suppression a été enregistrée');
         navigate('/cancellation-account');
@@ -811,8 +811,8 @@ const Profile: React.FC = () => {
               <ModalButton onClick={() => setShowConfirmModal(false)}>
                 Annuler
               </ModalButton>
-              <ModalButton 
-                $danger 
+              <ModalButton
+                $danger
                 onClick={() => {
                   setShowConfirmModal(false);
                   handleDeleteAccountRequest();
@@ -835,7 +835,7 @@ const Profile: React.FC = () => {
           )}
           <UploadButton onClick={() => fileInputRef.current?.click()}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
             </svg>
           </UploadButton>
           {uploadError && <ErrorMessage>{uploadError}</ErrorMessage>}
@@ -896,19 +896,19 @@ const Profile: React.FC = () => {
                 )}
               </EditableField>
               <SaveCancelButtons>
-                <ActionButton 
-                  variant="save" 
+                <ActionButton
+                  variant="save"
                   onClick={async () => {
                     const nomValid = validateField('nom', userData.personal_info.nom);
                     const prenomValid = validateField('prenom', userData.personal_info.prenom);
-                    
+
                     if (!nomValid.isValid || !prenomValid.isValid) {
                       toast.error(nomValid.error || prenomValid.error);
                       return;
                     }
 
                     try {
-                      const response = await axiosSecured.patch('/user/profile', {
+                      const response = await axiosSecured.patch('/api/user/profile', {
                         user: {
                           nom: userData.personal_info.nom,
                           prenom: userData.personal_info.prenom
@@ -931,8 +931,8 @@ const Profile: React.FC = () => {
                 >
                   Enregistrer
                 </ActionButton>
-                <ActionButton 
-                  variant="cancel" 
+                <ActionButton
+                  variant="cancel"
                   onClick={() => {
                     setEditingFields({});
                     fetchUserProfile(); // Recharger les données originales

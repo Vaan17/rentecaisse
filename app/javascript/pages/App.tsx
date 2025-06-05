@@ -1,7 +1,7 @@
-import React from "react"
+import React, { useEffect } from "react"
 import "./App.css"
-import { Provider } from "react-redux"
-import store from "../../store/store.js"
+import { Provider, useDispatch } from "react-redux"
+import store from "../redux/store.ts"
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom"
 import Sandbox from "./sandbox/Sandbox.js"
 import ColorsPage from "./sandbox/ColorsPage.js"
@@ -29,7 +29,11 @@ import VoitureDetails from "./voitures/VoitureDetails.tsx"
 import { ErrorBoundary } from "react-error-boundary"
 import ErrorFallback from "./errorFallbacks/ErrorFallback.tsx"
 import Home from "../components/Home.tsx"
+import AdminVoitures from "./admin/AdminVoitures.tsx"
+import { ToastContainer } from "react-toastify"
+import ReduxSync from "../redux/ReduxSync.tsx"
 import CancellationAccountDeletion from './CancellationAccountDeletion'
+import AdminSites from "./admin/AdminSites.tsx"
 import ReservationVoiturePage from './emprunts/ReservationVoiturePage'
 
 const AppContainer = styled.div`
@@ -60,7 +64,15 @@ const App = () => {
 					console.error('Infos :', info);
 				}}
 			>
+
 				<BrowserRouter>
+					<ToastContainer
+						position="bottom-left"
+						autoClose={5000}
+						pauseOnFocusLoss={false}
+						theme="colored"
+						newestOnTop
+					/>
 					<Routes>
 						{/* Routes publiques */}
 						<Route path="/login" element={<LoginPage />} />
@@ -74,10 +86,10 @@ const App = () => {
 						<Route path="/confirm_email" element={<ConfirmEmailPage />} />
 						{/* Routes authentifiées (plus de wrapper RequireAuth) */}
 						<Route
-            path="/cancellation-account"
-            element={<CancellationAccountDeletion />}
-            />
-						<Route path="/complete-profil" element={<CompleteProfil />} /> /
+							path="/cancellation-account"
+							element={<CancellationAccountDeletion />}
+						/>
+						<Route path="/complete-profil" element={<CompleteProfil />} />
 						<Route
 							path="/affectation-entreprise"
 							element={<AffectationEntrepriseSite />}
@@ -88,26 +100,35 @@ const App = () => {
 						/>
 						{/* Routes principales avec le layout standard */}
 						<Route path="/*" element={
-							<AppContainer>
-								<TopBar />
-								<ApplicationWrapper>
-									<SideBar />
-									<AppSubContainer>
-										<Routes>
-											<Route path="/home" element={<Home />} />
-											<Route path="/sandbox" element={<Sandbox />} />
-											<Route path="/colors" element={<ColorsPage />} />
-											<Route path="/sites" element={<Sites />} />
-											<Route path="/sites/:id" element={<SiteDetails />} />
-											<Route path="/voitures" element={<Voitures />} />
-											<Route path="/voitures/:id" element={<VoitureDetails />} />
-											<Route path="/profile" element={<Profile />} />
-                      <Route path="/emprunts" element={<ReservationVoiturePage />} />
-											<Route path="*" element={<Navigate to="/home" replace />} />
-										</Routes>
-									</AppSubContainer>
-								</ApplicationWrapper>
-							</AppContainer>
+							<ReduxSync>
+								<AppContainer>
+									<TopBar />
+									<ApplicationWrapper>
+										<SideBar />
+										<AppSubContainer>
+											<Routes>
+												{/* Temporaires */}
+												<Route path="/sandbox" element={<Sandbox />} />
+												<Route path="/colors" element={<ColorsPage />} />
+												{/* Routes globales */}
+												<Route path="/home" element={<Home />} />
+												<Route path="/sites" element={<Sites />} />
+												<Route path="/sites/:id" element={<SiteDetails />} />
+												<Route path="/voitures" element={<Voitures />} />
+												<Route path="/voitures/:id" element={<VoitureDetails />} />
+												<Route path="/profile" element={<Profile />} />
+
+												<Route path="/emprunts" element={<ReservationVoiturePage />} />
+												{/* Routes admin */}
+												<Route path="/admin/voitures" element={<AdminVoitures />} />
+												<Route path="/admin/sites" element={<AdminSites />} />
+												{/* Fallback */}
+												<Route path="*" element={<Navigate to="/home" replace />} />
+											</Routes>
+										</AppSubContainer>
+									</ApplicationWrapper>
+								</AppContainer>
+							</ReduxSync>
 						} />
 					</Routes>
 				</BrowserRouter>

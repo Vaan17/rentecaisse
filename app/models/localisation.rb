@@ -10,6 +10,4 @@ class Localisation < ApplicationRecord
   validates :pays, presence: true, length: { minimum: 5 }
   validates :email, format: { with: /\A[^@\s]+@[^@\s]+\.[^@\s]+\z/ }, allow_nil: true
   validates :site_web, format: { with: /\A(https?:\/\/)?(www\.[a-zA-Z0-9]+\.)+[a-zA-Z]{2,6}(\/[^\s]*)?\z/ }, allow_nil: true
-  validates :date_creation_localisation, presence: true
-  validates :date_modification_localisation, presence: true
 end 

@@ -32,7 +32,7 @@ export const getClesDisponiblesByVoiture = async (
   dateFin?: string
 ): Promise<Cle[]> => {
   try {
-    const response = await axiosSecured.get(`/cles/disponibles/voiture/${voitureId}`, {
+    const response = await axiosSecured.get(`/api/cles/disponibles/voiture/${voitureId}`, {
       params: {
         date_debut: dateDebut,
         date_fin: dateFin
@@ -48,7 +48,7 @@ export const getClesDisponiblesByVoiture = async (
 // Récupérer toutes les clés pour une voiture
 export const getClesByVoiture = async (voitureId: number): Promise<Cle[]> => {
   try {
-    const response = await axiosSecured.get(`/cles/voiture/${voitureId}`);
+    const response = await axiosSecured.get(`/api/cles/voiture/${voitureId}`);
     return response.data;
   } catch (error) {
     console.error('Erreur lors de la récupération des clés:', error);
@@ -59,7 +59,7 @@ export const getClesByVoiture = async (voitureId: number): Promise<Cle[]> => {
 // Récupérer toutes les localisations
 export const getAllLocalisations = async (): Promise<Localisation[]> => {
   try {
-    const response = await axiosSecured.get('/localisations');
+    const response = await axiosSecured.get('/api/localisations');
     return response.data;
   } catch (error) {
     console.error('Erreur lors de la récupération des localisations:', error);
@@ -70,7 +70,7 @@ export const getAllLocalisations = async (): Promise<Localisation[]> => {
 // Récupérer une localisation spécifique
 export const getLocalisation = async (id: number): Promise<Localisation> => {
   try {
-    const response = await axiosSecured.get(`/localisations/${id}`);
+    const response = await axiosSecured.get(`/api/localisations/${id}`);
     return response.data;
   } catch (error) {
     console.error(`Erreur lors de la récupération de la localisation ${id}:`, error);
@@ -81,7 +81,7 @@ export const getLocalisation = async (id: number): Promise<Localisation> => {
 // Créer une nouvelle localisation
 export const createLocalisation = async (data: Omit<Localisation, 'id' | 'date_creation_localisation' | 'date_modification_localisation'>): Promise<Localisation> => {
   try {
-    const response = await axiosSecured.post('/localisations', data);
+    const response = await axiosSecured.post('/api/localisations', data);
     return response.data;
   } catch (error) {
     console.error('Erreur lors de la création de la localisation:', error);
