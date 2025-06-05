@@ -144,7 +144,7 @@ const AdminUtilisateurModal = ({
                         </IconButton>
                     </ModalHeader>
                     <ModalBody>
-                        <Alert severity="info"><b>Information :</b> un email sera envoyé à l'adresse du membre afin de confirmer son compte</Alert>
+                        {!isEditingInscriptions && <Alert severity="info"><b>Information :</b> un email sera envoyé à l'adresse du membre afin de confirmer son compte</Alert>}
                         <FText name="email" label="Email" disabled={isEditingInscriptions} />
                         <FText name="password" label="Mot de passe" disabled={isEditingInscriptions} />
                         <FSelect name="site_id" label="Site de rattachement" options={Object.keys(sites)} getOptionLabel={(option) => sites[option]?.nom_site} />
