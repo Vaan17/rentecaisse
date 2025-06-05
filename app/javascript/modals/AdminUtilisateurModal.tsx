@@ -60,10 +60,12 @@ const AdminUtilisateurModal = ({
     isOpen,
     selectedUser,
     onClose,
+    isEditingInscriptions = false
 }: {
     isOpen: boolean
     selectedUser: IUser | undefined
     onClose: () => void
+    isEditingInscriptions?: boolean
 }) => {
     const dispatch = useDispatch()
     const sites = useSites()
@@ -91,16 +93,32 @@ const AdminUtilisateurModal = ({
 
     const onSubmit = async (values) => {
         if (!selectedUser) {
-            const user = await UserAPI.inviteUser(values)
-            dispatch(addUser(user))
+            // INVITATION D'UN UTILISATEUR
+            await UserAPI.inviteUser(values)
         } else {
-            const enhancedValues = {
-                ...values,
-                id: selectedUser.id,
-            }
+            if (isEditingInscriptions) {
+                // EDITION D'UNE INSCRIPTION AVANT ACCEPTATION
+                const enhancedValues = {
+                    ...values,
+                    id: selectedUser.id,
+                }
+                let user = undefined
 
-            const user = await UserAPI.editUser(enhancedValues)
-            dispatch(addUser(user))
+                if (selectedUser.site_id !== enhancedValues.site_id) {
+                    user = await UserAPI.editUser(enhancedValues)
+                }
+                user = await UserAPI.acceptUser(selectedUser.id)
+                dispatch(addUser(user))
+            } else {
+                // ÉDITION D'UN UTILISATEUR
+                const enhancedValues = {
+                    ...values,
+                    id: selectedUser.id,
+                }
+
+                const user = await UserAPI.editUser(enhancedValues)
+                dispatch(addUser(user))
+            }
         }
 
         handleClose()
@@ -130,7 +148,7 @@ const AdminUtilisateurModal = ({
                     </ModalBody>
                     <ModalFooter fullWidth directionReverse gap>
                         <Button variant="contained" color="primary" onClick={methods.handleSubmit(onSubmit)}>
-                            {!selectedUser ? "Inviter" : "Enregistrer"}
+                            {!selectedUser ? "Inviter" : `Enregistrer ${isEditingInscriptions ? "et Accepter" : ""}`}
                         </Button>
                         <Button variant="text" color="primary" onClick={handleClose}>
                             Annuler

@@ -16,6 +16,15 @@ class UtilisateursController < ApplicationController
     
   end
 
+  def accept
+    params.permit!
+
+    Utilisateur.find(params["id"]).update(confirmation_entreprise: true)
+    acceptedUser = Utilisateur.find(params["id"])
+
+    render json: acceptedUser.to_format
+  end
+
   def update
     params["data"].permit!
 
@@ -28,6 +37,10 @@ class UtilisateursController < ApplicationController
   end
 
   def kick
-    
+    params.permit!
+
+    Utilisateur.find(params["id"]).update(entreprise_id: nil, site_id: nil)
+
+    render json: { "id" => params["id"] }
   end
 end

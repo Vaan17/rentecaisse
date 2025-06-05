@@ -28,6 +28,7 @@ Rails.application.routes.draw do
   get "/api/user/self" => "utilisateurs#fetch_self"
   get "/api/utilisateurs" => "utilisateurs#fetch_all"
   post "/api/utilisateurs" => "utilisateurs#invite"
+  put "/api/utilisateurs/inscriptions/:id" => "utilisateurs#accept"
   put "/api/utilisateurs" => "utilisateurs#update"
   put "/api/utilisateurs/:id" => "utilisateurs#kick"
 
