@@ -48,11 +48,15 @@ const ModalTitle = styled.div`
     font-weight: 700;
 `
 
-const inviteSchema = Yup.object().shape({
+const schema = Yup.object().shape({
     email: Yup.string().email("Format d'email invalide").required("L'email est requis"),
-})
-
-const editSchema = Yup.object().shape({
+    password: Yup.string()
+        .required("Le mot de passe est requis")
+        .min(12, "Le mot de passe doit contenir au moins 12 caractères")
+        .matches(/[A-Z]/, "Le mot de passe doit contenir au moins une lettre majuscule")
+        .matches(/[a-z]/, "Le mot de passe doit contenir au moins une lettre minuscule")
+        .matches(/[0-9]/, "Le mot de passe doit contenir au moins un chiffre")
+        .matches(/[^A-Za-z0-9]/, "Le mot de passe doit contenir au moins un caractère spécial"),
     site_id: Yup.number().required("Le site est requis"),
 })
 
@@ -70,9 +74,6 @@ const AdminUtilisateurModal = ({
     const dispatch = useDispatch()
     const sites = useSites()
 
-    type FormValues = { email: string } | { site_id: number };
-
-    const schema = selectedUser ? editSchema : inviteSchema as Yup.ObjectSchema<FormValues>;
     const methods = useForm({
         resolver: yupResolver(schema),
     })
@@ -80,12 +81,15 @@ const AdminUtilisateurModal = ({
     useEffect(() => {
         if (selectedUser) {
             methods.reset({
+                email: selectedUser.email,
                 site_id: selectedUser.site_id,
             })
         } else {
-            methods.reset({})
+            methods.reset({
+                email: ""
+            })
         }
-    }, [selectedUser, methods]);
+    }, [selectedUser])
 
     const handleClose = () => {
         onClose()
@@ -94,7 +98,8 @@ const AdminUtilisateurModal = ({
     const onSubmit = async (values) => {
         if (!selectedUser) {
             // INVITATION D'UN UTILISATEUR
-            await UserAPI.inviteUser(values)
+            const user = await UserAPI.inviteUser(values)
+            dispatch(addUser(user))
         } else {
             if (isEditingInscriptions) {
                 // EDITION D'UNE INSCRIPTION AVANT ACCEPTATION
@@ -139,12 +144,9 @@ const AdminUtilisateurModal = ({
                         </IconButton>
                     </ModalHeader>
                     <ModalBody>
-                        {!selectedUser && (
-                            <FText name="email" label="Email" placeholder="Email du membre" />
-                        )}
-                        {selectedUser && (
-                            <FSelect name="site_id" label="Site de rattachement" options={Object.keys(sites)} getOptionLabel={(option) => sites[option]?.nom_site} />
-                        )}
+                        <FText name="email" label="Email" disabled={isEditingInscriptions} />
+                        <FText name="password" label="Mot de passe" disabled={isEditingInscriptions} />
+                        <FSelect name="site_id" label="Site de rattachement" options={Object.keys(sites)} getOptionLabel={(option) => sites[option]?.nom_site} />
                     </ModalBody>
                     <ModalFooter fullWidth directionReverse gap>
                         <Button variant="contained" color="primary" onClick={methods.handleSubmit(onSubmit)}>

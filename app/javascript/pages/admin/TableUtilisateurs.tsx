@@ -118,8 +118,8 @@ const TableUtilisateur = () => {
                                             padding="none"
                                         >
                                             <Chip
-                                                label={user.admin_entreprise ? "Entreprise" : "Membre"}
-                                                color={user.admin_entreprise ? "warning" : "primary"}
+                                                label={user.admin_entreprise ? "Entreprise" : user.derniere_connexion ? "Membre" : "Invité"}
+                                                color={user.admin_entreprise ? "warning" : user.derniere_connexion ? "primary" : "secondary"}
                                             />
                                         </TableCell>
                                         <TableCell padding='none'>{user.nom}</TableCell>

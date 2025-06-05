@@ -13,7 +13,22 @@ class UtilisateursController < ApplicationController
   end
 
   def invite
-    
+    params["data"].permit!
+
+    attributes = params["data"].to_h
+    attributes["password"] = Digest::SHA256.hexdigest(attributes["password"]) # hash password
+    attributes["entreprise_id"] = @current_user["entreprise_id"]
+    attributes["confirmation_entreprise"] = true
+
+    if Utilisateur.exists?(email: attributes["email"])
+      render json: { error: "Credentials already exists" }, status: :unprocessable_entity
+      return
+    end
+
+    newUser = Utilisateur.create!(attributes)
+    UserMailer.confirmation_email(newUser).deliver_later # envoi d'un mail pour confirmer l'email
+
+    render json: newUser.to_format
   end
 
   def accept
