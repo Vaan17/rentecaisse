@@ -83,9 +83,7 @@ const AdminVoitures = () => {
         return filteredCars.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
     }, [filteredCars, page, rowsPerPage]);
 
-    if (!isAdmin) {
-        return <Flex>Vous n'avez pas accès à cette page.</Flex>
-    }
+    if (!isAdmin) return <Flex>Vous n'avez pas accès à cette page.</Flex>
 
     return (
         <>
