@@ -77,9 +77,7 @@ const AdminSites = () => {
         return filteredSites.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
     }, [filteredSites, page, rowsPerPage]);
 
-    if (!isAdmin) {
-        return <Flex>Vous n'avez pas accès à cette page.</Flex>
-    }
+    if (!isAdmin) return <Flex>Vous n'avez pas accès à cette page.</Flex>
 
     return (
         <>

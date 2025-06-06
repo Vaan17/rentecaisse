@@ -2,28 +2,33 @@ import React, { useMemo, useState } from 'react'
 import { Flex } from '../../components/style/flex'
 import CustomFilter from '../../components/CustomFilter'
 import { Alert, Button, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Tooltip } from '@mui/material'
-import { useNavigate } from 'react-router-dom'
-import type { IVoiture } from '../voitures/Voitures'
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete'
 import styled from 'styled-components'
 import AdminVoitureModal from '../../modals/AdminVoitureModal'
 import useCars from '../../hook/useCars'
+import useCles, { ICle } from '../../hook/useCles'
 import ConfirmationModal from '../../utils/components/ConfirmationModal'
 import VoitureAPI from '../../redux/data/voiture/VoitureAPI'
 import { useDispatch } from 'react-redux'
 import { removeCar } from '../../redux/data/voiture/voitureReducer'
+import useSites from '../../hook/useSites'
+import AdminCleModal from '../../modals/AdminCleModal';
+import CleAPI from '../../redux/data/cle/CleAPI';
+import { removeKey } from '../../redux/data/cle/cleReducer';
 
 const SButton = styled(Button)`
     min-width: fit-content !important;
     padding: .5em 1em !important;
 `
 
-const AdminVoitures = () => {
+const AdminCles = () => {
     const dispatch = useDispatch()
     const cars = useCars()
+    const sites = useSites()
+    const keys = useCles()
 
-    const [selectedCar, setSelectedCar] = useState<IVoiture | undefined>(undefined)
+    const [selectedKey, setSelectedKey] = useState<ICle | undefined>(undefined)
     const [filterProperties, setFilterProperties] = useState({ filterBy: undefined, searchValue: "" })
     const [isOpen, setIsOpen] = useState(false)
     const [isOpenConfirmModal, setIsOpenConfirmModal] = useState(false)
@@ -32,56 +37,37 @@ const AdminVoitures = () => {
     const isAdmin = true // Replacer par une vérification réelle de l'utilisateur
 
     const filterOptions = [
-        {
-            value: "immatriculation",
-            label: "Immatriculation",
-        },
-        {
-            value: "modele",
-            label: "Modèle",
-        },
-        {
-            value: "marque",
-            label: "Marque",
-        },
-        {
-            value: "nombre_places",
-            label: "Nombre de places",
-        },
-        {
-            value: "type_boite",
-            label: "Type de boite",
-        },
+        { label: 'Statut', value: 'statut_cle' },
+        { label: 'Voiture', value: 'voiture_id' },
+        { label: 'Site', value: 'site_id' }
     ]
 
     const headCells = [
-        { id: 'immatriculation', label: 'Immatriculation' },
-        { id: 'modele', label: 'Modèle' },
-        { id: 'marque', label: 'Marque' },
-        { id: 'nombre_places', label: 'Nombre de places' },
-        { id: 'type_boite', label: 'Type de boite' },
+        { id: 'statut_cle', label: 'Statut' },
+        { id: 'voiture_id', label: 'Voiture' },
+        { id: 'site_id', label: 'Site' },
         { id: 'edit', label: '', colWidth: 50 },
         { id: 'delete', label: '', colWidth: 50 },
     ]
 
-    const filteredCars = Object.values(cars).filter(car => {
+    const filteredKeys = Object.values(keys).filter(cle => {
         if (!filterProperties.filterBy || !filterProperties.searchValue) return true
-        return car[filterProperties.filterBy]?.toString()?.toLowerCase().includes(filterProperties.searchValue.toLowerCase())
+        return cle[filterProperties.filterBy]?.toString()?.toLowerCase().includes(filterProperties.searchValue.toLowerCase())
     })
 
     const handleDelete = async () => {
-        if (!selectedCar) return
+        if (!selectedKey) return
 
-        const res = await VoitureAPI.deleteVoiture(selectedCar.id)
-        dispatch(removeCar(res))
+        const res = await CleAPI.deleteCle(selectedKey.id)
+        dispatch(removeKey(res))
 
         setIsOpenConfirmModal(false)
-        setSelectedCar(undefined)
+        setSelectedKey(undefined)
     }
 
     const visibleRows = useMemo(() => {
-        return filteredCars.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-    }, [filteredCars, page, rowsPerPage]);
+        return filteredKeys.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+    }, [filteredKeys, page, rowsPerPage]);
 
     if (!isAdmin) return <Flex>Vous n'avez pas accès à cette page.</Flex>
 
@@ -93,7 +79,7 @@ const AdminVoitures = () => {
                         (filterBy, searchValue) => { setFilterProperties({ filterBy, searchValue }) }
                     } />
                     <SButton variant="contained" onClick={() => setIsOpen(true)}>
-                        Ajouter une voiture
+                        Ajouter une clé
                     </SButton>
                 </Flex>
                 <TableContainer>
@@ -115,12 +101,12 @@ const AdminVoitures = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {visibleRows.map((car, index) => {
+                            {visibleRows.map((cle, index) => {
                                 const labelId = `enhanced-table-checkbox-${index}`;
 
                                 return (
                                     <TableRow
-                                        key={car.immatriculation}
+                                        key={cle.id}
                                         hover
                                         onClick={(event) => null}
                                         tabIndex={-1}
@@ -131,16 +117,14 @@ const AdminVoitures = () => {
                                             scope="row"
                                             padding="none"
                                         >
-                                            {car.immatriculation}
+                                            {cle.statut_cle}
                                         </TableCell>
-                                        <TableCell padding='none'>{car.modele}</TableCell>
-                                        <TableCell padding='none'>{car.marque}</TableCell>
-                                        <TableCell padding='none'>{car.nombre_places}</TableCell>
-                                        <TableCell padding='none'>{car.type_boite}</TableCell>
+                                        <TableCell padding='none'>{cars[cle.voiture_id]?.immatriculation}</TableCell>
+                                        <TableCell padding='none'>{sites[cle.site_id]?.nom_site}</TableCell>
                                         <TableCell padding='none'>
                                             <Tooltip title="Modifier" arrow>
                                                 <IconButton onClick={() => {
-                                                    setSelectedCar(car)
+                                                    setSelectedKey(cle)
                                                     setIsOpen(true)
                                                 }}>
                                                     <EditIcon />
@@ -150,7 +134,7 @@ const AdminVoitures = () => {
                                         <TableCell padding='none' >
                                             <Tooltip title="Supprimer" arrow>
                                                 <IconButton onClick={() => {
-                                                    setSelectedCar(car)
+                                                    setSelectedKey(cle)
                                                     setIsOpenConfirmModal(true)
                                                 }}>
                                                     <DeleteIcon />
@@ -160,7 +144,7 @@ const AdminVoitures = () => {
                                     </TableRow>
                                 );
                             })}
-                            {filteredCars.length === 0 && (
+                            {filteredKeys.length === 0 && (
                                 <TableRow>
                                     <TableCell colSpan={headCells.length + 1} align="center">
                                         <Alert severity={
@@ -170,7 +154,7 @@ const AdminVoitures = () => {
                                         }>
                                             {filterProperties.filterBy && filterProperties.searchValue
                                                 ? "Aucun résultat ne correspond à votre recherche"
-                                                : "Aucune voiture enregistré"}
+                                                : "Aucune clé enregistrée"}
                                         </Alert>
                                     </TableCell>
                                 </TableRow>
@@ -181,7 +165,7 @@ const AdminVoitures = () => {
                 <TablePagination
                     rowsPerPageOptions={[5, 10, 25, 50]}
                     component="div"
-                    count={filteredCars.length}
+                    count={filteredKeys.length}
                     rowsPerPage={rowsPerPage}
                     onRowsPerPageChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                         setRowsPerPage(parseInt(event.target.value, 10))
@@ -192,12 +176,12 @@ const AdminVoitures = () => {
                         setPage(newPage)
                     }}
                 />
-                <AdminVoitureModal
+                <AdminCleModal
                     isOpen={isOpen}
-                    selectedCar={selectedCar}
+                    selectedKey={selectedKey}
                     onClose={() => {
                         setIsOpen(false)
-                        setSelectedCar(undefined)
+                        setSelectedKey(undefined)
                     }}
                 />
                 <ConfirmationModal
@@ -206,7 +190,7 @@ const AdminVoitures = () => {
                     onConfirm={() => handleDelete()}
                     onClose={() => {
                         setIsOpenConfirmModal(false)
-                        setSelectedCar(undefined)
+                        setSelectedKey(undefined)
                     }}
                     onConfirmName="Supprimer"
                 />
@@ -215,4 +199,4 @@ const AdminVoitures = () => {
     )
 }
 
-export default AdminVoitures
+export default AdminCles

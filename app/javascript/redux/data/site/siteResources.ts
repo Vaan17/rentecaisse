@@ -4,7 +4,7 @@ import SiteAPI from "./SiteAPI";
 import { addSite } from "./siteReducer";
 
 export const getSites = createAsyncThunk(
-	"data/sites/getSites",
+	"data/site/getSites",
 	async (_, { dispatch }) => {
 		try {
 			const sites = await SiteAPI.fetchAll();

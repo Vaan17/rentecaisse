@@ -35,6 +35,7 @@ import ReduxSync from "../redux/ReduxSync.tsx"
 import CancellationAccountDeletion from './CancellationAccountDeletion'
 import AdminSites from "./admin/AdminSites.tsx"
 import AdminUtilisateurs from "./admin/AdminUtilisateurs.tsx"
+import AdminCles from "./admin/AdminCles.tsx"
 
 const AppContainer = styled.div`
 	width: 100vw;
@@ -121,6 +122,7 @@ const App = () => {
 												<Route path="/admin/utilisateurs" element={<AdminUtilisateurs />} />
 												<Route path="/admin/voitures" element={<AdminVoitures />} />
 												<Route path="/admin/sites" element={<AdminSites />} />
+												<Route path="/admin/cles" element={<AdminCles />} />
 												{/* Fallback */}
 												<Route path="*" element={<Navigate to="/home" replace />} />
 											</Routes>
