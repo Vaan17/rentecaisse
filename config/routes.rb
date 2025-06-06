@@ -45,6 +45,12 @@ Rails.application.routes.draw do
   put "/api/voitures" => "voitures#update"
   delete "/api/voitures/:id" => "voitures#delete"
 
+  # Routes pour les clés
+  get "/api/cles" => "cles#fetch_all"
+  post "/api/cles" => "cles#create"
+  put "/api/cles" => "cles#update"
+  delete "/api/cles/:id" => "cles#delete"
+
   # Routes pour les entreprises
   get "/api/entreprises" => "entreprises#fetch_all"
   get "/api/entreprises/:id" => "entreprises#fetch"

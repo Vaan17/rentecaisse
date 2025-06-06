@@ -7,4 +7,15 @@ class Cle < ApplicationRecord
 
   # Validations
   validates :statut_cle, presence: true
-end 
+
+  def to_format
+    {
+      id:,
+      statut_cle:,
+      utilisateur_id:,
+      voiture_id:,
+      site_id:,
+      updated_at:
+    }
+  end
+end

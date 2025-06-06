@@ -5,6 +5,7 @@ import { getSites } from './data/site/siteResources'
 import { getUser } from './user/userResources'
 import { getUsers } from './data/user/userResources'
 import { toast } from 'react-toastify'
+import { getCles } from './data/cle/cleResources'
 
 const ReduxSync = ({ children }) => {
     const dispatch = useDispatch()
@@ -15,9 +16,10 @@ const ReduxSync = ({ children }) => {
             try {
                 await Promise.all([
                     dispatch(getUser()),
+                    dispatch(getUsers()),
                     dispatch(getVoitures()),
                     dispatch(getSites()),
-                    dispatch(getUsers()),
+                    dispatch(getCles()),
                 ])
             } catch (error) {
                 toast.error("Erreur lors de la récupération des données initiales.")
