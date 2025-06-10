@@ -403,6 +403,7 @@ const ReservationVoiturePage: React.FC = () => {
               <Box 
                 sx={{ 
                   width: isSmallScreen ? '100%' : '380px', // Largeur optimisée pour les filtres
+                  height: '100%', // Utiliser toute la hauteur disponible
                   display: 'flex',
                   flexDirection: 'column',
                   position: 'relative',
@@ -410,28 +411,27 @@ const ReservationVoiturePage: React.FC = () => {
                   pb: 4 // Ajouter plus d'espace en bas
                 }}
               >
-                {/* Conteneur du panneau de filtres et de la liste */}
-                <Box sx={{ width: '100%' }}>
-                  {/* Composant de filtrage */}
-                  <FilterPanel 
-                    cars={cars} 
-                    filtersState={filtersState}
-                    onFiltersChange={handleFiltersChange}
-                    isOpen={isFilterPanelOpen}
-                    onToggle={handleFilterPanelToggle}
+                {/* Composant de filtrage */}
+                <FilterPanel 
+                  cars={cars} 
+                  filtersState={filtersState}
+                  onFiltersChange={handleFiltersChange}
+                  isOpen={isFilterPanelOpen}
+                  onToggle={handleFilterPanelToggle}
+                />
+                
+                {/* Liste des voitures avec hauteur contrainte */}
+                <Box sx={{ 
+                  flex: 1,
+                  minHeight: isSmallScreen ? '300px' : '400px',
+                  maxHeight: isSmallScreen ? '50vh' : '65vh', // Contrainte de hauteur selon l'écran
+                  overflow: 'hidden' // Important pour le fonctionnement du scroll interne
+                }}>
+                  <CarList 
+                    cars={filteredCars} 
+                    selectedCar={selectedCar} 
+                    onSelectCar={handleCarSelect} 
                   />
-                  
-                  {/* Liste des voitures */}
-                  <Box sx={{ 
-                    flex: 1,
-                    minHeight: isSmallScreen ? '300px' : 'auto'
-                  }}>
-                    <CarList 
-                      cars={filteredCars} 
-                      selectedCar={selectedCar} 
-                      onSelectCar={handleCarSelect} 
-                    />
-                  </Box>
                 </Box>
               </Box>
 
