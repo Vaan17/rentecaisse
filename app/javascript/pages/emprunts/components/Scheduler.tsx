@@ -60,6 +60,22 @@ const getStatusText = (status: ReservationStatus | null): string => {
   }
 };
 
+// Fonction pour calculer les bornes effectives d'une réservation pour une journée donnée
+const getEffectiveBounds = (
+  reservationStart: Date,
+  reservationEnd: Date,
+  dayStart: Date,
+  dayEnd: Date
+) => {
+  // La borne de début effective est soit le début de la réservation, soit le début du jour (si la réservation a commencé avant)
+  const effectiveStart = reservationStart < dayStart ? dayStart : reservationStart;
+  
+  // La borne de fin effective est soit la fin de la réservation, soit la fin du jour (si la réservation se termine après)
+  const effectiveEnd = reservationEnd > dayEnd ? dayEnd : reservationEnd;
+  
+  return { effectiveStart, effectiveEnd };
+};
+
 // Composant pour les en-têtes de colonnes triables
 const SortableColumnHeader: React.FC<SortableColumnHeaderProps> = ({ title, sortKey, currentSort, onSort }) => {
   const isActive = currentSort.column === sortKey;
@@ -196,17 +212,25 @@ const ReservationBar: React.FC<{
   const startTime = new Date(reservation.startTime);
   const endTime = new Date(reservation.endTime);
   
+  // Calculer les bornes effectives pour cette journée
+  const { effectiveStart, effectiveEnd } = getEffectiveBounds(startTime, endTime, dayStart, dayEnd);
+  
   // Calculer la position et la largeur en pourcentage de la journée
   const dayDurationMinutes = differenceInMinutes(dayEnd, dayStart);
-  const startOffsetMinutes = differenceInMinutes(startTime, dayStart);
-  const durationMinutes = differenceInMinutes(endTime, startTime);
+  const startOffsetMinutes = differenceInMinutes(effectiveStart, dayStart);
+  const durationMinutes = differenceInMinutes(effectiveEnd, effectiveStart);
   
-  const startPercent = Math.max(0, (startOffsetMinutes / dayDurationMinutes) * 100);
-  const widthPercent = Math.min(100 - startPercent, (durationMinutes / dayDurationMinutes) * 100);
+  const startPercent = (startOffsetMinutes / dayDurationMinutes) * 100;
+  const widthPercent = (durationMinutes / dayDurationMinutes) * 100;
   
   // Formater les heures pour l'affichage
   const formatTimeDisplay = (date: Date) => {
     return format(date, 'HH:mm');
+  };
+  
+  // Formater les dates complètes pour l'affichage dans le tooltip
+  const formatDateTimeDisplay = (date: Date) => {
+    return format(date, 'dd/MM/yyyy à HH:mm', { locale: fr });
   };
   
   // Déterminer si la réservation est assez large pour afficher le texte
@@ -222,15 +246,37 @@ const ReservationBar: React.FC<{
     <Tooltip
       title={
         <Box>
-          <Typography variant="subtitle2">{reservation.nom_emprunt || 'Sans nom'}</Typography>
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>
+            {reservation.nom_emprunt || 'Sans nom'}
+          </Typography>
+          
           {reservation.utilisateur_prenom && reservation.utilisateur_nom && (
-            <Typography variant="body2">
+            <Typography variant="body2" sx={{ mb: 1 }}>
               Demandeur: {reservation.utilisateur_prenom} {reservation.utilisateur_nom}
             </Typography>
           )}
-          <Typography variant="body2">
-            {formatTimeDisplay(startTime)} - {formatTimeDisplay(endTime)}
+          
+          <Typography variant="body2" sx={{ fontWeight: 'medium', mb: 0.5 }}>
+            Date de début: {formatDateTimeDisplay(startTime)}
           </Typography>
+          
+          <Typography variant="body2" sx={{ fontWeight: 'medium', mb: 1 }}>
+            Date de fin: {formatDateTimeDisplay(endTime)}
+          </Typography>
+          
+          {(startTime < dayStart || endTime > dayEnd) && (
+            <Typography variant="caption" sx={{ 
+              fontStyle: 'italic', 
+              color: 'rgba(255, 255, 255, 0.7)',
+              display: 'block',
+              mb: 1,
+              borderTop: '1px solid rgba(255, 255, 255, 0.2)',
+              pt: 1
+            }}>
+              Portion visible ce jour: {formatTimeDisplay(effectiveStart)} - {formatTimeDisplay(effectiveEnd)}
+            </Typography>
+          )}
+          
           <Typography variant="body2">
             Statut: {getStatusText(reservation.status)}
           </Typography>
