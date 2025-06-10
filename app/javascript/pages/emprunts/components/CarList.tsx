@@ -53,7 +53,7 @@ const CarList: React.FC<CarListProps> = ({ cars, selectedCar, onSelectCar }) => 
         sx={{ 
           mx: 2, 
           my: 1,
-          alignSelf: 'flex-start',
+          alignSelf: 'center', // Centrage du bouton
           borderColor: '#FFD700',
           color: '#FFD700',
           '&:hover': {

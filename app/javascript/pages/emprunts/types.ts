@@ -108,6 +108,15 @@ export interface CarListProps {
   onSelectCar: (car: Car | null) => void;
 }
 
+export interface FiltersState {
+  brandFilter: string | null;
+  modelFilter: string | null;
+  licensePlateFilter: string;
+  seatsFilter: number[];
+  doorsFilter: number[];
+  transmissionFilter: string | null;
+}
+
 // Interface pour les props d'un créneau
 export interface SlotProps {
   car: Car;

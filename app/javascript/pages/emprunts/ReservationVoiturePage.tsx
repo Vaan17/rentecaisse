@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Box, 
   Typography, 
@@ -17,7 +17,7 @@ import ReservationModal from './components/ReservationModal';
 import Legend from './components/Legend';
 import FilterPanel from './components/FilterPanel';
 import LocalizationProvider from './providers/LocalizationProvider';
-import { Car, Reservation, ReservationStatus } from './types';
+import { Car, Reservation, ReservationStatus, FiltersState } from './types';
 import { getVoituresBySite } from './services/voitureService';
 import { getEmpruntsByMultipleVoituresAndDate } from './services/empruntService';
 import { getClesDisponiblesByVoiture, getAllLocalisations } from './services/cleLocalisationService';
@@ -43,10 +43,18 @@ const ReservationVoiturePage: React.FC = () => {
     endTime: Date | null;
   } | null>(null);
   
-  // Nouveaux états pour les voitures filtrées
-  const [filteredCars, setFilteredCars] = useState<Car[]>([]);
-  
-  // Nouveaux états pour le filtrage
+  // État des filtres
+  const [filtersState, setFiltersState] = useState<FiltersState>({
+    brandFilter: null,
+    modelFilter: null,
+    licensePlateFilter: '',
+    seatsFilter: [0, 10],
+    doorsFilter: [0, 6],
+    transmissionFilter: null
+  });
+
+  // État d'ouverture du panneau de filtres
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   
   // Nouveaux états pour les données du back-end
   const [cars, setCars] = useState<Car[]>([]);
@@ -103,6 +111,44 @@ const ReservationVoiturePage: React.FC = () => {
   // Vérifier si l'écran est petit avec un thème fourni
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
 
+  // Fonction pour appliquer les filtres
+  const applyFiltersToCarsList = (cars: Car[], filters: FiltersState): Car[] => {
+    let filtered = [...cars];
+    
+    if (filters.brandFilter) {
+      filtered = filtered.filter(car => car.name.startsWith(filters.brandFilter!));
+    }
+    
+    if (filters.modelFilter) {
+      filtered = filtered.filter(car => car.name.includes(filters.modelFilter!));
+    }
+    
+    if (filters.licensePlateFilter) {
+      filtered = filtered.filter(car => 
+        car.licensePlate?.toLowerCase().includes(filters.licensePlateFilter.toLowerCase())
+      );
+    }
+    
+    filtered = filtered.filter(car => 
+      car.seats >= filters.seatsFilter[0] && car.seats <= filters.seatsFilter[1]
+    );
+    
+    filtered = filtered.filter(car => 
+      car.doors >= filters.doorsFilter[0] && car.doors <= filters.doorsFilter[1]
+    );
+    
+    if (filters.transmissionFilter) {
+      filtered = filtered.filter(car => car.transmission === filters.transmissionFilter);
+    }
+    
+    return filtered;
+  };
+
+  // Calcul automatique des voitures filtrées
+  const filteredCars = useMemo(() => {
+    return applyFiltersToCarsList(cars, filtersState);
+  }, [cars, filtersState]);
+
   // Charger les voitures au chargement de la page
   useEffect(() => {
     const fetchCars = async () => {
@@ -110,7 +156,7 @@ const ReservationVoiturePage: React.FC = () => {
         setLoading(true);
         const carsData = await getVoituresBySite(userId);
         setCars(carsData);
-        setFilteredCars(carsData); // Initialiser également les voitures filtrées
+        // Les voitures filtrées sont calculées automatiquement via useMemo
       } catch (error) {
         console.error('Erreur lors du chargement des voitures:', error);
       } finally {
@@ -306,8 +352,13 @@ const ReservationVoiturePage: React.FC = () => {
   };
 
   // Gérer le changement de filtres
-  const handleFiltersChange = (filteredCarsList: Car[]) => {
-    setFilteredCars(filteredCarsList);
+  const handleFiltersChange = (newFiltersState: FiltersState) => {
+    setFiltersState(newFiltersState);
+  };
+
+  // Gérer l'ouverture/fermeture du panneau de filtres
+  const handleFilterPanelToggle = () => {
+    setIsFilterPanelOpen(!isFilterPanelOpen);
   };
 
   // Sélectionner les voitures à afficher
@@ -362,7 +413,13 @@ const ReservationVoiturePage: React.FC = () => {
                 {/* Conteneur du panneau de filtres et de la liste */}
                 <Box sx={{ width: '100%' }}>
                   {/* Composant de filtrage */}
-                  <FilterPanel cars={cars} onFiltersChange={handleFiltersChange} />
+                  <FilterPanel 
+                    cars={cars} 
+                    filtersState={filtersState}
+                    onFiltersChange={handleFiltersChange}
+                    isOpen={isFilterPanelOpen}
+                    onToggle={handleFilterPanelToggle}
+                  />
                   
                   {/* Liste des voitures */}
                   <Box sx={{ 

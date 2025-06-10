@@ -12,23 +12,27 @@ import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import SettingsIcon from '@mui/icons-material/Settings';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import { Car } from '../types';
+import { Car, FiltersState } from '../types';
 
 interface FilterPanelProps {
   cars: Car[];
-  onFiltersChange: (filteredCars: Car[]) => void;
+  filtersState: FiltersState;
+  onFiltersChange: (filters: FiltersState) => void;
+  isOpen: boolean;
+  onToggle: () => void;
 }
 
-const FilterPanel: React.FC<FilterPanelProps> = ({ cars, onFiltersChange }) => {
-  const [open, setOpen] = useState(false);
+const FilterPanel: React.FC<FilterPanelProps> = ({ cars, filtersState, onFiltersChange, isOpen, onToggle }) => {
   
-  // États des filtres
-  const [brandFilter, setBrandFilter] = useState<string | null>(null);
-  const [modelFilter, setModelFilter] = useState<string | null>(null);
-  const [licensePlateFilter, setLicensePlateFilter] = useState<string>('');
-  const [seatsFilter, setSeatsFilter] = useState<number[]>([0, 10]);
-  const [doorsFilter, setDoorsFilter] = useState<number[]>([0, 6]);
-  const [transmissionFilter, setTransmissionFilter] = useState<string | null>(null);
+  // Extraire les filtres depuis les props
+  const {
+    brandFilter,
+    modelFilter,
+    licensePlateFilter,
+    seatsFilter,
+    doorsFilter,
+    transmissionFilter
+  } = filtersState;
   
   // Récupérer les valeurs uniques pour les filtres
   const brands = Array.from(new Set(cars.map(car => car.name.split(' ')[0])));
@@ -37,49 +41,32 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ cars, onFiltersChange }) => {
     return parts.length > 1 ? parts.slice(1).join(' ') : '';
   }).filter(model => model !== '')));
   const transmissions = Array.from(new Set(cars.map(car => car.transmission)));
-  
-  // Appliquer les filtres
-  const applyFilters = () => {
-    let filtered = [...cars];
-    
-    if (brandFilter) {
-      filtered = filtered.filter(car => car.name.startsWith(brandFilter));
-    }
-    
-    if (modelFilter) {
-      filtered = filtered.filter(car => car.name.includes(modelFilter));
-    }
-    
-    if (licensePlateFilter) {
-      filtered = filtered.filter(car => 
-        car.licensePlate?.toLowerCase().includes(licensePlateFilter.toLowerCase())
-      );
-    }
-    
-    filtered = filtered.filter(car => 
-      car.seats >= seatsFilter[0] && car.seats <= seatsFilter[1]
-    );
-    
-    filtered = filtered.filter(car => 
-      car.doors >= doorsFilter[0] && car.doors <= doorsFilter[1]
-    );
-    
-    if (transmissionFilter) {
-      filtered = filtered.filter(car => car.transmission === transmissionFilter);
-    }
-    
-    onFiltersChange(filtered);
+
+  // Fonctions de mise à jour des filtres
+  const updateFilters = (newFilters: Partial<FiltersState>) => {
+    onFiltersChange({ ...filtersState, ...newFilters });
   };
+
+  const setBrandFilter = (value: string | null) => updateFilters({ brandFilter: value });
+  const setModelFilter = (value: string | null) => updateFilters({ modelFilter: value });
+  const setLicensePlateFilter = (value: string) => updateFilters({ licensePlateFilter: value });
+  const setSeatsFilter = (value: number[]) => updateFilters({ seatsFilter: value });
+  const setDoorsFilter = (value: number[]) => updateFilters({ doorsFilter: value });
+  const setTransmissionFilter = (value: string | null) => updateFilters({ transmissionFilter: value });
+  
+
   
   // Réinitialiser les filtres
   const resetFilters = () => {
-    setBrandFilter(null);
-    setModelFilter(null);
-    setLicensePlateFilter('');
-    setSeatsFilter([0, 10]);
-    setDoorsFilter([0, 6]);
-    setTransmissionFilter(null);
-    onFiltersChange(cars);
+    const initialFilters: FiltersState = {
+      brandFilter: null,
+      modelFilter: null,
+      licensePlateFilter: '',
+      seatsFilter: [0, 10],
+      doorsFilter: [0, 6],
+      transmissionFilter: null
+    };
+    onFiltersChange(initialFilters);
   };
   
   // Déterminer si des filtres sont actifs
@@ -122,10 +109,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ cars, onFiltersChange }) => {
     }).length;
   };
   
-  // Appliquer les filtres à chaque changement
-  useEffect(() => {
-    applyFilters();
-  }, [brandFilter, modelFilter, licensePlateFilter, seatsFilter, doorsFilter, transmissionFilter]);
+
   
   return (
     <Box sx={{ width: '100%', mb: 2 }}>
@@ -148,8 +132,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ cars, onFiltersChange }) => {
           cursor: 'pointer',
           bgcolor: '#FFD700',
           color: '#272727',
-          borderBottom: open ? '1px solid rgba(39, 39, 39, 0.12)' : 'none'
-        }} onClick={() => setOpen(!open)}>
+          borderBottom: isOpen ? '1px solid rgba(39, 39, 39, 0.12)' : 'none'
+        }} onClick={onToggle}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <FilterListIcon sx={{ mr: 1 }} />
             <Typography variant="subtitle1">Filtres</Typography>
@@ -164,7 +148,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ cars, onFiltersChange }) => {
           )}
         </Box>
         
-        <Collapse in={open}>
+        <Collapse in={isOpen}>
           <Box sx={{ 
             p: 3,
             width: '100%',
