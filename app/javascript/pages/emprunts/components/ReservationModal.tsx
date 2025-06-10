@@ -28,7 +28,7 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
 import { ReservationModalProps, ReservationStatus } from '../types';
-import { createEmprunt, updateEmprunt, deleteEmprunt } from '../services/empruntService';
+import { createEmprunt, updateEmprunt, deleteEmprunt, soumettreEmpruntPourValidation } from '../services/empruntService';
 
 const ReservationModal: React.FC<ReservationModalProps> = ({
   open,
@@ -57,16 +57,20 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
   const [selectedLocationId, setSelectedLocationId] = useState<number | ''>('');
   const [selectedPassengers, setSelectedPassengers] = useState<number[]>([]);
   
-  // Vérifier si l'emprunt peut être supprimé (appartient à l'utilisateur et est en brouillon)
+  // Vérifier si l'emprunt peut être supprimé (appartient à l'utilisateur et est en brouillon ou en attente de validation)
   const canDelete = existingReservation && 
                     existingReservation.utilisateur_id === userId && 
-                    existingReservation.status === ReservationStatus.DRAFT;
+                    (existingReservation.status === ReservationStatus.DRAFT || 
+                     existingReservation.status === ReservationStatus.PENDING_VALIDATION);
                     
   // Vérifier si l'emprunt peut être modifié (appartient à l'utilisateur et est en brouillon)
   const canEdit = existingReservation && 
                   existingReservation.utilisateur_id === userId && 
                   existingReservation.status === ReservationStatus.DRAFT;
-                  
+
+  // Vérifier si l'emprunt peut être soumis pour validation (appartient à l'utilisateur et est en brouillon)
+  const canSubmitForValidation = canEdit;
+  
   // Logger les informations pour le débogage
   useEffect(() => {
     if (existingReservation) {
@@ -230,6 +234,36 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
     }
   };
 
+  // Gérer la soumission d'un emprunt pour validation
+  const handleSubmitForValidation = async () => {
+    if (!existingReservation) return;
+    
+    try {
+      // Appel au service pour changer le statut
+      await soumettreEmpruntPourValidation(existingReservation.id);
+      
+      // Notifier le composant parent
+      onSave({
+        carId: existingReservation.carId,
+        startTime: new Date(existingReservation.startTime),
+        endTime: new Date(existingReservation.endTime),
+        status: ReservationStatus.PENDING_VALIDATION,
+        nom_emprunt: existingReservation.nom_emprunt,
+        description: existingReservation.description,
+        utilisateur_id: existingReservation.utilisateur_id,
+        cle_id: existingReservation.cle_id,
+        localisation_id: existingReservation.localisation_id,
+        liste_passager_id: existingReservation.liste_passager_id
+      });
+      
+      // Fermer la modale
+      onClose();
+    } catch (error) {
+      console.error('Erreur lors de la soumission pour validation:', error);
+      setError('Une erreur est survenue lors de la soumission pour validation');
+    }
+  };
+
   // Gérer la suppression d'un emprunt
   const handleDelete = async () => {
     if (!existingReservation) return;
@@ -309,6 +343,26 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
                     {car.licensePlate} • {car.seats} places • {car.doors} portes • {car.transmission}
                   </Typography>
                 </Box>
+              </Box>
+            </Box>
+          )}
+          
+          {/* Informations sur le demandeur */}
+          {existingReservation && existingReservation.utilisateur_prenom && existingReservation.utilisateur_nom && (
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
+                Informations sur la demande
+              </Typography>
+              <Box 
+                sx={{ 
+                  p: 2, 
+                  backgroundColor: 'grey.100', 
+                  borderRadius: 1
+                }}
+              >
+                <Typography variant="body2">
+                  <strong>Demandeur :</strong> {existingReservation.utilisateur_prenom} {existingReservation.utilisateur_nom}
+                </Typography>
               </Box>
             </Box>
           )}
@@ -472,6 +526,15 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
               startIcon={<DeleteIcon />}
             >
               Supprimer
+            </Button>
+          )}
+          {canSubmitForValidation && (
+            <Button 
+              onClick={handleSubmitForValidation} 
+              variant="contained" 
+              color="success"
+            >
+              Valider
             </Button>
           )}
           {!isReadOnly && canEdit && existingReservation ? (

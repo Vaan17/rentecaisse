@@ -21,6 +21,7 @@ export interface Car {
 export enum ReservationStatus {
   CONFIRMED = 'confirmed',
   DRAFT = 'draft',
+  PENDING_VALIDATION = 'pending_validation',
   IN_PROGRESS = 'en_cours',
   COMPLETED = 'completed',
   EMPTY = 'empty'
@@ -35,6 +36,8 @@ export interface Reservation {
   status: ReservationStatus;
   // Champs additionnels du back-end
   utilisateur_id?: number;
+  utilisateur_nom?: string;
+  utilisateur_prenom?: string;
   nom_emprunt?: string;
   description?: string;
   cle_id?: number;

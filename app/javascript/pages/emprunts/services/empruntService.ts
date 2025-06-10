@@ -1,5 +1,5 @@
 import axiosSecured from '../../../services/apiService';
-import { Reservation, ReservationStatus } from '../types';
+import { Reservation } from '../types';
 
 // Interface pour les données du formulaire de réservation
 export interface ReservationFormData {
@@ -35,6 +35,27 @@ export const getEmpruntsByVoitureAndDate = async (
     return response.data;
   } catch (error) {
     console.error('Erreur lors de la récupération des emprunts:', error);
+    throw error;
+  }
+};
+
+// Récupérer les emprunts pour plusieurs voitures et une période donnée en une seule requête
+export const getEmpruntsByMultipleVoituresAndDate = async (
+  voitureIds: number[],
+  dateDebut: string,
+  dateFin: string
+): Promise<Reservation[]> => {
+  try {
+    const response = await axiosSecured.get('/api/emprunts/multiple_voitures', {
+      params: {
+        voiture_ids: voitureIds,
+        date_debut: dateDebut,
+        date_fin: dateFin
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Erreur lors de la récupération des emprunts multiple:', error);
     throw error;
   }
 };
@@ -84,6 +105,17 @@ export const validerEmprunt = async (empruntId: number): Promise<any> => {
     return response.data;
   } catch (error) {
     console.error('Erreur lors de la validation de l\'emprunt:', error);
+    throw error;
+  }
+};
+
+// Soumettre un emprunt pour validation
+export const soumettreEmpruntPourValidation = async (empruntId: number): Promise<any> => {
+  try {
+    const response = await axiosSecured.post(`/api/emprunts/${empruntId}/soumettre_validation`);
+    return response.data;
+  } catch (error) {
+    console.error('Erreur lors de la soumission de l\'emprunt pour validation:', error);
     throw error;
   }
 };

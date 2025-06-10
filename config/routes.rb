@@ -68,12 +68,14 @@ Rails.application.routes.draw do
 
   # Routes pour les emprunts
   get "/api/emprunts" => "emprunts_user#get_emprunts_users"
-  get '/api/emprunts/:id', to: 'emprunts_user#get_emprunts_user_by_id'
+  get '/api/emprunts/multiple_voitures', to: 'emprunts_user#get_emprunts_par_multiple_voitures'
   get '/api/emprunts/voiture/:voiture_id', to: 'emprunts_user#get_emprunts_par_voiture'
+  get '/api/emprunts/:id', to: 'emprunts_user#get_emprunts_user_by_id'
   post '/api/emprunts', to: 'emprunts_user#create'
   put '/api/emprunts/:id', to: 'emprunts_user#update'
   delete '/api/emprunts/:id', to: 'emprunts_user#destroy'
   post '/api/emprunts/:id/valider', to: 'emprunts_user#valider'
+  post '/api/emprunts/:id/soumettre_validation', to: 'emprunts_user#soumettre_validation'
   
   # Routes pour la gestion de suppression de compte
   post "/api/user/request_deletion", to: "authenticated_page#request_account_deletion"

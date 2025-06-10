@@ -29,6 +29,8 @@ const getStatusColor = (status: ReservationStatus | null): string => {
       return 'rgba(76, 175, 80, 0.7)'; // vert
     case ReservationStatus.DRAFT:
       return 'rgba(255, 152, 0, 0.7)'; // orange
+    case ReservationStatus.PENDING_VALIDATION:
+      return 'rgba(158, 158, 158, 0.7)'; // gris clair
     case ReservationStatus.IN_PROGRESS:
       return 'rgba(244, 67, 54, 0.7)'; // rouge
     case ReservationStatus.COMPLETED:
@@ -45,6 +47,8 @@ const getStatusText = (status: ReservationStatus | null): string => {
       return 'Validé';
     case ReservationStatus.DRAFT:
       return 'Brouillon';
+    case ReservationStatus.PENDING_VALIDATION:
+      return 'En attente de validation';
     case ReservationStatus.IN_PROGRESS:
       return 'En cours';
     case ReservationStatus.COMPLETED:
@@ -138,6 +142,11 @@ const ReservationBar: React.FC<{
       title={
         <Box>
           <Typography variant="subtitle2">{reservation.nom_emprunt || 'Sans nom'}</Typography>
+          {reservation.utilisateur_prenom && reservation.utilisateur_nom && (
+            <Typography variant="body2">
+              Demandeur: {reservation.utilisateur_prenom} {reservation.utilisateur_nom}
+            </Typography>
+          )}
           <Typography variant="body2">
             {formatTimeDisplay(startTime)} - {formatTimeDisplay(endTime)}
           </Typography>
@@ -188,7 +197,7 @@ const ReservationBar: React.FC<{
 
 // Composant pour représenter une ligne de voiture avec ses réservations
 const CarTimeline: React.FC<{
-  car: { id: number; name: string };
+  car: { id: number; name: string; licensePlate?: string };
   reservations: Reservation[];
   dayStart: Date;
   dayEnd: Date;
@@ -208,6 +217,7 @@ const CarTimeline: React.FC<{
   
   return (
     <React.Fragment>
+      {/* Colonne pour le nom de la voiture */}
       <Grid item xs={2}>
         <Box sx={{ 
           height: timelineHeight, 
@@ -221,7 +231,27 @@ const CarTimeline: React.FC<{
           {car.name}
         </Box>
       </Grid>
-      <Grid item xs={10}>
+      
+      {/* Nouvelle colonne pour l'immatriculation */}
+      <Grid item xs={2}>
+        <Box sx={{ 
+          height: timelineHeight, 
+          display: 'flex', 
+          alignItems: 'center', 
+          pl: 1,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          fontWeight: 'medium',
+          fontSize: '0.9rem',
+          color: 'text.secondary'
+        }}>
+          {car.licensePlate || ''}
+        </Box>
+      </Grid>
+      
+      {/* Colonne pour la timeline */}
+      <Grid item xs={8}>
         <Box 
           sx={{ 
             position: 'relative', 
@@ -328,13 +358,18 @@ const Scheduler: React.FC<SchedulerProps> = ({ cars, reservations, selectedDate,
         
         <Box sx={{ flex: 1, overflowY: 'auto' }}>
           <Grid container>
-            {/* En-tête des heures - Toutes les heures sur une seule ligne */}
+            {/* En-tête des colonnes */}
             <Grid item xs={2}>
               <Box sx={{ height: 40, display: 'flex', alignItems: 'center', fontWeight: 'bold', pl: 1 }}>
                 Voiture
               </Box>
             </Grid>
-            <Grid item xs={10}>
+            <Grid item xs={2}>
+              <Box sx={{ height: 40, display: 'flex', alignItems: 'center', fontWeight: 'bold', pl: 1 }}>
+                Immatriculation
+              </Box>
+            </Grid>
+            <Grid item xs={8}>
               <Box sx={{ 
                 position: 'relative', 
                 height: 40, 
@@ -402,7 +437,11 @@ const Scheduler: React.FC<SchedulerProps> = ({ cars, reservations, selectedDate,
             {cars.map((car) => (
               <React.Fragment key={car.id}>
                 <CarTimeline
-                  car={car}
+                  car={{
+                    id: car.id,
+                    name: car.name,
+                    licensePlate: car.licensePlate
+                  }}
                   reservations={reservations}
                   dayStart={dayStart}
                   dayEnd={dayEnd}
