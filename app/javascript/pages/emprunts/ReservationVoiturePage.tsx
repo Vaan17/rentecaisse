@@ -351,7 +351,7 @@ const ReservationVoiturePage: React.FC = () => {
               {/* Liste des voitures avec filtres */}
               <Box 
                 sx={{ 
-                  width: isSmallScreen ? '100%' : '350px', // Augmenter la largeur
+                  width: isSmallScreen ? '100%' : '380px', // Largeur optimisée pour les filtres
                   display: 'flex',
                   flexDirection: 'column',
                   position: 'relative',

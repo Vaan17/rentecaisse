@@ -135,7 +135,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ cars, onFiltersChange }) => {
           width: '100%',
           mb: 2,
           borderRadius: 2,
-          overflow: 'hidden'
+          overflow: 'hidden',
+          boxSizing: 'border-box' // Assurer que les bordures sont incluses dans la largeur
         }}
       >
         {/* En-tête du panneau de filtres */}
@@ -145,9 +146,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ cars, onFiltersChange }) => {
           justifyContent: 'space-between',
           alignItems: 'center',
           cursor: 'pointer',
-          bgcolor: 'primary.main',
-          color: 'primary.contrastText',
-          borderBottom: open ? '1px solid rgba(255, 255, 255, 0.12)' : 'none'
+          bgcolor: '#FFD700',
+          color: '#272727',
+          borderBottom: open ? '1px solid rgba(39, 39, 39, 0.12)' : 'none'
         }} onClick={() => setOpen(!open)}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <FilterListIcon sx={{ mr: 1 }} />
@@ -157,9 +158,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ cars, onFiltersChange }) => {
           {hasActiveFilters() && (
             <Chip 
               label={`${getMatchingCarsCount()} véhicules correspondants`} 
-              color="secondary" 
               size="small"
-              sx={{ bgcolor: 'rgba(255, 255, 255, 0.85)', color: 'primary.main' }}
+              sx={{ bgcolor: 'rgba(255, 255, 255, 0.85)', color: '#272727' }}
             />
           )}
         </Box>
@@ -168,15 +168,14 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ cars, onFiltersChange }) => {
           <Box sx={{ 
             p: 3,
             width: '100%',
-            maxWidth: '400px',
-            mx: 'auto',
-            bgcolor: 'background.paper'
+            bgcolor: 'background.paper',
+            boxSizing: 'border-box'
           }}>
             <Typography variant="h6" align="center" gutterBottom sx={{ mb: 3 }}>
               Filtres disponibles
             </Typography>
             
-            <Divider sx={{ mb: 3 }} />
+            <Divider sx={{ mb: 3, mx: 0 }} />
             
             {/* Section des filtres textuels et à options */}
             <Stack spacing={2} sx={{ mb: 3 }}>
@@ -194,9 +193,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ cars, onFiltersChange }) => {
                       ...params.InputProps,
                       startAdornment: (
                         <>
-                          <InputAdornment position="start">
-                            <DirectionsCarIcon color="primary" />
-                          </InputAdornment>
+                                                <InputAdornment position="start">
+                        <DirectionsCarIcon sx={{ color: '#FFD700' }} />
+                      </InputAdornment>
                           {params.InputProps.startAdornment}
                         </>
                       )
@@ -220,9 +219,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ cars, onFiltersChange }) => {
                       ...params.InputProps,
                       startAdornment: (
                         <>
-                          <InputAdornment position="start">
-                            <DriveEtaIcon color="primary" />
-                          </InputAdornment>
+                                                <InputAdornment position="start">
+                        <DriveEtaIcon sx={{ color: '#FFD700' }} />
+                      </InputAdornment>
                           {params.InputProps.startAdornment}
                         </>
                       )
@@ -242,7 +241,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ cars, onFiltersChange }) => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <VpnKeyIcon color="primary" />
+                      <VpnKeyIcon sx={{ color: '#FFD700' }} />
                     </InputAdornment>
                   )
                 }}
@@ -262,9 +261,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ cars, onFiltersChange }) => {
                       ...params.InputProps,
                       startAdornment: (
                         <>
-                          <InputAdornment position="start">
-                            <SettingsIcon color="primary" />
-                          </InputAdornment>
+                                                <InputAdornment position="start">
+                        <SettingsIcon sx={{ color: '#FFD700' }} />
+                      </InputAdornment>
                           {params.InputProps.startAdornment}
                         </>
                       )
@@ -279,13 +278,13 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ cars, onFiltersChange }) => {
               Plages de valeurs
             </Typography>
             
-            <Divider sx={{ mb: 3 }} />
+            <Divider sx={{ mb: 3, mx: 0 }} />
             
             {/* Section des sliders */}
             <Stack spacing={3} sx={{ mb: 4 }}>
               <Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <AirlineSeatReclineNormalIcon color="primary" sx={{ mr: 1 }} />
+                  <AirlineSeatReclineNormalIcon sx={{ color: '#FFD700', mr: 1 }} />
                   <Typography>Nombre de places (maximum 10)</Typography>
                 </Box>
                 <Box sx={{ px: 2 }}>
@@ -311,7 +310,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ cars, onFiltersChange }) => {
               
               <Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <MeetingRoomIcon color="primary" sx={{ mr: 1 }} />
+                  <MeetingRoomIcon sx={{ color: '#FFD700', mr: 1 }} />
                   <Typography>Nombre de portes</Typography>
                 </Box>
                 <Box sx={{ px: 2 }}>
@@ -336,19 +335,30 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ cars, onFiltersChange }) => {
               </Box>
             </Stack>
             
-            <Divider sx={{ mb: 3 }} />
+            <Divider sx={{ mb: 3, mx: 0 }} />
             
             {/* Bouton de réinitialisation */}
             <Box sx={{ 
               display: 'flex', 
               justifyContent: 'center',
-              mt: 3
+              mt: 3,
+              px: 0 // Assurer l'alignement parfait
             }}>
               <Button 
                 variant="outlined" 
-                color="secondary" 
                 onClick={resetFilters}
-                sx={{ width: '80%', height: '42px' }}
+                sx={{ 
+                  width: '90%', 
+                  height: '42px',
+                  maxWidth: '320px', // Limite pour garder un aspect professionnel
+                  borderColor: '#FFD700',
+                  color: '#FFD700',
+                  '&:hover': {
+                    borderColor: '#FFC700',
+                    color: '#FFC700',
+                    backgroundColor: 'rgba(255, 215, 0, 0.04)'
+                  }
+                }}
                 startIcon={<RestartAltIcon />}
               >
                 RÉINITIALISER TOUS LES FILTRES
@@ -362,19 +372,28 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ cars, onFiltersChange }) => {
               p: 3, 
               borderTop: '1px solid rgba(0, 0, 0, 0.12)',
               bgcolor: 'background.default',
-              maxWidth: '400px',
-              mx: 'auto'
+              boxSizing: 'border-box'
             }}>
               <Typography variant="subtitle2" gutterBottom>Filtres actifs :</Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+              <Box sx={{ 
+                display: 'flex', 
+                flexWrap: 'wrap', 
+                gap: 1, 
+                mt: 1,
+                justifyContent: 'flex-start'
+              }}>
                 {brandFilter && (
                   <Chip 
                     label={`Marque: ${brandFilter}`} 
                     onDelete={() => setBrandFilter(null)} 
                     size="small" 
-                    color="primary"
                     variant="outlined"
-                    icon={<DirectionsCarIcon />}
+                    sx={{
+                      borderColor: '#FFD700',
+                      color: '#FFD700',
+                      '& .MuiChip-deleteIcon': { color: '#FFD700' }
+                    }}
+                    icon={<DirectionsCarIcon sx={{ color: '#FFD700' }} />}
                   />
                 )}
                 {modelFilter && (
@@ -382,9 +401,13 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ cars, onFiltersChange }) => {
                     label={`Modèle: ${modelFilter}`} 
                     onDelete={() => setModelFilter(null)} 
                     size="small" 
-                    color="primary"
                     variant="outlined"
-                    icon={<DriveEtaIcon />}
+                    sx={{
+                      borderColor: '#FFD700',
+                      color: '#FFD700',
+                      '& .MuiChip-deleteIcon': { color: '#FFD700' }
+                    }}
+                    icon={<DriveEtaIcon sx={{ color: '#FFD700' }} />}
                   />
                 )}
                 {licensePlateFilter && (
@@ -392,9 +415,13 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ cars, onFiltersChange }) => {
                     label={`Immatriculation: ${licensePlateFilter}`} 
                     onDelete={() => setLicensePlateFilter('')} 
                     size="small" 
-                    color="primary"
                     variant="outlined"
-                    icon={<VpnKeyIcon />}
+                    sx={{
+                      borderColor: '#FFD700',
+                      color: '#FFD700',
+                      '& .MuiChip-deleteIcon': { color: '#FFD700' }
+                    }}
+                    icon={<VpnKeyIcon sx={{ color: '#FFD700' }} />}
                   />
                 )}
                 {(seatsFilter[0] > 0 || seatsFilter[1] < 10) && (
@@ -402,9 +429,13 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ cars, onFiltersChange }) => {
                     label={`Places: ${seatsFilter[0]}-${seatsFilter[1]}`} 
                     onDelete={() => setSeatsFilter([0, 10])} 
                     size="small" 
-                    color="primary"
                     variant="outlined"
-                    icon={<AirlineSeatReclineNormalIcon />}
+                    sx={{
+                      borderColor: '#FFD700',
+                      color: '#FFD700',
+                      '& .MuiChip-deleteIcon': { color: '#FFD700' }
+                    }}
+                    icon={<AirlineSeatReclineNormalIcon sx={{ color: '#FFD700' }} />}
                   />
                 )}
                 {(doorsFilter[0] > 0 || doorsFilter[1] < 6) && (
@@ -412,9 +443,13 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ cars, onFiltersChange }) => {
                     label={`Portes: ${doorsFilter[0]}-${doorsFilter[1]}`} 
                     onDelete={() => setDoorsFilter([0, 6])} 
                     size="small" 
-                    color="primary"
                     variant="outlined"
-                    icon={<MeetingRoomIcon />}
+                    sx={{
+                      borderColor: '#FFD700',
+                      color: '#FFD700',
+                      '& .MuiChip-deleteIcon': { color: '#FFD700' }
+                    }}
+                    icon={<MeetingRoomIcon sx={{ color: '#FFD700' }} />}
                   />
                 )}
                 {transmissionFilter && (
@@ -422,9 +457,13 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ cars, onFiltersChange }) => {
                     label={`Boîte: ${transmissionFilter}`} 
                     onDelete={() => setTransmissionFilter(null)} 
                     size="small" 
-                    color="primary"
                     variant="outlined"
-                    icon={<SettingsIcon />}
+                    sx={{
+                      borderColor: '#FFD700',
+                      color: '#FFD700',
+                      '& .MuiChip-deleteIcon': { color: '#FFD700' }
+                    }}
+                    icon={<SettingsIcon sx={{ color: '#FFD700' }} />}
                   />
                 )}
               </Box>

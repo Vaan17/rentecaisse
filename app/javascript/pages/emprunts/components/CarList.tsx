@@ -27,20 +27,20 @@ const CarList: React.FC<CarListProps> = ({ cars, selectedCar, onSelectCar }) => 
       elevation={3} 
       sx={{ 
         width: '100%', 
-        maxWidth: 360, 
         height: '100%', 
         overflow: 'auto',
         borderRadius: 2,
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        boxSizing: 'border-box' // Harmonisation avec FilterPanel
       }}
     >
       <Typography 
         variant="h6" 
         sx={{ 
           p: 2, 
-          backgroundColor: 'primary.main', 
-          color: 'white' 
+          backgroundColor: '#FFD700', 
+          color: '#272727' 
         }}
       >
         Véhicules disponibles
@@ -49,12 +49,22 @@ const CarList: React.FC<CarListProps> = ({ cars, selectedCar, onSelectCar }) => 
       {/* Bouton pour afficher toutes les voitures */}
       <Button 
         variant="outlined" 
-        color="primary" 
         onClick={() => onSelectCar(null)}
         sx={{ 
           mx: 2, 
           my: 1,
-          alignSelf: 'flex-start'
+          alignSelf: 'flex-start',
+          borderColor: '#FFD700',
+          color: '#FFD700',
+          '&:hover': {
+            borderColor: '#FFC700',
+            color: '#FFC700',
+            backgroundColor: 'rgba(255, 215, 0, 0.04)'
+          },
+          '&:disabled': {
+            borderColor: '#ccc',
+            color: '#999'
+          }
         }}
         disabled={selectedCar === null}
       >
@@ -70,9 +80,9 @@ const CarList: React.FC<CarListProps> = ({ cars, selectedCar, onSelectCar }) => 
                 selected={selectedCar?.id === car.id}
                 sx={{
                   '&.Mui-selected': {
-                    backgroundColor: 'primary.light',
+                    backgroundColor: 'rgba(255, 215, 0, 0.15)',
                     '&:hover': {
-                      backgroundColor: 'primary.light',
+                      backgroundColor: 'rgba(255, 215, 0, 0.2)',
                     },
                   },
                 }}
@@ -128,8 +138,14 @@ const CarList: React.FC<CarListProps> = ({ cars, selectedCar, onSelectCar }) => 
                           <Button 
                             size="small" 
                             startIcon={<InfoIcon />} 
-                            color="primary"
                             variant="text"
+                            sx={{
+                              color: '#FFD700',
+                              '&:hover': {
+                                backgroundColor: 'rgba(255, 215, 0, 0.04)',
+                                color: '#FFC700'
+                              }
+                            }}
                           >
                             Détails
                           </Button>
