@@ -17,7 +17,7 @@ import ReservationModal from './components/ReservationModal';
 import Legend from './components/Legend';
 import FilterPanel from './components/FilterPanel';
 import LocalizationProvider from './providers/LocalizationProvider';
-import { Car, Reservation, ReservationStatus, FiltersState } from './types';
+import { Car, Reservation, ReservationStatus, FiltersState, SortState } from './types';
 import { getVoituresBySite } from './services/voitureService';
 import { getEmpruntsByMultipleVoituresAndDate } from './services/empruntService';
 import { getClesDisponiblesByVoiture, getAllLocalisations } from './services/cleLocalisationService';
@@ -55,6 +55,9 @@ const ReservationVoiturePage: React.FC = () => {
 
   // État d'ouverture du panneau de filtres
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
+  
+  // État de tri des colonnes du scheduler
+  const [sortState, setSortState] = useState<SortState>({ column: null, direction: null });
   
   // Nouveaux états pour les données du back-end
   const [cars, setCars] = useState<Car[]>([]);
@@ -345,7 +348,7 @@ const ReservationVoiturePage: React.FC = () => {
     setSelectedReservation(null);
   };
 
-  const handleSaveReservation = (reservation: Omit<Reservation, 'id'>) => {
+  const handleSaveReservation = () => {
     // Notifier le composant parent (la mise à jour réelle est gérée dans ReservationModal)
     // Recharger les réservations pour afficher les modifications
     fetchReservations();
@@ -359,6 +362,11 @@ const ReservationVoiturePage: React.FC = () => {
   // Gérer l'ouverture/fermeture du panneau de filtres
   const handleFilterPanelToggle = () => {
     setIsFilterPanelOpen(!isFilterPanelOpen);
+  };
+
+  // Gérer le changement de tri du scheduler
+  const handleSortChange = (newSortState: SortState) => {
+    setSortState(newSortState);
   };
 
   // Sélectionner les voitures à afficher
@@ -444,6 +452,8 @@ const ReservationVoiturePage: React.FC = () => {
                   cars={displayedCars}
                   reservations={reservations}
                   selectedDate={selectedDate}
+                  sortState={sortState}
+                  onSortChange={handleSortChange}
                   onSlotClick={handleSlotClick}
                   onReservationClick={handleReservationClick}
                 />

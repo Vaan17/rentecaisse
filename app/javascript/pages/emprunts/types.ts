@@ -97,6 +97,8 @@ export interface SchedulerProps {
   cars: Car[];
   reservations: Reservation[];
   selectedDate: Date;
+  sortState: SortState;
+  onSortChange: (sortState: SortState) => void;
   onSlotClick: (carId: number, time: Date) => void;
   onReservationClick?: (reservation: Reservation) => void;
 }
@@ -129,4 +131,21 @@ export interface SlotProps {
 export interface DateNavigatorProps {
   selectedDate: Date;
   onDateChange: (date: Date) => void;
+}
+
+// Types pour le système de tri des colonnes
+export type SortDirection = 'asc' | 'desc' | null;
+export type SortableColumn = 'name' | 'licensePlate'; // Extensible pour futures colonnes
+
+export interface SortState {
+  column: SortableColumn | null;
+  direction: SortDirection;
+}
+
+// Interface pour les props de l'en-tête triable
+export interface SortableColumnHeaderProps {
+  title: string;
+  sortKey: SortableColumn;
+  currentSort: SortState;
+  onSort: (column: SortableColumn) => void;
 } 

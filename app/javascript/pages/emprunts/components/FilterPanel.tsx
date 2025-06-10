@@ -281,6 +281,27 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ cars, filtersState, onFilters
                         min={0}
                         max={10}
                         step={1}
+                        sx={{
+                          color: '#FFD700',
+                          '& .MuiSlider-thumb': {
+                            backgroundColor: '#FFD700',
+                            '&:hover': {
+                              boxShadow: '0px 0px 0px 8px rgba(255, 215, 0, 0.16)',
+                            },
+                            '&:focus, &:active': {
+                              boxShadow: '0px 0px 0px 12px rgba(255, 215, 0, 0.16)',
+                            },
+                          },
+                          '& .MuiSlider-track': {
+                            backgroundColor: '#FFD700',
+                          },
+                          '& .MuiSlider-rail': {
+                            backgroundColor: 'rgba(255, 215, 0, 0.2)',
+                          },
+                          '& .MuiSlider-valueLabel': {
+                            backgroundColor: '#FFD700',
+                          },
+                        }}
                       />
                     </Grid>
                     <Grid item>
@@ -307,6 +328,27 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ cars, filtersState, onFilters
                         min={0}
                         max={6}
                         step={1}
+                        sx={{
+                          color: '#FFD700',
+                          '& .MuiSlider-thumb': {
+                            backgroundColor: '#FFD700',
+                            '&:hover': {
+                              boxShadow: '0px 0px 0px 8px rgba(255, 215, 0, 0.16)',
+                            },
+                            '&:focus, &:active': {
+                              boxShadow: '0px 0px 0px 12px rgba(255, 215, 0, 0.16)',
+                            },
+                          },
+                          '& .MuiSlider-track': {
+                            backgroundColor: '#FFD700',
+                          },
+                          '& .MuiSlider-rail': {
+                            backgroundColor: 'rgba(255, 215, 0, 0.2)',
+                          },
+                          '& .MuiSlider-valueLabel': {
+                            backgroundColor: '#FFD700',
+                          },
+                        }}
                       />
                     </Grid>
                     <Grid item>

@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Paper, Typography, Grid, Divider, Tooltip } from '@mui/material';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { format, addHours, startOfDay, endOfDay, differenceInMinutes, differenceInHours, isWithinInterval } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { SchedulerProps, TimeSlot, Reservation, ReservationStatus } from '../types';
+import { SchedulerProps, TimeSlot, Reservation, ReservationStatus, SortState, SortableColumn, SortableColumnHeaderProps } from '../types';
 
 // Fonction pour générer les créneaux horaires
 const generateTimeSlots = (date: Date): TimeSlot[] => {
@@ -56,6 +58,85 @@ const getStatusText = (status: ReservationStatus | null): string => {
     default:
       return 'Disponible';
   }
+};
+
+// Composant pour les en-têtes de colonnes triables
+const SortableColumnHeader: React.FC<SortableColumnHeaderProps> = ({ title, sortKey, currentSort, onSort }) => {
+  const isActive = currentSort.column === sortKey;
+  const direction = isActive ? currentSort.direction : null;
+
+  const getSortIcon = () => {
+    if (!isActive || direction === null) return null;
+    return direction === 'asc' ? <ArrowUpwardIcon fontSize="small" /> : <ArrowDownwardIcon fontSize="small" />;
+  };
+
+  const getTooltipText = () => {
+    if (!isActive || direction === null) return `Cliquer pour trier par ${title}`;
+    if (direction === 'asc') return `Tri croissant par ${title} - Cliquer pour tri décroissant`;
+    return `Tri décroissant par ${title} - Cliquer pour annuler le tri`;
+  };
+
+  const handleClick = () => {
+    onSort(sortKey);
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onSort(sortKey);
+    }
+  };
+
+  return (
+    <Tooltip title={getTooltipText()} arrow>
+      <Box 
+        sx={{ 
+          height: 40, 
+          display: 'flex', 
+          alignItems: 'center', 
+          pl: 1,
+          cursor: 'pointer',
+          userSelect: 'none',
+          '&:hover': {
+            backgroundColor: 'rgba(255, 215, 0, 0.08)',
+          },
+          borderRadius: 1,
+          transition: 'background-color 0.2s ease'
+        }}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        tabIndex={0}
+        role="button"
+        aria-sort={
+          !isActive || direction === null 
+            ? 'none' 
+            : direction === 'asc' 
+              ? 'ascending' 
+              : 'descending'
+        }
+      >
+        <Typography 
+          variant="subtitle2" 
+          sx={{ 
+            fontWeight: 'bold',
+            color: isActive ? '#FFD700' : 'inherit',
+            mr: 1
+          }}
+        >
+          {title}
+        </Typography>
+        <Box sx={{ 
+          color: '#FFD700',
+          display: 'flex',
+          alignItems: 'center',
+          transition: 'transform 0.2s ease',
+          transform: getSortIcon() ? 'scale(1)' : 'scale(0)',
+        }}>
+          {getSortIcon()}
+        </Box>
+      </Box>
+    </Tooltip>
+  );
 };
 
 // Interface pour une piste de réservation
@@ -328,7 +409,7 @@ const CarTimeline: React.FC<{
   );
 };
 
-const Scheduler: React.FC<SchedulerProps> = ({ cars, reservations, selectedDate, onSlotClick, onReservationClick }) => {
+const Scheduler: React.FC<SchedulerProps> = ({ cars, reservations, selectedDate, sortState, onSortChange, onSlotClick, onReservationClick }) => {
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   
   // Calculer le début et la fin de la journée
@@ -339,6 +420,53 @@ const Scheduler: React.FC<SchedulerProps> = ({ cars, reservations, selectedDate,
   useEffect(() => {
     setTimeSlots(generateTimeSlots(selectedDate));
   }, [selectedDate]);
+
+  // Fonction de tri des voitures
+  const sortedCars = useMemo(() => {
+    if (!sortState.column || !sortState.direction) {
+      return cars;
+    }
+
+    return [...cars].sort((a, b) => {
+      const aValue = (a[sortState.column!] || '').toString().toLowerCase();
+      const bValue = (b[sortState.column!] || '').toString().toLowerCase();
+      
+      const comparison = aValue.localeCompare(bValue, 'fr', { 
+        numeric: true,
+        sensitivity: 'base'
+      });
+      
+      return sortState.direction === 'asc' ? comparison : -comparison;
+    });
+  }, [cars, sortState]);
+
+  // Gestion du cycle de tri des colonnes
+  const handleColumnSort = (column: SortableColumn) => {
+    let newSortState: SortState;
+    
+    if (sortState.column !== column) {
+      // Nouvelle colonne : commencer par ascendant
+      newSortState = { column, direction: 'asc' };
+    } else {
+      // Même colonne : cycler les états
+      switch (sortState.direction) {
+        case null:
+          newSortState = { column, direction: 'asc' };
+          break;
+        case 'asc':
+          newSortState = { column, direction: 'desc' };
+          break;
+        case 'desc':
+          newSortState = { column: null, direction: null };
+          break;
+        default:
+          newSortState = { column: null, direction: null };
+          break;
+      }
+    }
+    
+    onSortChange(newSortState);
+  };
   
   // S'assurer que onReservationClick est défini
   const handleReservationClick = (reservation: Reservation) => {
@@ -358,16 +486,22 @@ const Scheduler: React.FC<SchedulerProps> = ({ cars, reservations, selectedDate,
         
         <Box sx={{ flex: 1, overflowY: 'auto' }}>
           <Grid container>
-            {/* En-tête des colonnes */}
+            {/* En-têtes des colonnes triables */}
             <Grid item xs={2}>
-              <Box sx={{ height: 40, display: 'flex', alignItems: 'center', fontWeight: 'bold', pl: 1 }}>
-                Voiture
-              </Box>
+              <SortableColumnHeader
+                title="Voiture"
+                sortKey="name"
+                currentSort={sortState}
+                onSort={handleColumnSort}
+              />
             </Grid>
             <Grid item xs={2}>
-              <Box sx={{ height: 40, display: 'flex', alignItems: 'center', fontWeight: 'bold', pl: 1 }}>
-                Immatriculation
-              </Box>
+              <SortableColumnHeader
+                title="Immatriculation"
+                sortKey="licensePlate"
+                currentSort={sortState}
+                onSort={handleColumnSort}
+              />
             </Grid>
             <Grid item xs={8}>
               <Box sx={{ 
@@ -433,8 +567,8 @@ const Scheduler: React.FC<SchedulerProps> = ({ cars, reservations, selectedDate,
               <Divider />
             </Grid>
             
-            {/* Lignes pour chaque voiture avec timeline */}
-            {cars.map((car) => (
+            {/* Lignes pour chaque voiture avec timeline (triées) */}
+            {sortedCars.map((car) => (
               <React.Fragment key={car.id}>
                 <CarTimeline
                   car={{
