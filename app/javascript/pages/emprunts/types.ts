@@ -59,6 +59,7 @@ export interface Location {
   nom_localisation: string;
   adresse: string;
   ville: string;
+  pays?: string;
 }
 
 // Type pour les passagers
@@ -149,4 +150,22 @@ export interface SortableColumnHeaderProps {
   sortKey: SortableColumn;
   currentSort: SortState;
   onSort: (column: SortableColumn) => void;
+}
+
+// Interface pour les props du sélecteur de passagers
+export interface PassengerSelectorProps {
+  passengers: Passenger[];
+  selectedPassengers: number[];
+  onChange: (selectedIds: number[]) => void;
+  maxCapacity: number;
+  disabled?: boolean;
+  excludeUserId?: number;
+}
+
+// Interface pour les props du sélecteur de localisation
+export interface LocationSelectorProps {
+  locations: Location[];
+  selectedLocationId: number | '';
+  onChange: (locationId: number | '') => void;
+  disabled?: boolean;
 } 

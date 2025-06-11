@@ -14,8 +14,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Chip,
-  OutlinedInput,
   SelectChangeEvent,
   Alert,
   Dialog as ConfirmDialog,
@@ -29,6 +27,8 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
 import { ReservationModalProps, ReservationStatus } from '../types';
 import { createEmprunt, updateEmprunt, deleteEmprunt, soumettreEmpruntPourValidation } from '../services/empruntService';
+import PassengerSelector from './PassengerSelector';
+import LocationSelector from './LocationSelector';
 
 const ReservationModal: React.FC<ReservationModalProps> = ({
   open,
@@ -157,14 +157,13 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
   };
   
   // Gérer le changement de la localisation
-  const handleLocationChange = (event: SelectChangeEvent<number | string>) => {
-    setSelectedLocationId(event.target.value as number);
+  const handleLocationChange = (locationId: number | '') => {
+    setSelectedLocationId(locationId);
   };
   
   // Gérer le changement des passagers
-  const handlePassengersChange = (event: SelectChangeEvent<number[]>) => {
-    const { value } = event.target;
-    setSelectedPassengers(typeof value === 'string' ? value.split(',').map(Number) : value);
+  const handlePassengersChange = (selectedIds: number[]) => {
+    setSelectedPassengers(selectedIds);
   };
 
   // Gérer la soumission du formulaire
@@ -464,65 +463,22 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
             </FormControl>
             
             {/* Sélection de localisation */}
-            <FormControl fullWidth disabled={isReadOnly}>
-              <InputLabel id="location-select-label">Destination</InputLabel>
-              <Select
-                labelId="location-select-label"
-                value={selectedLocationId}
-                onChange={handleLocationChange}
-                label="Destination"
-              >
-                <MenuItem value="">
-                  <em>Aucune</em>
-                </MenuItem>
-                {locations.map((location) => (
-                  <MenuItem key={location.id} value={location.id}>
-                    {location.nom_localisation} - {location.ville}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <LocationSelector
+              locations={locations}
+              selectedLocationId={selectedLocationId}
+              onChange={handleLocationChange}
+              disabled={isReadOnly}
+            />
             
             {/* Sélection de passagers */}
-            <FormControl fullWidth disabled={isReadOnly}>
-              <InputLabel id="passengers-select-label">
-                Passagers {car && `(${car.seats - 1} places max)`}
-              </InputLabel>
-              <Select
-                labelId="passengers-select-label"
-                multiple
-                value={selectedPassengers}
-                onChange={handlePassengersChange}
-                input={<OutlinedInput id="select-multiple-passengers" label="Passagers" />}
-                renderValue={(selected) => (
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                    {selected.map((passengerId) => {
-                      const passenger = passengers.find(p => p.id === passengerId);
-                      return (
-                        <Chip key={passengerId} label={passenger ? `${passenger.prenom} ${passenger.nom}` : `Passager ${passengerId}`} />
-                      );
-                    })}
-                  </Box>
-                )}
-              >
-                {passengers
-                  .filter(passenger => passenger.id !== userId) // Exclure le conducteur
-                  .map((passenger) => (
-                    <MenuItem 
-                      key={passenger.id} 
-                      value={passenger.id}
-                      disabled={selectedPassengers.length >= (car?.seats || 5) - 1 && !selectedPassengers.includes(passenger.id)}
-                    >
-                      {passenger.prenom} {passenger.nom} ({passenger.email})
-                    </MenuItem>
-                  ))}
-              </Select>
-              {car && selectedPassengers.length >= car.seats - 1 && (
-                <Typography variant="caption" color="warning.main" sx={{ mt: 1 }}>
-                  Capacité maximale atteinte ({car.seats} places total)
-                </Typography>
-              )}
-            </FormControl>
+            <PassengerSelector
+              passengers={passengers}
+              selectedPassengers={selectedPassengers}
+              onChange={handlePassengersChange}
+              maxCapacity={car ? car.seats - 1 : 4}
+              disabled={isReadOnly}
+              excludeUserId={userId}
+            />
           </Stack>
           
           {error && (
