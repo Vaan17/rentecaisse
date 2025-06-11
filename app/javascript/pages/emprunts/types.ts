@@ -43,6 +43,7 @@ export interface Reservation {
   cle_id?: number;
   liste_passager_id?: number;
   localisation_id?: number;
+  passagers?: Passenger[];
 }
 
 // Type pour les clés

@@ -28,4 +28,9 @@ export const getPassagersByListe = async (listeId: number): Promise<Utilisateur[
     console.error(`Erreur lors de la récupération des passagers de la liste ${listeId}:`, error);
     throw error;
   }
+};
+
+// Fonction utilitaire pour récupérer les passagers directement par leur ID de liste
+export const getPassagersByListeId = async (listeId: number): Promise<Utilisateur[]> => {
+  return getPassagersByListe(listeId);
 }; 

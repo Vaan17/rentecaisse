@@ -109,10 +109,11 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
         setDescription(existingReservation.description || '');
         setSelectedKeyId(existingReservation.cle_id || '');
         setSelectedLocationId(existingReservation.localisation_id || '');
-        // Récupérer les passagers si liste_passager_id est présent
-        if (existingReservation.liste_passager_id) {
-          // Idéalement, on chargerait les passagers depuis l'API
-          // Pour l'instant, on utilise un tableau vide
+        // Récupérer les passagers existants depuis la réponse API
+        if (existingReservation.passagers && existingReservation.passagers.length > 0) {
+          const passagerIds = existingReservation.passagers.map(p => p.id);
+          setSelectedPassengers(passagerIds);
+        } else {
           setSelectedPassengers([]);
         }
       } else {
@@ -184,6 +185,12 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
     }
 
     if (!validateDates(start, end)) {
+      return;
+    }
+
+    // Vérifier la capacité du véhicule
+    if (car && selectedPassengers.length + 1 > car.seats) {
+      setError(`Le nombre total d'occupants (${selectedPassengers.length + 1}) dépasse la capacité du véhicule (${car.seats} places)`);
       return;
     }
     
@@ -478,7 +485,9 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
             
             {/* Sélection de passagers */}
             <FormControl fullWidth disabled={isReadOnly}>
-              <InputLabel id="passengers-select-label">Passagers</InputLabel>
+              <InputLabel id="passengers-select-label">
+                Passagers {car && `(${car.seats - 1} places max)`}
+              </InputLabel>
               <Select
                 labelId="passengers-select-label"
                 multiple
@@ -496,12 +505,23 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
                   </Box>
                 )}
               >
-                {passengers.map((passenger) => (
-                  <MenuItem key={passenger.id} value={passenger.id}>
-                    {passenger.prenom} {passenger.nom} ({passenger.email})
-                  </MenuItem>
-                ))}
+                {passengers
+                  .filter(passenger => passenger.id !== userId) // Exclure le conducteur
+                  .map((passenger) => (
+                    <MenuItem 
+                      key={passenger.id} 
+                      value={passenger.id}
+                      disabled={selectedPassengers.length >= (car?.seats || 5) - 1 && !selectedPassengers.includes(passenger.id)}
+                    >
+                      {passenger.prenom} {passenger.nom} ({passenger.email})
+                    </MenuItem>
+                  ))}
               </Select>
+              {car && selectedPassengers.length >= car.seats - 1 && (
+                <Typography variant="caption" color="warning.main" sx={{ mt: 1 }}>
+                  Capacité maximale atteinte ({car.seats} places total)
+                </Typography>
+              )}
             </FormControl>
           </Stack>
           

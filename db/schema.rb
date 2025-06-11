@@ -79,11 +79,19 @@ ActiveRecord::Schema[7.2].define(version: 2025_06_03_095149) do
     t.check_constraint "site_web::text ~ '^(https?://)?(www.[a-zA-Z0-9]+.)+[a-zA-Z]{2,6}(/[^ ]*)?$'::text", name: "check_site_web"
   end
 
-  create_table "liste_passagers", force: :cascade do |t|
+  create_table "liste_passager_utilisateurs", force: :cascade do |t|
+    t.bigint "liste_passager_id", null: false
     t.bigint "utilisateur_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["liste_passager_id", "utilisateur_id"], name: "index_liste_passager_utilisateur_unique", unique: true
+    t.index ["liste_passager_id"], name: "index_liste_passager_utilisateurs_on_liste_passager_id"
+    t.index ["utilisateur_id"], name: "index_liste_passager_utilisateurs_on_utilisateur_id"
+  end
+
+  create_table "liste_passagers", force: :cascade do |t|
     t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
-    t.index ["utilisateur_id"], name: "index_liste_passagers_on_utilisateur_id"
   end
 
   create_table "localisations", force: :cascade do |t|
@@ -185,7 +193,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_06_03_095149) do
   add_foreign_key "emprunts", "localisations"
   add_foreign_key "emprunts", "utilisateurs", column: "utilisateur_demande_id"
   add_foreign_key "emprunts", "voitures"
-  add_foreign_key "liste_passagers", "utilisateurs"
+  add_foreign_key "liste_passager_utilisateurs", "liste_passagers"
+  add_foreign_key "liste_passager_utilisateurs", "utilisateurs"
   add_foreign_key "sites", "entreprises"
   add_foreign_key "utilisateurs", "entreprises"
   add_foreign_key "utilisateurs", "sites"

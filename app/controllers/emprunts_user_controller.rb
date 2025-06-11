@@ -61,49 +61,13 @@ class EmpruntsUserController < ApplicationController
         emprunts = Emprunt.where(voiture_id: voiture_id)
                         .where("(date_debut <= ? AND date_fin >= ?) OR (date_debut >= ? AND date_fin <= ?)", 
                               date_fin, date_debut, date_debut, date_fin)
-                        .includes(:utilisateur_demande) # Inclure les données de l'utilisateur demandeur
+                        .includes(:utilisateur_demande, liste_passager: :utilisateurs) # Inclure les données de l'utilisateur demandeur et passagers
         
         # Date actuelle pour vérifier si un emprunt est en cours
         now = DateTime.now
         
         # Transformer les emprunts au format attendu par le front
-        emprunts_formattees = emprunts.map do |emprunt|
-            status = if emprunt.statut_emprunt == "validé"
-                        # Vérifier si l'emprunt est en cours
-                        if now >= emprunt.date_debut && now <= emprunt.date_fin
-                            "en_cours"
-                        else
-                            "confirmed" 
-                        end
-                     elsif emprunt.statut_emprunt == "brouillon"
-                        "draft"
-                     elsif emprunt.statut_emprunt == "en_attente_validation"
-                        "pending_validation"
-                     elsif emprunt.statut_emprunt == "completed"
-                        "completed"
-                     else
-                        "empty"
-                     end
-            
-            # Récupérer les informations de l'utilisateur demandeur
-            utilisateur = emprunt.utilisateur_demande
-            
-            {
-                id: emprunt.id,
-                carId: emprunt.voiture_id,
-                startTime: emprunt.date_debut,
-                endTime: emprunt.date_fin,
-                status: status,
-                utilisateur_id: emprunt.utilisateur_demande_id,
-                utilisateur_nom: utilisateur&.nom,
-                utilisateur_prenom: utilisateur&.prenom,
-                nom_emprunt: emprunt.nom_emprunt,
-                description: emprunt.description,
-                cle_id: emprunt.cle_id,
-                liste_passager_id: emprunt.liste_passager_id,
-                localisation_id: emprunt.localisation_id
-            }
-        end
+        emprunts_formattees = emprunts.map { |emprunt| format_emprunt_response(emprunt) }
         
         render json: emprunts_formattees
     end
@@ -133,11 +97,11 @@ class EmpruntsUserController < ApplicationController
         voitures = Voiture.where(id: voiture_ids, entreprise_id: entreprise_id, site_id: site_id)
         voiture_ids_filtres = voitures.pluck(:id)
         
-        # Requête unique pour toutes les voitures
+        # Requête unique pour toutes les voitures avec les passagers
         emprunts = Emprunt.where(voiture_id: voiture_ids_filtres)
                           .where("(date_debut <= ? AND date_fin >= ?) OR (date_debut >= ? AND date_fin <= ?)", 
                                 date_fin, date_debut, date_debut, date_fin)
-                          .includes(:utilisateur_demande)
+                          .includes(:utilisateur_demande, liste_passager: :utilisateurs)
         
         # Date actuelle pour vérifier si un emprunt est en cours
         now = DateTime.now
@@ -164,6 +128,20 @@ class EmpruntsUserController < ApplicationController
             # Récupérer les informations de l'utilisateur demandeur
             utilisateur = emprunt.utilisateur_demande
             
+            # Récupérer les informations des passagers
+            passagers_info = if emprunt.liste_passager.present?
+                emprunt.liste_passager.utilisateurs.map do |passager|
+                    {
+                        id: passager.id,
+                        nom: passager.nom,
+                        prenom: passager.prenom,
+                        email: passager.email
+                    }
+                end
+            else
+                []
+            end
+            
             {
                 id: emprunt.id,
                 carId: emprunt.voiture_id,
@@ -177,7 +155,8 @@ class EmpruntsUserController < ApplicationController
                 description: emprunt.description,
                 cle_id: emprunt.cle_id,
                 liste_passager_id: emprunt.liste_passager_id,
-                localisation_id: emprunt.localisation_id
+                localisation_id: emprunt.localisation_id,
+                passagers: passagers_info
             }
         end
         
@@ -221,23 +200,32 @@ class EmpruntsUserController < ApplicationController
             updated_at: DateTime.now
         )
         
-        # Créer une liste de passagers si des passagers sont spécifiés
+        # Gérer les passagers avec la nouvelle structure
         if params[:passagers].present? && params[:passagers].any?
-            # Prendre le premier passager pour créer la liste
-            premier_passager_id = params[:passagers].first
+            # Filtrer les passagers pour exclure le conducteur
+            passagers_valides = params[:passagers].reject { |id| id.to_i == @current_user.id }
             
-            liste_passager = ListePassager.create!(
-                utilisateur_id: premier_passager_id,
-                created_at: DateTime.now,
-                updated_at: DateTime.now
-            )
-            
-            # Associer la liste de passagers à l'emprunt
-            emprunt.liste_passager_id = liste_passager.id
+            if passagers_valides.any?
+                # Vérifier la capacité du véhicule
+                voiture = Voiture.find(voiture_id)
+                nombre_total_occupants = 1 + passagers_valides.count # conducteur + passagers
+                
+                                 if nombre_total_occupants > voiture.nombre_places
+                     return render json: { 
+                         error: "Le nombre total d'occupants (#{nombre_total_occupants}) dépasse la capacité du véhicule (#{voiture.nombre_places} places)"
+                     }, status: :bad_request
+                end
+                
+                liste_passager = ListePassager.create_with_passagers(passagers_valides)
+                emprunt.liste_passager = liste_passager
+            end
         end
         
         if emprunt.save
-            render json: emprunt, status: :created
+            # Recharger avec les relations pour le formatage
+            emprunt.reload
+            emprunt = Emprunt.includes(:utilisateur_demande, liste_passager: :utilisateurs).find(emprunt.id)
+            render json: format_emprunt_response(emprunt), status: :created
         else
             render json: { error: emprunt.errors.full_messages }, status: :unprocessable_entity
         end
@@ -282,29 +270,44 @@ class EmpruntsUserController < ApplicationController
         emprunt.localisation_id = params[:localisation_id] if params[:localisation_id].present?
         emprunt.updated_at = DateTime.now
         
-        # Mettre à jour la liste des passagers si nécessaire
-        if params[:passagers].present? && params[:passagers].any?
-            # Supprimer l'ancienne liste si elle existe
-            if emprunt.liste_passager.present?
-                emprunt.liste_passager.destroy
+        # Mettre à jour la liste des passagers avec la nouvelle structure
+        if params.key?(:passagers)
+            Rails.logger.info "🚗 UPDATE PASSAGERS - Paramètres reçus: #{params[:passagers]}"
+            Rails.logger.info "🚗 UPDATE PASSAGERS - Passagers actuels: #{emprunt.passager_ids}"
+            
+            if params[:passagers].present?
+                # Filtrer les passagers pour exclure le conducteur
+                passagers_valides = params[:passagers].reject { |id| id.to_i == @current_user.id }
+                Rails.logger.info "🚗 UPDATE PASSAGERS - Passagers valides après filtrage: #{passagers_valides}"
+                
+                if passagers_valides.any?
+                    # Vérifier la capacité du véhicule
+                    nombre_total_occupants = 1 + passagers_valides.count # conducteur + passagers
+                    
+                                         if nombre_total_occupants > emprunt.voiture.nombre_places
+                         return render json: { 
+                             error: "Le nombre total d'occupants (#{nombre_total_occupants}) dépasse la capacité du véhicule (#{emprunt.voiture.nombre_places} places)"
+                         }, status: :bad_request
+                    end
+                    
+                    Rails.logger.info "🚗 UPDATE PASSAGERS - Appel mettre_a_jour_passagers avec: #{passagers_valides}"
+                    emprunt.mettre_a_jour_passagers(passagers_valides)
+                else
+                    Rails.logger.info "🚗 UPDATE PASSAGERS - Aucun passager valide, suppression de tous les passagers"
+                    emprunt.supprimer_tous_passagers
+                end
+            else
+                Rails.logger.info "🚗 UPDATE PASSAGERS - Paramètre passagers vide, suppression de tous les passagers"
+                emprunt.supprimer_tous_passagers
             end
             
-            # Prendre le premier passager pour créer la nouvelle liste
-            premier_passager_id = params[:passagers].first
-            
-            # Créer une nouvelle liste
-            liste_passager = ListePassager.create!(
-                utilisateur_id: premier_passager_id,
-                created_at: DateTime.now,
-                updated_at: DateTime.now
-            )
-            
-            # Associer la nouvelle liste à l'emprunt
-            emprunt.liste_passager_id = liste_passager.id
+            Rails.logger.info "🚗 UPDATE PASSAGERS - Passagers après modification: #{emprunt.reload.passager_ids}"
         end
         
         if emprunt.save
-            render json: emprunt
+            # Recharger avec les relations pour le formatage
+            emprunt = Emprunt.includes(:utilisateur_demande, liste_passager: :utilisateurs).find(emprunt.id)
+            render json: format_emprunt_response(emprunt)
         else
             render json: { error: emprunt.errors.full_messages }, status: :unprocessable_entity
         end
@@ -379,6 +382,60 @@ class EmpruntsUserController < ApplicationController
     end
     
     private
+    
+    # Formater la réponse d'un emprunt avec toutes les informations
+    def format_emprunt_response(emprunt)
+        
+        # Mapper le statut
+        status = case emprunt.statut_emprunt
+                 when "validé"
+                     now = DateTime.now
+                     if now >= emprunt.date_debut && now <= emprunt.date_fin
+                         "en_cours"
+                     else
+                         "confirmed" 
+                     end
+                 when "brouillon"
+                     "draft"
+                 when "en_attente_validation"  
+                     "pending_validation"
+                 when "completed"
+                     "completed"
+                 else
+                     "empty"
+                 end
+        
+        # Récupérer les informations des passagers
+        passagers_info = if emprunt.liste_passager.present?
+            emprunt.liste_passager.utilisateurs.map do |passager|
+                {
+                    id: passager.id,
+                    nom: passager.nom,
+                    prenom: passager.prenom,
+                    email: passager.email
+                }
+            end
+        else
+            []
+        end
+        
+        {
+            id: emprunt.id,
+            carId: emprunt.voiture_id,
+            startTime: emprunt.date_debut,
+            endTime: emprunt.date_fin,
+            status: status,
+            utilisateur_id: emprunt.utilisateur_demande_id,
+            utilisateur_nom: emprunt.utilisateur_demande&.nom,
+            utilisateur_prenom: emprunt.utilisateur_demande&.prenom,
+            nom_emprunt: emprunt.nom_emprunt,
+            description: emprunt.description,
+            cle_id: emprunt.cle_id,
+            liste_passager_id: emprunt.liste_passager_id,
+            localisation_id: emprunt.localisation_id,
+            passagers: passagers_info
+        }
+    end
     
     # Vérifier s'il y a des chevauchements avec d'autres emprunts
     def verifier_chevauchements(voiture_id, date_debut, date_fin, emprunt_id = nil)
