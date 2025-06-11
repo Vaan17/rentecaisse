@@ -199,8 +199,11 @@ class EmpruntsUserController < ApplicationController
             created_at: DateTime.now,
             updated_at: DateTime.now
         )
-        
-        # Gérer les passagers avec la nouvelle structure
+
+        # Créer toujours une liste de passagers vide
+        emprunt.creer_liste_passager_vide
+
+        # Gérer les passagers si fournis
         if params[:passagers].present? && params[:passagers].any?
             # Filtrer les passagers pour exclure le conducteur
             passagers_valides = params[:passagers].reject { |id| id.to_i == @current_user.id }
@@ -216,8 +219,8 @@ class EmpruntsUserController < ApplicationController
                      }, status: :bad_request
                 end
                 
-                liste_passager = ListePassager.create_with_passagers(passagers_valides)
-                emprunt.liste_passager = liste_passager
+                # Ajouter les passagers à la liste vide
+                emprunt.mettre_a_jour_passagers(passagers_valides)
             end
         end
         
@@ -293,15 +296,15 @@ class EmpruntsUserController < ApplicationController
                     Rails.logger.info "🚗 UPDATE PASSAGERS - Appel mettre_a_jour_passagers avec: #{passagers_valides}"
                     emprunt.mettre_a_jour_passagers(passagers_valides)
                 else
-                    Rails.logger.info "🚗 UPDATE PASSAGERS - Aucun passager valide, suppression de tous les passagers"
-                    emprunt.supprimer_tous_passagers
+                    Rails.logger.info "🚗 UPDATE PASSAGERS - Aucun passager valide, suppression de toutes les relations"
+                    emprunt.mettre_a_jour_passagers([])
                 end
             else
-                Rails.logger.info "🚗 UPDATE PASSAGERS - Paramètre passagers vide, suppression de tous les passagers"
-                emprunt.supprimer_tous_passagers
+                Rails.logger.info "🚗 UPDATE PASSAGERS - Paramètre passagers vide, suppression de toutes les relations"
+                emprunt.mettre_a_jour_passagers([])
             end
             
-            Rails.logger.info "🚗 UPDATE PASSAGERS - Passagers après modification: #{emprunt.reload.passager_ids}"
+            Rails.logger.info "🚗 UPDATE PASSAGERS - Passagers après modification: #{emprunt.passager_ids}"
         end
         
         if emprunt.save

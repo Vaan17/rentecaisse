@@ -24,69 +24,42 @@ class Emprunt < ApplicationRecord
   after_destroy :cleanup_liste_passager
 
   # Méthodes utiles pour gérer les passagers
-  def ajouter_passagers(passager_ids)
-    return if passager_ids.blank?
-    
-    transaction do
-      # Supprimer l'ancienne liste si elle existe
-      if liste_passager.present?
-        liste_passager.destroy
-      end
-      
-      # Créer une nouvelle liste avec les passagers
-      nouvelle_liste = ListePassager.create_with_passagers(passager_ids)
-      update!(liste_passager: nouvelle_liste)
-    end
+  def creer_liste_passager_vide
+    # Créer une nouvelle liste vide pour cet emprunt
+    nouvelle_liste = ListePassager.new
+    # Ne pas sauvegarder immédiatement pour éviter les saves intermédiaires
+    self.liste_passager = nouvelle_liste
+    Rails.logger.info "📋 CREATION_LISTE - Liste vide créée (sera sauvegardée avec l'emprunt)"
   end
   
   def mettre_a_jour_passagers(nouveaux_passager_ids)
-    Rails.logger.info "📝 METTRE_A_JOUR_PASSAGERS - Début avec nouveaux IDs: #{nouveaux_passager_ids}"
-    Rails.logger.info "📝 METTRE_A_JOUR_PASSAGERS - Passagers actuels: #{passager_ids}"
+    Rails.logger.info "🔄 UPDATE_PASSAGERS - Début avec nouveaux IDs: #{nouveaux_passager_ids}"
+    Rails.logger.info "🔄 UPDATE_PASSAGERS - Passagers actuels: #{passager_ids}"
     
-    return supprimer_tous_passagers if nouveaux_passager_ids.blank?
+    # S'assurer qu'une liste existe
+    creer_liste_passager_vide unless liste_passager.present?
     
-    if liste_passager.present?
-      Rails.logger.info "📝 METTRE_A_JOUR_PASSAGERS - Liste existante ID: #{liste_passager.id}"
-      
-      # Mettre à jour la liste existante
-      liste_passager.transaction do
-        # Supprimer les passagers qui ne sont plus dans la liste
-        passagers_a_retirer = liste_passager.passager_ids - nouveaux_passager_ids
-        Rails.logger.info "📝 METTRE_A_JOUR_PASSAGERS - Passagers à retirer: #{passagers_a_retirer}"
-        
-        passagers_a_retirer.each do |id| 
-          Rails.logger.info "📝 METTRE_A_JOUR_PASSAGERS - Retrait du passager ID: #{id}"
-          liste_passager.retirer_passager(id) 
-        end
-        
-        # Ajouter les nouveaux passagers
-        passagers_a_ajouter = nouveaux_passager_ids - liste_passager.passager_ids
-        Rails.logger.info "📝 METTRE_A_JOUR_PASSAGERS - Passagers à ajouter: #{passagers_a_ajouter}"
-        
-        passagers_a_ajouter.each do |id| 
-          Rails.logger.info "📝 METTRE_A_JOUR_PASSAGERS - Ajout du passager ID: #{id}"
-          liste_passager.ajouter_passager(id) 
-        end
+    # Pour une nouvelle liste, elle doit être sauvegardée avant d'ajouter des relations
+    if liste_passager.new_record?
+      liste_passager.save!(validate: false)
+      Rails.logger.info "🔄 UPDATE_PASSAGERS - Nouvelle liste sauvegardée ID: #{liste_passager.id}"
+    end
+    
+    # Supprimer toutes les relations existantes
+    if liste_passager.liste_passager_utilisateurs.any?
+      Rails.logger.info "🗑️ UPDATE_PASSAGERS - Suppression de toutes les relations existantes"
+      liste_passager.liste_passager_utilisateurs.destroy_all
+    end
+    
+    # Ajouter les nouvelles relations
+    if nouveaux_passager_ids.present?
+      Rails.logger.info "➕ UPDATE_PASSAGERS - Ajout des nouvelles relations: #{nouveaux_passager_ids}"
+      nouveaux_passager_ids.each do |passager_id|
+        liste_passager.liste_passager_utilisateurs.create!(utilisateur_id: passager_id)
       end
-      
-      Rails.logger.info "📝 METTRE_A_JOUR_PASSAGERS - Passagers finaux: #{liste_passager.reload.passager_ids}"
-    else
-      Rails.logger.info "📝 METTRE_A_JOUR_PASSAGERS - Aucune liste existante, création nouvelle"
-      ajouter_passagers(nouveaux_passager_ids)
     end
-  end
-  
-  def supprimer_tous_passagers
-    Rails.logger.info "🧹 SUPPRIMER_TOUS_PASSAGERS - Début"
     
-    if liste_passager.present?
-      Rails.logger.info "🧹 SUPPRIMER_TOUS_PASSAGERS - Liste existante ID: #{liste_passager.id}"
-      liste_passager.destroy
-      self.liste_passager_id = nil
-      Rails.logger.info "🧹 SUPPRIMER_TOUS_PASSAGERS - Liste supprimée et référence mise à nil"
-    else
-      Rails.logger.info "🧹 SUPPRIMER_TOUS_PASSAGERS - Aucune liste à supprimer"
-    end
+    Rails.logger.info "✅ UPDATE_PASSAGERS - Passagers finaux: #{liste_passager.passager_ids}"
   end
   
   def noms_passagers
@@ -129,29 +102,10 @@ class Emprunt < ApplicationRecord
   
   # Nettoyer la liste de passagers après suppression de l'emprunt
   def cleanup_liste_passager
-    # Récupérer l'ID de la liste avant que l'association soit rompue
-    liste_passager_id_to_check = liste_passager_id
-    
-    if liste_passager_id_to_check.present?
-      Rails.logger.info "Nettoyage de la liste de passagers #{liste_passager_id_to_check} pour l'emprunt #{id}"
-      
-      # Trouver la liste de passagers
-      liste_to_check = ListePassager.find_by(id: liste_passager_id_to_check)
-      
-      if liste_to_check.present?
-        # Vérifier si cette liste est utilisée par d'autres emprunts (l'emprunt actuel est déjà supprimé)
-        autres_emprunts = Emprunt.where(liste_passager_id: liste_passager_id_to_check)
-        
-        if autres_emprunts.empty?
-          # Cette liste n'est utilisée par aucun emprunt, on peut la supprimer
-          Rails.logger.info "Suppression de la liste de passagers #{liste_passager_id_to_check} - plus aucune référence"
-          liste_to_check.destroy
-        else
-          Rails.logger.info "Liste de passagers #{liste_passager_id_to_check} utilisée par #{autres_emprunts.count} autre(s) emprunt(s), conservation"
-        end
-      else
-        Rails.logger.info "Liste de passagers #{liste_passager_id_to_check} déjà supprimée"
-      end
+    if liste_passager.present?
+      Rails.logger.info "🧹 CLEANUP - Suppression de la liste de passagers #{liste_passager.id} pour l'emprunt #{id}"
+      liste_passager.destroy # Suppression en cascade des relations
+      Rails.logger.info "🧹 CLEANUP - Liste de passagers supprimée"
     end
   end
 end 

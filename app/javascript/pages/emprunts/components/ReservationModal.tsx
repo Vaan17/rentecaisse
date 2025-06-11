@@ -206,7 +206,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
         description: description,
         cle_id: selectedKeyId || undefined,
         localisation_id: selectedLocationId || undefined,
-        passagers: selectedPassengers.length > 0 ? selectedPassengers : undefined
+        passagers: selectedPassengers.length > 0 ? selectedPassengers : []
       };
       
       if (existingReservation) {
