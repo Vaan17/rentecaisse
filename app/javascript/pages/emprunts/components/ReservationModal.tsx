@@ -235,11 +235,15 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
       });
       
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur lors de la soumission de l\'emprunt:', error);
       if (error.response && error.response.status === 409) {
         // Code 409 Conflict - il y a un chevauchement
         setError('Ce véhicule est déjà réservé sur cette période. Veuillez choisir une autre période ou un autre véhicule.');
+      } else if (error.response && error.response.status === 422) {
+        // Code 422 Unprocessable Entity - erreur de validation (ex: aucune clé)
+        const errorMessage = error.response.data?.error || 'Erreur de validation';
+        setError(errorMessage);
       } else {
         setError('Une erreur est survenue lors de la soumission de l\'emprunt');
       }
