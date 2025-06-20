@@ -1,5 +1,5 @@
 class ClesController < ApplicationController
-  
+  before_action :verify_authentication
   # Récupérer les clés pour une voiture spécifique
   def fetch_by_voiture
     voiture_id = params[:voiture_id]
@@ -47,8 +47,6 @@ class ClesController < ApplicationController
     
     render json: cles
   end
-end 
-  before_action :verify_authentication
 
   def fetch_all
     entreprise_sites = Site.all.where(entreprise_id: @current_user.entreprise_id)
