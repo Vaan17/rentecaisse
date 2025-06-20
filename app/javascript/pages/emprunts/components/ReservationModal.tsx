@@ -10,11 +10,8 @@ import {
   Typography,
   Divider,
   Stack,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  SelectChangeEvent,
+
+
   Alert,
   Dialog as ConfirmDialog,
   DialogContent as ConfirmDialogContent,
@@ -39,7 +36,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
   endTime,
   onSave,
   userId,
-  keys = [],
+
   locations = [],
   passengers = [],
   existingReservation = null,
@@ -56,7 +53,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
   // États pour les nouveaux champs
   const [nomEmprunt, setNomEmprunt] = useState<string>('');
   const [description, setDescription] = useState<string>('');
-  const [selectedKeyId, setSelectedKeyId] = useState<number | ''>('');
+
   const [selectedLocationId, setSelectedLocationId] = useState<number | ''>('');
   const [selectedPassengers, setSelectedPassengers] = useState<number[]>([]);
   
@@ -97,10 +94,8 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
       // Réinitialiser les nouveaux champs
       if (existingReservation) {
         // Si on modifie un emprunt existant, pré-remplir les champs
-        setNomEmprunt(existingReservation.nom_emprunt || '');
+                setNomEmprunt(existingReservation.nom_emprunt || '');
         setDescription(existingReservation.description || '');
-
-        setSelectedKeyId(existingReservation.cle_id || '');
         setSelectedLocationId(existingReservation.localisation_id ? Number(existingReservation.localisation_id) : '');
         // Récupérer les passagers existants depuis la réponse API
         if (existingReservation.passagers && existingReservation.passagers.length > 0) {
@@ -113,7 +108,6 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
         // Sinon, réinitialiser
         setNomEmprunt('');
         setDescription('');
-        setSelectedKeyId('');
         setSelectedLocationId('');
         setSelectedPassengers([]);
       }
@@ -144,10 +138,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
     return true;
   };
   
-  // Gérer le changement de la clé
-  const handleKeyChange = (event: SelectChangeEvent<number | string>) => {
-    setSelectedKeyId(event.target.value as number);
-  };
+
   
   // Gérer le changement de la localisation
   const handleLocationChange = (locationId: number | '') => {
@@ -219,7 +210,6 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
         date_fin: dateFin,
         nom_emprunt: nomEmprunt,
         description: description,
-        cle_id: selectedKeyId || undefined,
         localisation_id: selectedLocationId ? Number(selectedLocationId) : undefined,
         passagers: selectedPassengers.length > 0 ? selectedPassengers : []
       };
@@ -240,7 +230,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
         status: ReservationStatus.DRAFT,
         nom_emprunt: nomEmprunt,
         description: description,
-        cle_id: selectedKeyId as number,
+
         localisation_id: selectedLocationId as number
       });
       
@@ -388,6 +378,32 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
               </Box>
             </Box>
           )}
+
+          {/* Informations sur la clé assignée */}
+          {existingReservation && existingReservation.cle_info && (
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
+                Clé assignée
+              </Typography>
+              <Box 
+                sx={{ 
+                  p: 2, 
+                  backgroundColor: 'grey.100', 
+                  borderRadius: 1
+                }}
+              >
+                <Typography variant="body2">
+                  <strong>Clé n° :</strong> {existingReservation.cle_info.id}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Statut :</strong> {existingReservation.cle_info.statut_cle}
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                  La clé est assignée automatiquement par le système
+                </Typography>
+              </Box>
+            </Box>
+          )}
           
           {isReadOnly && (
             <Alert severity="info" sx={{ mb: 2 }}>
@@ -458,26 +474,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
               views={['year', 'month', 'day', 'hours', 'minutes']}
             />
             
-            {/* Sélection de clé */}
-            <FormControl fullWidth disabled={isReadOnly}>
-              <InputLabel id="key-select-label">Clé</InputLabel>
-              <Select
-                labelId="key-select-label"
-                value={selectedKeyId}
-                onChange={handleKeyChange}
-                label="Clé"
-              >
-                <MenuItem value="">
-                  <em>Aucune</em>
-                </MenuItem>
 
-                {keys.map((key) => (
-                  <MenuItem key={key.id} value={key.id}>
-                    Clé {key.id} - {key.statut_cle}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
             
             {/* Sélection de localisation */}
             <LocationSelector

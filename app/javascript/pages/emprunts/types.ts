@@ -44,6 +44,10 @@ export interface Reservation {
   liste_passager_id?: number;
   localisation_id?: number;
   passagers?: Passenger[];
+  cle_info?: {
+    id: number;
+    statut_cle: string;
+  };
 }
 
 // Type pour les clés
@@ -87,7 +91,6 @@ export interface ReservationModalProps {
   endTime: Date | null;
   onSave: (reservation: Omit<Reservation, 'id'>) => void;
   userId: number;
-  keys?: CarKey[];
   locations?: Location[];
   passengers?: Passenger[];
   existingReservation?: Reservation | null;

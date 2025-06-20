@@ -19,9 +19,37 @@ class Emprunt < ApplicationRecord
   validate :date_fin_after_date_debut
   # Validation pour vérifier la capacité de la voiture
   validate :capacite_voiture_respectee
+  # Validation pour s'assurer que la voiture a des clés configurées
+  validate :voiture_has_keys, on: :create
   
   # Callbacks pour gérer les listes de passagers
   after_destroy :cleanup_liste_passager
+
+  # Méthodes utiles pour gérer les clés
+  def self.car_has_keys?(voiture_id)
+    Cle.where(voiture_id: voiture_id).exists?
+  end
+  
+  def self.find_primary_key_for_car(voiture_id)
+    # Chercher d'abord une clé PRIMAIRE
+    primary_key = Cle.where(voiture_id: voiture_id, statut_cle: 'PRIMAIRE').first
+    return primary_key if primary_key
+    
+    # Fallback : prendre la première clé disponible
+    Cle.where(voiture_id: voiture_id).first
+  end
+  
+  def assign_primary_key
+    return if cle_id.present? # Ne pas réassigner si déjà présent
+    
+    primary_key = self.class.find_primary_key_for_car(voiture_id)
+    if primary_key
+      self.cle_id = primary_key.id
+      Rails.logger.info "🔑 AUTO-ASSIGN - Clé #{primary_key.id} (#{primary_key.statut_cle}) assignée à l'emprunt"
+    else
+      Rails.logger.error "❌ AUTO-ASSIGN - Aucune clé trouvée pour la voiture #{voiture_id}"
+    end
+  end
 
   # Méthodes utiles pour gérer les passagers
   def creer_liste_passager_vide
@@ -98,6 +126,14 @@ class Emprunt < ApplicationRecord
          if nombre_total_occupants > voiture_obj.nombre_places
        errors.add(:base, "Le nombre total d'occupants (#{nombre_total_occupants}) dépasse la capacité du véhicule (#{voiture_obj.nombre_places} places)")
      end
+  end
+  
+  def voiture_has_keys
+    return unless voiture_id.present?
+    
+    unless self.class.car_has_keys?(voiture_id)
+      errors.add(:base, "Cette voiture n'a aucune clé configurée. L'administrateur doit créer au moins une clé avant de pouvoir créer des emprunts.")
+    end
   end
   
   # Nettoyer la liste de passagers après suppression de l'emprunt

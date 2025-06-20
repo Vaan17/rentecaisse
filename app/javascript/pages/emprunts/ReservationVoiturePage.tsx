@@ -20,7 +20,7 @@ import LocalizationProvider from './providers/LocalizationProvider';
 import { Car, Reservation, ReservationStatus, FiltersState, SortState } from './types';
 import { getVoituresBySite } from './services/voitureService';
 import { getEmpruntsByMultipleVoituresAndDate } from './services/empruntService';
-import { getClesDisponiblesByVoiture, getClesByVoiture, getAllLocalisations } from './services/cleLocalisationService';
+import { getAllLocalisations } from './services/cleLocalisationService';
 import { getUtilisateursBySite } from './services/passagerService';
 
 // Créer un thème par défaut pour useMediaQuery
@@ -62,7 +62,7 @@ const ReservationVoiturePage: React.FC = () => {
   // Nouveaux états pour les données du back-end
   const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [keys, setKeys] = useState<any[]>([]);
+
   const [locations, setLocations] = useState<any[]>([]);
   const [passengers, setPassengers] = useState<any[]>([]);
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
@@ -272,18 +272,6 @@ const ReservationVoiturePage: React.FC = () => {
     setSelectedReservation(null);
     setIsReadOnly(false);
     
-    // Charger les clés disponibles pour cette voiture
-    try {
-      const clesData = await getClesDisponiblesByVoiture(
-        carId,
-        time.toISOString(),
-        endTime.toISOString()
-      );
-      setKeys(clesData);
-    } catch (error) {
-      console.error('Erreur lors du chargement des clés:', error);
-    }
-    
     setModalOpen(true);
   };
   
@@ -312,15 +300,7 @@ const ReservationVoiturePage: React.FC = () => {
     const canEdit = isCreator && isDraft;
     setIsReadOnly(!canEdit);
     
-    // Charger les clés disponibles pour cette voiture
-    try {
-      // Pour un emprunt existant, charger toutes les clés de la voiture
-      // car nous devons inclure la clé déjà assignée
-      const clesData = await getClesByVoiture(reservation.carId);
-      setKeys(clesData);
-    } catch (error) {
-      console.error('Erreur lors du chargement des clés:', error);
-    }
+
     
     setModalOpen(true);
   };
@@ -455,7 +435,7 @@ const ReservationVoiturePage: React.FC = () => {
             endTime={selectedSlot?.endTime || null}
             onSave={handleSaveReservation}
             userId={userId}
-            keys={keys}
+
             locations={locations}
             passengers={passengers}
             existingReservation={selectedReservation}

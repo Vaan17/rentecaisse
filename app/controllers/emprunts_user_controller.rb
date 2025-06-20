@@ -97,11 +97,11 @@ class EmpruntsUserController < ApplicationController
         voitures = Voiture.where(id: voiture_ids, entreprise_id: entreprise_id, site_id: site_id)
         voiture_ids_filtres = voitures.pluck(:id)
         
-        # Requête unique pour toutes les voitures avec les passagers
+        # Requête unique pour toutes les voitures avec les passagers et clés
         emprunts = Emprunt.where(voiture_id: voiture_ids_filtres)
                           .where("(date_debut <= ? AND date_fin >= ?) OR (date_debut >= ? AND date_fin <= ?)", 
                                 date_fin, date_debut, date_debut, date_fin)
-                          .includes(:utilisateur_demande, liste_passager: :utilisateurs)
+                          .includes(:utilisateur_demande, :cle, liste_passager: :utilisateurs)
         
         # Date actuelle pour vérifier si un emprunt est en cours
         now = DateTime.now
@@ -142,6 +142,16 @@ class EmpruntsUserController < ApplicationController
                 []
             end
             
+            # Récupérer les informations de la clé assignée
+            cle_info = if emprunt.cle.present?
+                {
+                    id: emprunt.cle.id,
+                    statut_cle: emprunt.cle.statut_cle
+                }
+            else
+                nil
+            end
+            
             {
                 id: emprunt.id,
                 carId: emprunt.voiture_id,
@@ -156,7 +166,8 @@ class EmpruntsUserController < ApplicationController
                 cle_id: emprunt.cle_id,
                 liste_passager_id: emprunt.liste_passager_id,
                 localisation_id: emprunt.localisation_id,
-                passagers: passagers_info
+                passagers: passagers_info,
+                cle_info: cle_info
             }
         end
         
@@ -185,6 +196,13 @@ class EmpruntsUserController < ApplicationController
             }, status: :conflict
         end
         
+        # Vérifier que la voiture a des clés configurées
+        unless Emprunt.car_has_keys?(voiture_id)
+            return render json: { 
+                error: "Impossible de créer un emprunt pour cette voiture. Aucune clé n'a été configurée. Veuillez contacter l'administrateur."
+            }, status: :unprocessable_entity
+        end
+
         # Créer un nouvel emprunt avec le statut "brouillon"
         emprunt = Emprunt.new(
             voiture_id: voiture_id,
@@ -194,11 +212,14 @@ class EmpruntsUserController < ApplicationController
             description: params[:description],
             statut_emprunt: "brouillon",
             utilisateur_demande_id: @current_user.id,
-            cle_id: params[:cle_id],
             localisation_id: params[:localisation_id],
             created_at: DateTime.now,
             updated_at: DateTime.now
         )
+
+        # Assigner automatiquement une clé
+        Rails.logger.info "🔑 CRÉATION EMPRUNT - Recherche clé pour voiture #{voiture_id}"
+        emprunt.assign_primary_key
 
         # Créer toujours une liste de passagers vide
         emprunt.creer_liste_passager_vide
@@ -227,7 +248,7 @@ class EmpruntsUserController < ApplicationController
         if emprunt.save
             # Recharger avec les relations pour le formatage
             emprunt.reload
-            emprunt = Emprunt.includes(:utilisateur_demande, liste_passager: :utilisateurs).find(emprunt.id)
+            emprunt = Emprunt.includes(:utilisateur_demande, :cle, liste_passager: :utilisateurs).find(emprunt.id)
             render json: format_emprunt_response(emprunt), status: :created
         else
             render json: { error: emprunt.errors.full_messages }, status: :unprocessable_entity
@@ -264,14 +285,15 @@ class EmpruntsUserController < ApplicationController
             end
         end
         
-        # Mettre à jour les champs de l'emprunt
+        # Mettre à jour les champs de l'emprunt (la clé est préservée automatiquement)
         emprunt.date_debut = params[:date_debut] if params[:date_debut].present?
         emprunt.date_fin = params[:date_fin] if params[:date_fin].present?
         emprunt.nom_emprunt = params[:nom_emprunt] if params[:nom_emprunt].present?
         emprunt.description = params[:description] if params[:description].present?
-        emprunt.cle_id = params[:cle_id] if params[:cle_id].present?
         emprunt.localisation_id = params[:localisation_id] if params.key?(:localisation_id)
         emprunt.updated_at = DateTime.now
+        
+        Rails.logger.info "🔑 MODIFICATION EMPRUNT - Clé préservée: #{emprunt.cle_id}"
         
         # Mettre à jour la liste des passagers avec la nouvelle structure
         if params.key?(:passagers)
@@ -309,7 +331,7 @@ class EmpruntsUserController < ApplicationController
         
         if emprunt.save
             # Recharger avec les relations pour le formatage
-            emprunt = Emprunt.includes(:utilisateur_demande, liste_passager: :utilisateurs).find(emprunt.id)
+            emprunt = Emprunt.includes(:utilisateur_demande, :cle, liste_passager: :utilisateurs).find(emprunt.id)
             render json: format_emprunt_response(emprunt)
         else
             render json: { error: emprunt.errors.full_messages }, status: :unprocessable_entity
@@ -422,6 +444,16 @@ class EmpruntsUserController < ApplicationController
             []
         end
         
+        # Récupérer les informations de la clé assignée
+        cle_info = if emprunt.cle.present?
+            {
+                id: emprunt.cle.id,
+                statut_cle: emprunt.cle.statut_cle
+            }
+        else
+            nil
+        end
+        
         {
             id: emprunt.id,
             carId: emprunt.voiture_id,
@@ -436,7 +468,8 @@ class EmpruntsUserController < ApplicationController
             cle_id: emprunt.cle_id,
             liste_passager_id: emprunt.liste_passager_id,
             localisation_id: emprunt.localisation_id,
-            passagers: passagers_info
+            passagers: passagers_info,
+            cle_info: cle_info
         }
     end
     
