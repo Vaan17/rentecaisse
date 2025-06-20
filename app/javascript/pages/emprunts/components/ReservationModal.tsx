@@ -74,23 +74,12 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
   // Vérifier si l'emprunt peut être soumis pour validation (appartient à l'utilisateur et est en brouillon)
   const canSubmitForValidation = canEdit;
   
-  // Logger les informations pour le débogage
-  useEffect(() => {
-    if (existingReservation) {
-      console.log('Vérification des permissions dans ReservationModal:', {
-        'ID utilisateur connecté': userId,
-        'ID utilisateur de l\'emprunt': existingReservation.utilisateur_id,
-        'Peut supprimer?': canDelete,
-        'Peut éditer?': canEdit,
-        'Est en lecture seule?': isReadOnly,
-        'Statut de l\'emprunt': existingReservation.status
-      });
-    }
-  }, [existingReservation, userId, canDelete, canEdit, isReadOnly]);
+
 
   // Mettre à jour les états lorsque les props changent
   useEffect(() => {
     if (open) {
+      
       // Réinitialiser les champs de base
       setStart(startTime ? dayjs(startTime) : null);
       
@@ -110,8 +99,9 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
         // Si on modifie un emprunt existant, pré-remplir les champs
         setNomEmprunt(existingReservation.nom_emprunt || '');
         setDescription(existingReservation.description || '');
+
         setSelectedKeyId(existingReservation.cle_id || '');
-        setSelectedLocationId(existingReservation.localisation_id || '');
+        setSelectedLocationId(existingReservation.localisation_id ? Number(existingReservation.localisation_id) : '');
         // Récupérer les passagers existants depuis la réponse API
         if (existingReservation.passagers && existingReservation.passagers.length > 0) {
           const passagerIds = existingReservation.passagers.map(p => p.id);
@@ -166,9 +156,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
 
   // Gérer l'ouverture du modal d'ajout de localisation
   const handleAddLocationOpen = () => {
-    console.log('=== OUVERTURE MODAL LOCALISATION ===');
     setAddLocationModalOpen(true);
-    console.log('addLocationModalOpen mis à true');
   };
 
   // Gérer la fermeture du modal d'ajout de localisation
@@ -232,7 +220,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
         nom_emprunt: nomEmprunt,
         description: description,
         cle_id: selectedKeyId || undefined,
-        localisation_id: selectedLocationId || undefined,
+        localisation_id: selectedLocationId ? Number(selectedLocationId) : undefined,
         passagers: selectedPassengers.length > 0 ? selectedPassengers : []
       };
       
@@ -482,6 +470,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
                 <MenuItem value="">
                   <em>Aucune</em>
                 </MenuItem>
+
                 {keys.map((key) => (
                   <MenuItem key={key.id} value={key.id}>
                     Clé {key.id} - {key.statut_cle}

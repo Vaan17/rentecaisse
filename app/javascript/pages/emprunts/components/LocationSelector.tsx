@@ -66,39 +66,9 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
 
   return (
     <FormControl fullWidth disabled={disabled}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-        <InputLabel shrink>
-          Destination
-        </InputLabel>
-        {showAddButton && onAddLocation && (
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={() => {
-              console.log('=== BOUTON AJOUTER CLIQUÉ ===');
-              console.log('onAddLocation function:', onAddLocation);
-              if (onAddLocation) {
-                console.log('Appel de onAddLocation...');
-                onAddLocation();
-              } else {
-                console.error('onAddLocation n\'est pas défini !');
-              }
-            }}
-            disabled={disabled}
-            startIcon={<AddLocationIcon />}
-            sx={{
-              borderColor: '#FFD700',
-              color: '#FFD700',
-              '&:hover': {
-                borderColor: '#FFC700',
-                backgroundColor: 'rgba(255, 215, 0, 0.1)'
-              }
-            }}
-          >
-            Ajouter
-          </Button>
-        )}
-      </Box>
+      <InputLabel shrink sx={{ position: 'relative', transform: 'none', mb: 1 }}>
+        Destination
+      </InputLabel>
       
       <Box sx={{ mt: 1 }}>
         {/* Champ de recherche */}
@@ -126,6 +96,29 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
           }}
           sx={{ mb: 1 }}
         />
+
+        {/* Bouton d'ajout de localisation */}
+        {showAddButton && onAddLocation && (
+          <Button
+            fullWidth
+            variant="outlined"
+            size="small"
+            onClick={onAddLocation}
+            disabled={disabled}
+            startIcon={<AddLocationIcon />}
+            sx={{
+              mb: 2,
+              borderColor: '#FFD700',
+              color: '#FFD700',
+              '&:hover': {
+                borderColor: '#FFC700',
+                backgroundColor: 'rgba(255, 215, 0, 0.1)'
+              }
+            }}
+          >
+            Ajouter une nouvelle destination
+          </Button>
+        )}
 
         {/* Affichage de la localisation sélectionnée */}
         {selectedLocation && (

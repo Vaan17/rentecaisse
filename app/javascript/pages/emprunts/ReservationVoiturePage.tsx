@@ -20,7 +20,7 @@ import LocalizationProvider from './providers/LocalizationProvider';
 import { Car, Reservation, ReservationStatus, FiltersState, SortState } from './types';
 import { getVoituresBySite } from './services/voitureService';
 import { getEmpruntsByMultipleVoituresAndDate } from './services/empruntService';
-import { getClesDisponiblesByVoiture, getAllLocalisations } from './services/cleLocalisationService';
+import { getClesDisponiblesByVoiture, getClesByVoiture, getAllLocalisations } from './services/cleLocalisationService';
 import { getUtilisateursBySite } from './services/passagerService';
 
 // Créer un thème par défaut pour useMediaQuery
@@ -75,14 +75,12 @@ const ReservationVoiturePage: React.FC = () => {
     if (storedUser) {
       try {
         const user = JSON.parse(storedUser);
-        console.log('ID utilisateur récupéré du localStorage:', user.id);
         return user.id;
       } catch (e) {
         console.error('Erreur lors de la récupération de l\'ID utilisateur:', e);
       }
     }
-    console.warn('Aucun utilisateur trouvé dans le localStorage, utilisation de la valeur par défaut');
-    return 1; // Valeur par défaut pour le développement
+    return 1; // Valeur par défaut
   });
 
   // Mettre à jour l'ID utilisateur si le localStorage change
@@ -92,7 +90,6 @@ const ReservationVoiturePage: React.FC = () => {
       if (storedUser) {
         try {
           const user = JSON.parse(storedUser);
-          console.log('ID utilisateur mis à jour depuis le localStorage:', user.id);
           setUserId(user.id);
         } catch (e) {
           console.error('Erreur lors de la mise à jour de l\'ID utilisateur:', e);
@@ -291,7 +288,7 @@ const ReservationVoiturePage: React.FC = () => {
   };
   
   // Gérer le clic sur une réservation existante
-  const handleReservationClick = (reservation: Reservation) => {
+  const handleReservationClick = async (reservation: Reservation) => {
     // Ne pas modifier selectedCar
     const car = cars.find(c => c.id === reservation.carId) || null;
     setModalCar(car);
@@ -309,16 +306,6 @@ const ReservationVoiturePage: React.FC = () => {
     
     // Vérifier le statut de l'emprunt
     const isDraft = reservation.status === ReservationStatus.DRAFT;
-    const isPendingValidation = reservation.status === ReservationStatus.PENDING_VALIDATION;
-    
-    console.log('Vérification de propriété de l\'emprunt:', {
-      'ID utilisateur connecté': userId,
-      'ID utilisateur de l\'emprunt': reservation.utilisateur_id,
-      'Est créateur?': isCreator,
-      'Est brouillon?': isDraft,
-      'Est en attente de validation?': isPendingValidation,
-      'Statut de l\'emprunt': reservation.status
-    });
     
     // L'utilisateur peut modifier l'emprunt seulement s'il en est le créateur ET si l'emprunt est en brouillon
     // Pour le statut "En attente de validation", l'utilisateur ne peut pas modifier mais peut voir les détails
@@ -327,13 +314,10 @@ const ReservationVoiturePage: React.FC = () => {
     
     // Charger les clés disponibles pour cette voiture
     try {
-      getClesDisponiblesByVoiture(
-        reservation.carId,
-        new Date(reservation.startTime).toISOString(),
-        new Date(reservation.endTime).toISOString()
-      ).then(clesData => {
-        setKeys(clesData);
-      });
+      // Pour un emprunt existant, charger toutes les clés de la voiture
+      // car nous devons inclure la clé déjà assignée
+      const clesData = await getClesByVoiture(reservation.carId);
+      setKeys(clesData);
     } catch (error) {
       console.error('Erreur lors du chargement des clés:', error);
     }

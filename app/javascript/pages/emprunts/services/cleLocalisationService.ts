@@ -79,34 +79,12 @@ export const getLocalisation = async (id: number): Promise<Localisation> => {
 };
 
 // Créer une nouvelle localisation
-export const createLocalisation = async (data: Omit<Localisation, 'id' | 'created_at' | 'updated_at'>): Promise<Localisation> => {
+export const createLocalisation = async (data: Partial<Omit<Localisation, 'id' | 'created_at' | 'updated_at'>>): Promise<Localisation> => {
   try {
-    console.log('=== SERVICE createLocalisation ===');
-    console.log('URL:', '/api/localisations');
-    console.log('Données à envoyer:', data);
-    
     const response = await axiosSecured.post('/api/localisations', data);
-    
-    console.log('Réponse reçue - Status:', response.status);
-    console.log('Réponse reçue - Data:', response.data);
-    console.log('=== FIN SERVICE ===');
-    
     return response.data;
   } catch (error) {
-    console.error('=== ERREUR SERVICE createLocalisation ===');
-    console.error('Erreur complète:', error);
-    console.error('URL tentée:', '/api/localisations');
-    console.error('Données envoyées:', data);
-    if (error.response) {
-      console.error('Status de la réponse:', error.response.status);
-      console.error('Données de la réponse d\'erreur:', error.response.data);
-      console.error('Headers de la réponse:', error.response.headers);
-    } else if (error.request) {
-      console.error('Aucune réponse reçue:', error.request);
-    } else {
-      console.error('Erreur de configuration:', error.message);
-    }
-    console.error('=== FIN ERREUR SERVICE ===');
+    console.error('Erreur lors de la création de la localisation:', error);
     throw error;
   }
 }; 

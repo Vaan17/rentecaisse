@@ -270,7 +270,7 @@ class EmpruntsUserController < ApplicationController
         emprunt.nom_emprunt = params[:nom_emprunt] if params[:nom_emprunt].present?
         emprunt.description = params[:description] if params[:description].present?
         emprunt.cle_id = params[:cle_id] if params[:cle_id].present?
-        emprunt.localisation_id = params[:localisation_id] if params[:localisation_id].present?
+        emprunt.localisation_id = params[:localisation_id] if params.key?(:localisation_id)
         emprunt.updated_at = DateTime.now
         
         # Mettre à jour la liste des passagers avec la nouvelle structure

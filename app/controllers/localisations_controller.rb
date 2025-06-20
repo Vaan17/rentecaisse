@@ -29,16 +29,20 @@ class LocalisationsController < ApplicationController
       return render json: { error: "Les champs nom, adresse et ville sont requis" }, status: :bad_request
     end
     
-    # Créer la localisation
-    localisation = Localisation.new(
+    # Créer la localisation avec les paramètres fournis
+    localisation_params = {
       nom_localisation: params[:nom_localisation],
       adresse: params[:adresse],
-      code_postal: params[:code_postal],
       ville: params[:ville],
-      pays: params[:pays] || 'France',
-      email: params[:email],
-      site_web: params[:site_web]
-    )
+      pays: params[:pays] || 'France'
+    }
+    
+    # Ajouter les paramètres optionnels seulement s'ils sont présents
+    localisation_params[:code_postal] = params[:code_postal] if params[:code_postal].present?
+    localisation_params[:email] = params[:email] if params[:email].present?
+    localisation_params[:site_web] = params[:site_web] if params[:site_web].present?
+    
+    localisation = Localisation.new(localisation_params)
     
     if localisation.save
       render json: localisation, status: :created

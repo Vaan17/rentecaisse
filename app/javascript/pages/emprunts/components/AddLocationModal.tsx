@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { Button, IconButton, Modal } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Button, IconButton, Modal, Alert } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { Flex } from '../../../components/style/flex';
 import styled from 'styled-components';
@@ -53,12 +53,22 @@ const schema = Yup.object().shape({
     ville: Yup.string().required("La ville est requise"),
     pays: Yup.string(),
     code_postal: Yup.string(),
-    email: Yup.string().email("Email invalide").when('$email', (email, schema) => 
-        email ? schema.required() : schema
-    ),
-    site_web: Yup.string().url("URL invalide").when('$site_web', (site_web, schema) => 
-        site_web ? schema.required() : schema
-    )
+    email: Yup.string()
+        .transform((value, originalValue) => originalValue === '' ? null : value)
+        .nullable()
+        .email("Email invalide"),
+    site_web: Yup.string()
+        .transform((value, originalValue) => {
+            // Transformer les chaînes vides en null
+            if (!originalValue || originalValue.trim() === '') return null;
+            // Ajouter http:// si pas de protocole
+            if (originalValue && !originalValue.match(/^https?:\/\//)) {
+                return `https://${originalValue}`;
+            }
+            return originalValue;
+        })
+        .nullable()
+        .url("URL invalide (ex: https://example.com)")
 });
 
 const AddLocationModal: React.FC<AddLocationModalProps> = ({
@@ -66,6 +76,9 @@ const AddLocationModal: React.FC<AddLocationModalProps> = ({
     onClose,
     onLocationAdded
 }) => {
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+    
     const methods = useForm({
         resolver: yupResolver(schema),
         defaultValues: {
@@ -90,6 +103,7 @@ const AddLocationModal: React.FC<AddLocationModalProps> = ({
                 email: '',
                 site_web: ''
             });
+            setError(null);
         }
     }, [open, methods]);
 
@@ -99,24 +113,24 @@ const AddLocationModal: React.FC<AddLocationModalProps> = ({
     };
 
     const onSubmit = async (values: any) => {
-        console.log('=== DÉBUT CRÉATION LOCALISATION ===');
-        console.log('Valeurs du formulaire:', values);
+        setError(null);
+        setLoading(true);
         
         try {
             // Nettoyer les valeurs vides pour les champs optionnels
-            const cleanedValues = {
-                ...values,
-                code_postal: values.code_postal || undefined,
-                email: values.email || undefined,
-                site_web: values.site_web || undefined
+            const cleanedValues: any = {
+                nom_localisation: values.nom_localisation,
+                adresse: values.adresse,
+                ville: values.ville,
+                pays: values.pays || 'France'
             };
-
-            console.log('Valeurs nettoyées à envoyer:', cleanedValues);
-            console.log('Appel de createLocalisation...');
+            
+            // Ajouter les champs optionnels seulement s'ils ont une valeur
+            if (values.code_postal) cleanedValues.code_postal = values.code_postal;
+            if (values.email) cleanedValues.email = values.email;
+            if (values.site_web) cleanedValues.site_web = values.site_web;
             
             const newLocation = await createLocalisation(cleanedValues);
-            
-            console.log('Réponse du serveur:', newLocation);
             
             // Convertir la réponse au format attendu par l'interface Location
             const location: Location = {
@@ -127,15 +141,24 @@ const AddLocationModal: React.FC<AddLocationModalProps> = ({
                 pays: newLocation.pays
             };
 
-            console.log('Localisation formatée:', location);
             onLocationAdded(location);
             handleClose();
-        } catch (error) {
-            console.error('=== ERREUR CRÉATION LOCALISATION ===');
-            console.error('Erreur complète:', error);
-            console.error('Réponse du serveur:', error.response?.data);
-            console.error('Status:', error.response?.status);
-            console.error('=== FIN ERREUR ===');
+        } catch (error: any) {
+            // Définir un message d'erreur pour l'utilisateur
+            if (error.response?.data?.error) {
+                // Si c'est un tableau d'erreurs, les joindre
+                if (Array.isArray(error.response.data.error)) {
+                    setError(error.response.data.error.join(', '));
+                } else {
+                    setError(error.response.data.error);
+                }
+            } else if (error.response?.status === 422) {
+                setError("Les données fournies sont invalides. Veuillez vérifier les champs.");
+            } else {
+                setError("Une erreur est survenue lors de la création de la destination.");
+            }
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -155,6 +178,11 @@ const AddLocationModal: React.FC<AddLocationModalProps> = ({
                         </IconButton>
                     </ModalHeader>
                     <ModalBody>
+                        {error && (
+                            <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2 }}>
+                                {error}
+                            </Alert>
+                        )}
                         <FText name="nom_localisation" label="Nom de la destination" />
                         <FText name="adresse" label="Adresse" />
                         <FText name="ville" label="Ville" />
@@ -166,6 +194,7 @@ const AddLocationModal: React.FC<AddLocationModalProps> = ({
                     <ModalFooter fullWidth directionReverse gap>
                         <Button 
                             variant="contained" 
+                            disabled={loading}
                             sx={{
                                 backgroundColor: '#FFD700',
                                 color: '#272727',
@@ -175,7 +204,7 @@ const AddLocationModal: React.FC<AddLocationModalProps> = ({
                             }}
                             onClick={methods.handleSubmit(onSubmit)}
                         >
-                            Créer la destination
+                            {loading ? 'Création en cours...' : 'Créer la destination'}
                         </Button>
                         <Button variant="text" color="primary" onClick={handleClose}>
                             Annuler
