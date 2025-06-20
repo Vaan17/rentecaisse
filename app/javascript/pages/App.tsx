@@ -36,6 +36,7 @@ import CancellationAccountDeletion from './CancellationAccountDeletion'
 import AdminSites from "./admin/AdminSites.tsx"
 import AdminUtilisateurs from "./admin/AdminUtilisateurs.tsx"
 import AdminCles from "./admin/AdminCles.tsx"
+import ReservationVoiturePage from './emprunts/ReservationVoiturePage'
 
 const AppContainer = styled.div`
 	width: 100vw;
@@ -118,6 +119,8 @@ const App = () => {
 												<Route path="/voitures" element={<Voitures />} />
 												<Route path="/voitures/:id" element={<VoitureDetails />} />
 												<Route path="/profile" element={<Profile />} />
+
+												<Route path="/emprunts" element={<ReservationVoiturePage />} />
 												{/* Routes admin */}
 												<Route path="/admin/utilisateurs" element={<AdminUtilisateurs />} />
 												<Route path="/admin/voitures" element={<AdminVoitures />} />

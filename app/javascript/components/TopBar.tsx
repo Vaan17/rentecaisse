@@ -106,8 +106,9 @@ const TopBar = () => {
 			const response = await axiosSecured.get("/api/authenticated-page");
 			if (response.status === 200) {
 				const data = response.data;
-				if (data.success) {
+				if (data.success && data.user) {
 					setUserInfo(data.user);
+					localStorage.setItem('user', JSON.stringify(data.user));
 				}
 			}
 		} catch (error) {

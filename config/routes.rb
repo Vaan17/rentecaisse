@@ -44,6 +44,23 @@ Rails.application.routes.draw do
   post "/api/voitures" => "voitures#create"
   put "/api/voitures" => "voitures#update"
   delete "/api/voitures/:id" => "voitures#delete"
+  get "/api/voitures/site/:user_id" => "voitures#fetch_voitures_site"
+
+  # Routes pour les clés
+  get "/api/cles" => "cles#fetch_all"
+  get "/api/cles/voiture/:voiture_id" => "cles#fetch_by_voiture"
+  get "/api/cles/disponibles/voiture/:voiture_id" => "cles#fetch_disponibles_by_voiture"
+
+  # Routes pour les localisations
+  get "/api/localisations" => "localisations#fetch_all"
+  get "/api/localisations/:id" => "localisations#fetch"
+  post "/api/localisations" => "localisations#create"
+  put "/api/localisations/:id" => "localisations#update"
+  delete "/api/localisations/:id" => "localisations#destroy"
+
+  # Routes pour les listes de passagers
+  get "/api/utilisateurs/site/:user_id" => "liste_passager#fetch_utilisateurs_site"
+  get "/api/passagers/liste/:liste_id" => "liste_passager#fetch_passagers_liste"
 
   # Routes pour les clés
   get "/api/cles" => "cles#fetch_all"
@@ -62,8 +79,15 @@ Rails.application.routes.draw do
 
   # Routes pour les emprunts
   get "/api/emprunts" => "emprunts_user#get_emprunts_users"
-  get "/api/emprunts/:id", to: "emprunts_user#get_emprunts_user_by_id"
-
+  get '/api/emprunts/multiple_voitures', to: 'emprunts_user#get_emprunts_par_multiple_voitures'
+  get '/api/emprunts/voiture/:voiture_id', to: 'emprunts_user#get_emprunts_par_voiture'
+  get '/api/emprunts/:id', to: 'emprunts_user#get_emprunts_user_by_id'
+  post '/api/emprunts', to: 'emprunts_user#create'
+  put '/api/emprunts/:id', to: 'emprunts_user#update'
+  delete '/api/emprunts/:id', to: 'emprunts_user#destroy'
+  post '/api/emprunts/:id/valider', to: 'emprunts_user#valider'
+  post '/api/emprunts/:id/soumettre_validation', to: 'emprunts_user#soumettre_validation'
+  
   # Routes pour la gestion de suppression de compte
   post "/api/user/request_deletion", to: "authenticated_page#request_account_deletion"
   post "/api/user/cancel_deletion", to: "authenticated_page#cancel_deletion_request"

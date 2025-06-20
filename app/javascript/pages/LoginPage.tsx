@@ -298,6 +298,11 @@ const LoginPage = () => {
         console.log('Status response:', statusData);
 
         if (statusData.success) {
+          // Stocker les informations de l'utilisateur
+          if (statusData.user) {
+            localStorage.setItem('user', JSON.stringify(statusData.user));
+            console.log('Informations utilisateur stockées:', statusData.user);
+          }
           window.location.href = statusData.redirect_to || '/main';
         } else {
           window.location.href = statusData.redirect_to || '/login';

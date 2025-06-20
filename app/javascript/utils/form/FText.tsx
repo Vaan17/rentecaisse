@@ -35,6 +35,8 @@ const FText = ({
             label={label}
             placeholder={placeholder}
             disabled={disabled}
+            error={!!error}
+            helperText={error?.message || ''}
         />
     )
 }
