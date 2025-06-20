@@ -92,6 +92,7 @@ export interface ReservationModalProps {
   passengers?: Passenger[];
   existingReservation?: Reservation | null;
   isReadOnly?: boolean;
+  onRefreshLocations?: () => Promise<void>;
 }
 
 // Interface pour les props du calendrier
@@ -168,4 +169,13 @@ export interface LocationSelectorProps {
   selectedLocationId: number | '';
   onChange: (locationId: number | '') => void;
   disabled?: boolean;
+  onAddLocation?: () => void;
+  showAddButton?: boolean;
+}
+
+// Interface pour les props du modal d'ajout de localisation
+export interface AddLocationModalProps {
+  open: boolean;
+  onClose: () => void;
+  onLocationAdded: (location: Location) => void;
 } 

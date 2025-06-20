@@ -14,18 +14,22 @@ import {
   InputAdornment,
   Radio,
   RadioGroup,
-  FormControlLabel
+  FormControlLabel,
+  Button
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import AddLocationIcon from '@mui/icons-material/AddLocation';
 import { LocationSelectorProps, Location } from '../types';
 
 const LocationSelector: React.FC<LocationSelectorProps> = ({
   locations,
   selectedLocationId,
   onChange,
-  disabled = false
+  disabled = false,
+  onAddLocation,
+  showAddButton = true
 }) => {
   const [searchText, setSearchText] = useState<string>('');
 
@@ -62,11 +66,41 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
 
   return (
     <FormControl fullWidth disabled={disabled}>
-      <InputLabel shrink>
-        Destination
-      </InputLabel>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+        <InputLabel shrink>
+          Destination
+        </InputLabel>
+        {showAddButton && onAddLocation && (
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => {
+              console.log('=== BOUTON AJOUTER CLIQUÉ ===');
+              console.log('onAddLocation function:', onAddLocation);
+              if (onAddLocation) {
+                console.log('Appel de onAddLocation...');
+                onAddLocation();
+              } else {
+                console.error('onAddLocation n\'est pas défini !');
+              }
+            }}
+            disabled={disabled}
+            startIcon={<AddLocationIcon />}
+            sx={{
+              borderColor: '#FFD700',
+              color: '#FFD700',
+              '&:hover': {
+                borderColor: '#FFC700',
+                backgroundColor: 'rgba(255, 215, 0, 0.1)'
+              }
+            }}
+          >
+            Ajouter
+          </Button>
+        )}
+      </Box>
       
-      <Box sx={{ mt: 2 }}>
+      <Box sx={{ mt: 1 }}>
         {/* Champ de recherche */}
         <TextField
           fullWidth

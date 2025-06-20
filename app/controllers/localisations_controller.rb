@@ -25,9 +25,8 @@ class LocalisationsController < ApplicationController
   # Créer une nouvelle localisation
   def create
     # Valider les paramètres requis
-    if params[:nom_localisation].blank? || params[:adresse].blank? || 
-       params[:code_postal].blank? || params[:ville].blank? || params[:pays].blank?
-      return render json: { error: "Paramètres requis manquants" }, status: :bad_request
+    if params[:nom_localisation].blank? || params[:adresse].blank? || params[:ville].blank?
+      return render json: { error: "Les champs nom, adresse et ville sont requis" }, status: :bad_request
     end
     
     # Créer la localisation
@@ -36,11 +35,9 @@ class LocalisationsController < ApplicationController
       adresse: params[:adresse],
       code_postal: params[:code_postal],
       ville: params[:ville],
-      pays: params[:pays],
+      pays: params[:pays] || 'France',
       email: params[:email],
-      site_web: params[:site_web],
-      date_creation_localisation: DateTime.now,
-      date_modification_localisation: DateTime.now
+      site_web: params[:site_web]
     )
     
     if localisation.save
@@ -69,7 +66,6 @@ class LocalisationsController < ApplicationController
       localisation.pays = params[:pays] if params[:pays].present?
       localisation.email = params[:email] if params[:email].present?
       localisation.site_web = params[:site_web] if params[:site_web].present?
-      localisation.date_modification_localisation = DateTime.now
       
       if localisation.save
         render json: localisation

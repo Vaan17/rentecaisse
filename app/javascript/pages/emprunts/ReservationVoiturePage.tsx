@@ -170,17 +170,18 @@ const ReservationVoiturePage: React.FC = () => {
     fetchCars();
   }, [userId]);
 
+  // Fonction pour charger les localisations
+  const fetchLocations = async () => {
+    try {
+      const locationsData = await getAllLocalisations();
+      setLocations(locationsData);
+    } catch (error) {
+      console.error('Erreur lors du chargement des localisations:', error);
+    }
+  };
+
   // Charger les localisations au chargement de la page
   useEffect(() => {
-    const fetchLocations = async () => {
-      try {
-        const locationsData = await getAllLocalisations();
-        setLocations(locationsData);
-      } catch (error) {
-        console.error('Erreur lors du chargement des localisations:', error);
-      }
-    };
-
     fetchLocations();
   }, []);
 
@@ -475,6 +476,7 @@ const ReservationVoiturePage: React.FC = () => {
             passengers={passengers}
             existingReservation={selectedReservation}
             isReadOnly={isReadOnly}
+            onRefreshLocations={fetchLocations}
           />
         </Container>
       </LocalizationProvider>

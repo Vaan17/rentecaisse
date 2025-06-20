@@ -29,6 +29,7 @@ import { ReservationModalProps, ReservationStatus } from '../types';
 import { createEmprunt, updateEmprunt, deleteEmprunt, soumettreEmpruntPourValidation } from '../services/empruntService';
 import PassengerSelector from './PassengerSelector';
 import LocationSelector from './LocationSelector';
+import AddLocationModal from './AddLocationModal';
 
 const ReservationModal: React.FC<ReservationModalProps> = ({
   open,
@@ -42,13 +43,15 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
   locations = [],
   passengers = [],
   existingReservation = null,
-  isReadOnly = false
+  isReadOnly = false,
+  onRefreshLocations
 }) => {
   // États pour gérer les dates de début et de fin
   const [start, setStart] = useState<dayjs.Dayjs | null>(startTime ? dayjs(startTime) : null);
   const [end, setEnd] = useState<dayjs.Dayjs | null>(endTime ? dayjs(endTime) : null);
   const [error, setError] = useState<string | null>(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState<boolean>(false);
+  const [addLocationModalOpen, setAddLocationModalOpen] = useState<boolean>(false);
   
   // États pour les nouveaux champs
   const [nomEmprunt, setNomEmprunt] = useState<string>('');
@@ -159,6 +162,31 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
   // Gérer le changement de la localisation
   const handleLocationChange = (locationId: number | '') => {
     setSelectedLocationId(locationId);
+  };
+
+  // Gérer l'ouverture du modal d'ajout de localisation
+  const handleAddLocationOpen = () => {
+    console.log('=== OUVERTURE MODAL LOCALISATION ===');
+    setAddLocationModalOpen(true);
+    console.log('addLocationModalOpen mis à true');
+  };
+
+  // Gérer la fermeture du modal d'ajout de localisation
+  const handleAddLocationClose = () => {
+    setAddLocationModalOpen(false);
+  };
+
+  // Gérer l'ajout d'une nouvelle localisation
+  const handleLocationAdded = async (newLocation: any) => {
+    // Sélectionner automatiquement la nouvelle localisation
+    setSelectedLocationId(newLocation.id);
+    
+    // Recharger la liste des localisations depuis le parent
+    if (onRefreshLocations) {
+      await onRefreshLocations();
+    }
+    
+    setAddLocationModalOpen(false);
   };
   
   // Gérer le changement des passagers
@@ -468,6 +496,8 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
               selectedLocationId={selectedLocationId}
               onChange={handleLocationChange}
               disabled={isReadOnly}
+              onAddLocation={handleAddLocationOpen}
+              showAddButton={!isReadOnly}
             />
             
             {/* Sélection de passagers */}
@@ -557,6 +587,13 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
           </Button>
         </ConfirmDialogActions>
       </ConfirmDialog>
+
+      {/* Modal d'ajout de localisation */}
+      <AddLocationModal
+        open={addLocationModalOpen}
+        onClose={handleAddLocationClose}
+        onLocationAdded={handleLocationAdded}
+      />
     </>
   );
 };
