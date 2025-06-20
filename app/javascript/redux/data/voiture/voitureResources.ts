@@ -4,7 +4,7 @@ import { addCar } from "./voitureReducer";
 import { toast } from "react-toastify";
 
 export const getVoitures = createAsyncThunk(
-	"data/voitures/getVoitures",
+	"data/voiture/getVoitures",
 	async (_, { dispatch }) => {
 		try {
 			const cars = await VoitureAPI.fetchAll();

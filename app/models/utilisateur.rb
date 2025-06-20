@@ -39,6 +39,7 @@ class Utilisateur < ApplicationRecord
       lien_image_utilisateur:,
       entreprise_id:,
       site_id:,
+      confirmation_entreprise:,
       admin_entreprise:,
       admin_rentecaisse:,
       derniere_connexion:,

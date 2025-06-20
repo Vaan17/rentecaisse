@@ -41,7 +41,21 @@ class AuthenticationService
     if self.class.token_expired?(token)
       # Générer un nouveau token et envoyer un nouveau mail
       new_token = generate_auth_token(user)
-      UserMailer.confirmation_email(user).deliver_later
+
+      UserMailer.send_mail(
+        email: user.email,
+        subject: "Confirmez votre compte",
+        htmlContent: "
+          <html>
+            <head></head>
+            <body>
+              <p>Bonjour,</p>
+              <p>Veuillez confirmer votre compte en cliquant sur le lien suivant : <a href='#{@confirmation_url}'>#{@confirmation_url}</a></p>
+            </body>
+          </html>
+        "
+      ).deliver_later
+
       return { success: false, message: "Le lien de confirmation a expiré. Un nouveau mail de confirmation vous a été envoyé." }
     end
 
@@ -55,7 +69,22 @@ class AuthenticationService
   def request_password_reset
     find_user
     token = generate_reset_token
-    send_reset_password_email
+    reset_url = "#{ENV['URL_SITE']}/reset-password?token=#{@user.reset_password_token}"
+
+    UserMailer.send_mail(
+        email: @user.email,
+        subject: "Réinitialisation de votre mot de passe",
+        htmlContent: "
+          <html>
+            <head></head>
+            <body>
+              <p>Bonjour,</p>
+              <p>Vous avez demandé la réinitialisation de votre mot de passe. Cliquez sur le lien suivant pour procéder à la réinitialisation : <a href='#{reset_url}'>#{reset_url}</a></p><p>Si vous n'avez pas demandé cette réinitialisation, vous pouvez ignorer cet email.</p>
+            </body>
+          </html>
+        "
+      ).deliver_later
+
     token
   rescue AuthenticationError => e
     nil
@@ -176,10 +205,6 @@ class AuthenticationService
       reset_password_sent_at: Time.current
     )
     token
-  end
-
-  def send_reset_password_email
-    UserMailer.reset_password_email(@user).deliver_later
   end
 
   def self.token_expired?(token, expiration_hours = 24)

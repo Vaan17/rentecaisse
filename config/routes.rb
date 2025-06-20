@@ -26,6 +26,11 @@ Rails.application.routes.draw do
 
   # Routes pour les utilisateurs
   get "/api/user/self" => "utilisateurs#fetch_self"
+  get "/api/utilisateurs" => "utilisateurs#fetch_all"
+  post "/api/utilisateurs" => "utilisateurs#invite"
+  put "/api/utilisateurs/inscriptions/:id" => "utilisateurs#accept"
+  put "/api/utilisateurs" => "utilisateurs#update"
+  put "/api/utilisateurs/:id" => "utilisateurs#kick"
 
   # Routes pour les sites
   get "/api/sites" => "sites#fetch_all"
@@ -56,6 +61,12 @@ Rails.application.routes.draw do
   # Routes pour les listes de passagers
   get "/api/utilisateurs/site/:user_id" => "liste_passager#fetch_utilisateurs_site"
   get "/api/passagers/liste/:liste_id" => "liste_passager#fetch_passagers_liste"
+
+  # Routes pour les clés
+  get "/api/cles" => "cles#fetch_all"
+  post "/api/cles" => "cles#create"
+  put "/api/cles" => "cles#update"
+  delete "/api/cles/:id" => "cles#delete"
 
   # Routes pour les entreprises
   get "/api/entreprises" => "entreprises#fetch_all"

@@ -1,89 +1,79 @@
 import React, { useMemo, useState } from 'react'
 import { Flex } from '../../components/style/flex'
 import CustomFilter from '../../components/CustomFilter'
-import { Alert, Button, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Tooltip } from '@mui/material'
-import { useNavigate } from 'react-router-dom'
-import type { IVoiture } from '../voitures/Voitures'
+import { Alert, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Tooltip } from '@mui/material'
 import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 import styled from 'styled-components'
-import AdminVoitureModal from '../../modals/AdminVoitureModal'
-import useCars from '../../hook/useCars'
 import ConfirmationModal from '../../utils/components/ConfirmationModal'
-import VoitureAPI from '../../redux/data/voiture/VoitureAPI'
 import { useDispatch } from 'react-redux'
-import { removeCar } from '../../redux/data/voiture/voitureReducer'
+import type { IUser } from '../../hook/useUser'
+import useUsers from '../../hook/useUsers'
+import UserAPI from '../../redux/data/user/UserAPI';
+import { addUser, removeUser } from '../../redux/data/user/userReducer';
+import useSites from '../../hook/useSites';
+import AdminUtilisateurModal from '../../modals/AdminUtilisateurModal';
 
-const SButton = styled(Button)`
-    min-width: fit-content !important;
-    padding: .5em 1em !important;
-`
-
-const AdminVoitures = () => {
+const TableInscriptions = () => {
     const dispatch = useDispatch()
-    const cars = useCars()
+    const users = useUsers()
+    const sites = useSites()
 
-    const [selectedCar, setSelectedCar] = useState<IVoiture | undefined>(undefined)
+    const [selectedUser, setSelectedUser] = useState<IUser | undefined>(undefined)
     const [filterProperties, setFilterProperties] = useState({ filterBy: undefined, searchValue: "" })
     const [isOpen, setIsOpen] = useState(false)
     const [isOpenConfirmModal, setIsOpenConfirmModal] = useState(false)
     const [page, setPage] = useState(0)
     const [rowsPerPage, setRowsPerPage] = useState(10)
-    const isAdmin = true // Replacer par une vérification réelle de l'utilisateur
 
     const filterOptions = [
-        {
-            value: "immatriculation",
-            label: "Immatriculation",
-        },
-        {
-            value: "modele",
-            label: "Modèle",
-        },
-        {
-            value: "marque",
-            label: "Marque",
-        },
-        {
-            value: "nombre_places",
-            label: "Nombre de places",
-        },
-        {
-            value: "type_boite",
-            label: "Type de boite",
-        },
+        { label: 'Nom', value: 'nom' },
+        { label: 'Prénom', value: 'prenom' },
+        { label: 'Email', value: 'email' },
+        { label: 'Catégorie du permis', value: 'categorie_permis' },
+        { label: 'Site rattaché', value: 'site' }
     ]
 
     const headCells = [
-        { id: 'immatriculation', label: 'Immatriculation' },
-        { id: 'modele', label: 'Modèle' },
-        { id: 'marque', label: 'Marque' },
-        { id: 'nombre_places', label: 'Nombre de places' },
-        { id: 'type_boite', label: 'Type de boite' },
+        { id: 'nom', label: 'Nom' },
+        { id: 'prenom', label: 'Prénom' },
+        { id: 'email', label: 'Mail' },
+        { id: 'categorie_permis', label: 'Catégorie du permis' },
+        { id: 'site', label: 'Site rattaché' },
+        { id: 'accept', label: '', colWidth: 50 },
         { id: 'edit', label: '', colWidth: 50 },
-        { id: 'delete', label: '', colWidth: 50 },
+        { id: 'reject', label: '', colWidth: 50 },
     ]
 
-    const filteredCars = Object.values(cars).filter(car => {
-        if (!filterProperties.filterBy || !filterProperties.searchValue) return true
-        return car[filterProperties.filterBy]?.toString()?.toLowerCase().includes(filterProperties.searchValue.toLowerCase())
-    })
+    const filteredUsers = Object.values(users)
+        .filter(user => !user.confirmation_entreprise)
+        .filter(user => {
+            if (!filterProperties.filterBy || !filterProperties.searchValue) return true
+            return user[filterProperties.filterBy]?.toString()?.toLowerCase().includes(filterProperties.searchValue.toLowerCase())
+        })
 
-    const handleDelete = async () => {
-        if (!selectedCar) return
+    const handleAccept = async (userId) => {
+        const user = await UserAPI.acceptUser(userId)
+        dispatch(addUser(user))
 
-        const res = await VoitureAPI.deleteVoiture(selectedCar.id)
-        dispatch(removeCar(res))
+        setIsOpen(false)
+        setSelectedUser(undefined)
+    }
+
+    const handleKick = async () => {
+        if (!selectedUser) return
+
+        const res = await UserAPI.kickUser(selectedUser.id)
+        dispatch(removeUser(res))
 
         setIsOpenConfirmModal(false)
-        setSelectedCar(undefined)
+        setSelectedUser(undefined)
     }
 
     const visibleRows = useMemo(() => {
-        return filteredCars.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-    }, [filteredCars, page, rowsPerPage]);
-
-    if (!isAdmin) return <Flex>Vous n'avez pas accès à cette page.</Flex>
+        return filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+    }, [filteredUsers, page, rowsPerPage]);
 
     return (
         <>
@@ -92,9 +82,6 @@ const AdminVoitures = () => {
                     <CustomFilter options={filterOptions} filterCallback={
                         (filterBy, searchValue) => { setFilterProperties({ filterBy, searchValue }) }
                     } />
-                    <SButton variant="contained" onClick={() => setIsOpen(true)}>
-                        Ajouter une voiture
-                    </SButton>
                 </Flex>
                 <TableContainer>
                     <Table
@@ -115,32 +102,34 @@ const AdminVoitures = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {visibleRows.map((car, index) => {
-                                const labelId = `enhanced-table-checkbox-${index}`;
-
+                            {visibleRows.map((user, index) => {
                                 return (
                                     <TableRow
-                                        key={car.immatriculation}
+                                        key={user.id}
                                         hover
                                         onClick={(event) => null}
                                         tabIndex={-1}
                                         sx={{ cursor: 'pointer' }}
                                     >
-                                        <TableCell
-                                            id={labelId}
-                                            scope="row"
-                                            padding="none"
-                                        >
-                                            {car.immatriculation}
+                                        <TableCell padding='none'>{user.nom}</TableCell>
+                                        <TableCell padding='none'>{user.prenom}</TableCell>
+                                        <TableCell padding='none'>{user.email}</TableCell>
+                                        <TableCell padding='none'>{user.categorie_permis}</TableCell>
+                                        <TableCell padding='none'>{sites[user.site_id]?.nom_site}</TableCell>
+                                        <TableCell padding='none'>
+                                            <Tooltip title="Accepter" arrow>
+                                                <IconButton onClick={() => {
+                                                    setSelectedUser(user)
+                                                    handleAccept(user.id)
+                                                }}>
+                                                    <CheckCircleIcon />
+                                                </IconButton>
+                                            </Tooltip>
                                         </TableCell>
-                                        <TableCell padding='none'>{car.modele}</TableCell>
-                                        <TableCell padding='none'>{car.marque}</TableCell>
-                                        <TableCell padding='none'>{car.nombre_places}</TableCell>
-                                        <TableCell padding='none'>{car.type_boite}</TableCell>
                                         <TableCell padding='none'>
                                             <Tooltip title="Modifier" arrow>
                                                 <IconButton onClick={() => {
-                                                    setSelectedCar(car)
+                                                    setSelectedUser(user)
                                                     setIsOpen(true)
                                                 }}>
                                                     <EditIcon />
@@ -148,19 +137,19 @@ const AdminVoitures = () => {
                                             </Tooltip>
                                         </TableCell>
                                         <TableCell padding='none' >
-                                            <Tooltip title="Supprimer" arrow>
+                                            <Tooltip title="Refuser" arrow>
                                                 <IconButton onClick={() => {
-                                                    setSelectedCar(car)
+                                                    setSelectedUser(user)
                                                     setIsOpenConfirmModal(true)
                                                 }}>
-                                                    <DeleteIcon />
+                                                    <CancelIcon />
                                                 </IconButton>
                                             </Tooltip>
                                         </TableCell>
                                     </TableRow>
                                 );
                             })}
-                            {filteredCars.length === 0 && (
+                            {filteredUsers.length === 0 && (
                                 <TableRow>
                                     <TableCell colSpan={headCells.length + 1} align="center">
                                         <Alert severity={
@@ -170,7 +159,7 @@ const AdminVoitures = () => {
                                         }>
                                             {filterProperties.filterBy && filterProperties.searchValue
                                                 ? "Aucun résultat ne correspond à votre recherche"
-                                                : "Aucune voiture enregistré"}
+                                                : "Aucune demande d'inscription"}
                                         </Alert>
                                     </TableCell>
                                 </TableRow>
@@ -181,7 +170,7 @@ const AdminVoitures = () => {
                 <TablePagination
                     rowsPerPageOptions={[5, 10, 25, 50]}
                     component="div"
-                    count={filteredCars.length}
+                    count={filteredUsers.length}
                     rowsPerPage={rowsPerPage}
                     onRowsPerPageChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                         setRowsPerPage(parseInt(event.target.value, 10))
@@ -192,27 +181,28 @@ const AdminVoitures = () => {
                         setPage(newPage)
                     }}
                 />
-                <AdminVoitureModal
+                <AdminUtilisateurModal
                     isOpen={isOpen}
-                    selectedCar={selectedCar}
+                    selectedUser={selectedUser}
                     onClose={() => {
                         setIsOpen(false)
-                        setSelectedCar(undefined)
+                        setSelectedUser(undefined)
                     }}
+                    isEditingInscriptions
                 />
                 <ConfirmationModal
                     isOpen={isOpenConfirmModal}
-                    message="Êtes-vous sûr de vouloir supprimer cette voiture ?"
-                    onConfirm={() => handleDelete()}
+                    message="Êtes-vous sûr de vouloir refuser l'inscription de ce membre ?"
+                    onConfirm={() => handleKick()}
                     onClose={() => {
                         setIsOpenConfirmModal(false)
-                        setSelectedCar(undefined)
+                        setSelectedUser(undefined)
                     }}
-                    onConfirmName="Supprimer"
+                    onConfirmName="Confirmer"
                 />
             </Flex>
         </>
     )
 }
 
-export default AdminVoitures
+export default TableInscriptions;

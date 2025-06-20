@@ -17,6 +17,7 @@ export interface IUser {
 	lien_image_utilisateur: string;
 	entreprise_id: number;
 	site_id: number;
+	confirmation_entreprise: boolean;
 	admin_entreprise: boolean;
 	admin_rentecaisse: boolean;
 	derniere_connexion: string;

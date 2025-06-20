@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Button, IconButton, Modal } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close';
 import { Flex } from '../components/style/flex';
@@ -10,10 +10,16 @@ import FText from '../utils/form/FText';
 import FNumber from '../utils/form/FNumber';
 import FSelect from '../utils/form/FSelect';
 import _ from 'lodash';
+import VoitureAPI from "../redux/data/voiture/VoitureAPI"
 import { useDispatch } from 'react-redux';
-import type { ISite } from '../pages/sites/Sites';
-import { addSite } from '../redux/data/site/siteReducer';
-import SiteAPI from '../redux/data/site/SiteAPI';
+import { addCar } from '../redux/data/voiture/voitureReducer';
+import type { IVoiture } from '../pages/voitures/Voitures';
+import axiosSecured from '../services/apiService';
+import { ICle } from '../hook/useCles';
+import useCars from '../hook/useCars';
+import useSites from '../hook/useSites';
+import { addKey } from '../redux/data/cle/cleReducer';
+import CleAPI from '../redux/data/cle/CleAPI';
 
 const ModalContent = styled(Flex)`
     position: absolute;
@@ -49,26 +55,22 @@ const ModalTitle = styled.div`
 `
 
 const schema = Yup.object().shape({
-    nom_site: Yup.string().required("Champ requis."),
-    adresse: Yup.string().required("Champ requis."),
-    code_postal: Yup.string().required("Champ requis."),
-    ville: Yup.string().required("Champ requis."),
-    pays: Yup.string().required("Champ requis."),
-    telephone: Yup.string().required("Champ requis."),
-    email: Yup.string().email("Email invalide.").required("Champ requis."),
-    site_web: Yup.string().url("URL invalide.").nullable(),
-    lien_image_site: Yup.string().url("URL invalide.").nullable(),
+    statut_cle: Yup.string().required("Champ requis."),
+    voiture_id: Yup.number().required("Champ requis."),
+    site_id: Yup.number().required("Champ requis."),
 })
 
-const AdminSiteModal = ({
+const AdminCleModal = ({
     isOpen,
-    selectedSite,
+    selectedKey,
     onClose,
 }: {
     isOpen: boolean
-    selectedSite: ISite | undefined
+    selectedKey: ICle | undefined
     onClose: () => void
 }) => {
+    const cars = useCars()
+    const sites = useSites()
     const dispatch = useDispatch()
 
     const methods = useForm({
@@ -76,28 +78,27 @@ const AdminSiteModal = ({
     })
 
     useEffect(() => {
-        if (selectedSite) {
-            methods.reset(selectedSite)
+        if (selectedKey) {
+            methods.reset(selectedKey)
         } else {
             methods.reset({
-                nom_site: ""
+                statut_cle: "",
             })
         }
-    }, [selectedSite]);
+    }, [selectedKey]);
 
     const handleClose = () => {
         onClose()
     }
 
     const onSubmit = async (values) => {
-        const { key, ...formValues } = values
-
-        if (!selectedSite) {
-            const site = await SiteAPI.createSite(formValues)
-            dispatch(addSite(site))
+        debugger
+        if (!selectedKey) {
+            const cle = await CleAPI.createCle(values)
+            dispatch(addKey(cle))
         } else {
-            const site = await SiteAPI.editSite(formValues)
-            dispatch(addSite(site))
+            const cle = await CleAPI.editCle(values)
+            dispatch(addKey(cle))
         }
 
         handleClose()
@@ -112,25 +113,33 @@ const AdminSiteModal = ({
             >
                 <ModalContent directionColumn alignItemsInitial gap=".5em">
                     <ModalHeader fullWidth spaceBetween>
-                        <ModalTitle>{!selectedSite ? "Ajouter un site" : "Éditer un site"}</ModalTitle>
+                        <ModalTitle>{!selectedKey ? "Ajouter une clé" : "Éditer une clé"}</ModalTitle>
                         <IconButton onClick={handleClose}>
                             <CloseIcon />
                         </IconButton>
                     </ModalHeader>
                     <ModalBody>
-                        <FText name="nom_site" label="Nom" />
-                        <FText name="adresse" label="Adresse" />
-                        <FText name="code_postal" label="Code postal" />
-                        <FText name="ville" label="Ville" />
-                        <FText name="pays" label="Pays" />
-                        <FText name="telephone" label="Téléphone" />
-                        <FText name="email" label="Email" />
-                        <FText name="site_web" label="URL site web" />
-                        <FText name="lien_image_site" label="Image" disabled />
+                        <FSelect
+                            name="statut_cle"
+                            label="Statut"
+                            options={["Principale", "Double"]}
+                        />
+                        <FSelect
+                            name="voiture_id"
+                            label="Voiture associée"
+                            options={Object.keys(cars)}
+                            getOptionLabel={(option) => cars[option].immatriculation}
+                        />
+                        <FSelect
+                            name="site_id"
+                            label="Site rattaché"
+                            options={Object.keys(sites)}
+                            getOptionLabel={(option) => sites[option].nom_site}
+                        />
                     </ModalBody>
                     <ModalFooter fullWidth directionReverse gap>
                         <Button variant="contained" color="primary" onClick={methods.handleSubmit(onSubmit)}>
-                            {!selectedSite ? "Créer" : "Enregistrer"}
+                            {!selectedKey ? "Créer" : "Enregistrer"}
                         </Button>
                         <Button variant="text" color="primary" onClick={handleClose}>
                             Annuler
@@ -142,4 +151,4 @@ const AdminSiteModal = ({
     )
 }
 
-export default AdminSiteModal
+export default AdminCleModal

@@ -1,9 +1,9 @@
 class AuthController < ApplicationController
   skip_before_action :verify_authentication, raise: false
-  
+
   def login
     Rails.logger.info "Tentative de connexion avec l'email: #{user_params[:email]}"
-    
+
     service = AuthenticationService.new(user_params[:email], user_params[:password])
     user = service.authenticate
 
@@ -16,7 +16,7 @@ class AuthController < ApplicationController
       )
 
       Rails.logger.info "Connexion réussie pour l'utilisateur: #{user.email}"
-      
+
       # Vérification si le compte est en attente de suppression
       if user.desactive
         render json: {
@@ -82,7 +82,7 @@ class AuthController < ApplicationController
   def logout
     token = request.headers['Authorization']&.split(' ')&.last
     user = Utilisateur.find_by(session_token: token)
-    
+
     if user
       user.update(session_token: nil, session_token_expires_at: nil)
       render json: { success: true, message: 'Déconnexion réussie' }
@@ -93,7 +93,7 @@ class AuthController < ApplicationController
 
   def register
     Rails.logger.info "Tentative d'inscription avec l'email: #{user_params[:email]}"
-    
+
     # Utiliser le service d'authentification pour l'inscription
     result = AuthenticationService.register_user(
       user_params[:email],
@@ -102,13 +102,26 @@ class AuthController < ApplicationController
 
     if result[:success]
       Rails.logger.info "Inscription réussie pour l'utilisateur: #{result[:user].email}"
-      
+
       # Génération du token de confirmation
       service = AuthenticationService.new(result[:user].email, result[:user].password)
       token = service.generate_auth_token(result[:user])
-      
+
       # Envoi de l'email de confirmation
-      UserMailer.confirmation_email(result[:user]).deliver_later
+      confirmation_url = "#{ENV['URL_SITE']}/confirm_email?token=#{result[:user].confirmation_token}"
+      UserMailer.send_mail(
+        email: result[:user].email,
+        subject: "Confirmez votre compte",
+        htmlContent: "
+          <html>
+            <head></head>
+            <body>
+              <p>Bonjour,</p>
+              <p>Veuillez confirmer votre compte en cliquant sur le lien suivant : <a href='#{confirmation_url}'>#{confirmation_url}</a></p>
+            </body>
+          </html>
+        "
+      ).deliver_later
 
       render json: {
         success: true,
@@ -134,10 +147,10 @@ class AuthController < ApplicationController
 
   def confirm_email
     Rails.logger.info "Tentative de confirmation d'email avec le token: #{params[:token]}"
-    
+
     service = AuthenticationService.new(nil, nil)
     result = service.confirm_email(params[:token])
-    
+
     if result[:success]
       Rails.logger.info "Email confirmé avec succès"
       render json: { 
@@ -164,7 +177,7 @@ class AuthController < ApplicationController
 
   def forgot_password
     Rails.logger.info "Tentative de réinitialisation de mot de passe pour l'email: #{user_params[:email]}"
-    
+
     service = AuthenticationService.new(user_params[:email], nil)
     token = service.request_password_reset
 
@@ -193,7 +206,7 @@ class AuthController < ApplicationController
 
   def reset_password
     Rails.logger.info "Tentative de réinitialisation de mot de passe avec un token"
-    
+
     service = AuthenticationService.new(nil, nil)
     if service.reset_password(reset_password_params[:token], reset_password_params[:password])
       Rails.logger.info "Mot de passe réinitialisé avec succès"
