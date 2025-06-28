@@ -41,8 +41,8 @@ const SiteDetails = () => {
     }, [])
 
     const selectedSite = sites.find(site => site.id === parseInt(id || '0')) ?? {} as ISite
-    const SiteImage = selectedSite.lien_image_site
-        ? <img src={selectedSite.lien_image_site} alt="site" style={{ width: "500px", height: "300px", objectFit: "cover" }} />
+    const SiteImage = selectedSite.image && !selectedSite.image.includes('placeholder')
+        ? <img src={selectedSite.image} alt="site" style={{ width: "500px", height: "300px", objectFit: "cover" }} />
         : <div style={{ width: "500px", height: "300px", backgroundColor: "lightgray", display: "flex", justifyContent: "center", alignItems: "center" }}>Image indisponible</div>
 
     useEffect(() => {

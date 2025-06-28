@@ -38,6 +38,7 @@ Rails.application.routes.draw do
   post "/api/sites" => "sites#create"
   put "/api/sites" => "sites#update"
   delete "/api/sites/:id" => "sites#delete"
+  post "/api/sites/:id/photo" => "sites#update_photo"
 
   # Routes pour les voitures
   get "/api/voitures" => "voitures#fetch_all"
