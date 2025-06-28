@@ -197,7 +197,7 @@ class EmpruntsUserController < ApplicationController
         end
         
         # Vérifier que la voiture a des clés configurées
-        unless Emprunt.car_has_keys?(voiture_id)
+        unless EmpruntService.car_has_keys?(voiture_id)
             return render json: { 
                 error: "Impossible de créer un emprunt pour cette voiture. Aucune clé principale ou double n'a été configurée. Veuillez contacter l'administrateur."
             }, status: :unprocessable_entity
@@ -219,10 +219,10 @@ class EmpruntsUserController < ApplicationController
 
         # Assigner automatiquement une clé
         Rails.logger.info "🔑 CRÉATION EMPRUNT - Recherche clé pour voiture #{voiture_id}"
-        emprunt.assign_primary_key
+        EmpruntService.assign_primary_key(emprunt)
 
         # Créer toujours une liste de passagers vide
-        emprunt.creer_liste_passager_vide
+        EmpruntService.creer_liste_passager_vide(emprunt)
 
         # Gérer les passagers si fournis
         if params[:passagers].present? && params[:passagers].any?
@@ -234,14 +234,14 @@ class EmpruntsUserController < ApplicationController
                 voiture = Voiture.find(voiture_id)
                 nombre_total_occupants = 1 + passagers_valides.count # conducteur + passagers
                 
-                                 if nombre_total_occupants > voiture.nombre_places
-                     return render json: { 
-                         error: "Le nombre total d'occupants (#{nombre_total_occupants}) dépasse la capacité du véhicule (#{voiture.nombre_places} places)"
-                     }, status: :bad_request
+                if nombre_total_occupants > voiture.nombre_places
+                    return render json: { 
+                        error: "Le nombre total d'occupants (#{nombre_total_occupants}) dépasse la capacité du véhicule (#{voiture.nombre_places} places)"
+                    }, status: :bad_request
                 end
                 
                 # Ajouter les passagers à la liste vide
-                emprunt.mettre_a_jour_passagers(passagers_valides)
+                EmpruntService.mettre_a_jour_passagers(emprunt, passagers_valides)
             end
         end
         
@@ -298,7 +298,7 @@ class EmpruntsUserController < ApplicationController
         # Mettre à jour la liste des passagers avec la nouvelle structure
         if params.key?(:passagers)
             Rails.logger.info "🚗 UPDATE PASSAGERS - Paramètres reçus: #{params[:passagers]}"
-            Rails.logger.info "🚗 UPDATE PASSAGERS - Passagers actuels: #{emprunt.passager_ids}"
+            Rails.logger.info "🚗 UPDATE PASSAGERS - Passagers actuels: #{EmpruntService.passager_ids(emprunt)}"
             
             if params[:passagers].present?
                 # Filtrer les passagers pour exclure le conducteur
@@ -309,24 +309,24 @@ class EmpruntsUserController < ApplicationController
                     # Vérifier la capacité du véhicule
                     nombre_total_occupants = 1 + passagers_valides.count # conducteur + passagers
                     
-                                         if nombre_total_occupants > emprunt.voiture.nombre_places
-                         return render json: { 
-                             error: "Le nombre total d'occupants (#{nombre_total_occupants}) dépasse la capacité du véhicule (#{emprunt.voiture.nombre_places} places)"
-                         }, status: :bad_request
+                    if nombre_total_occupants > emprunt.voiture.nombre_places
+                        return render json: { 
+                            error: "Le nombre total d'occupants (#{nombre_total_occupants}) dépasse la capacité du véhicule (#{emprunt.voiture.nombre_places} places)"
+                        }, status: :bad_request
                     end
                     
                     Rails.logger.info "🚗 UPDATE PASSAGERS - Appel mettre_a_jour_passagers avec: #{passagers_valides}"
-                    emprunt.mettre_a_jour_passagers(passagers_valides)
+                    EmpruntService.mettre_a_jour_passagers(emprunt, passagers_valides)
                 else
                     Rails.logger.info "🚗 UPDATE PASSAGERS - Aucun passager valide, suppression de toutes les relations"
-                    emprunt.mettre_a_jour_passagers([])
+                    EmpruntService.mettre_a_jour_passagers(emprunt, [])
                 end
             else
                 Rails.logger.info "🚗 UPDATE PASSAGERS - Paramètre passagers vide, suppression de toutes les relations"
-                emprunt.mettre_a_jour_passagers([])
+                EmpruntService.mettre_a_jour_passagers(emprunt, [])
             end
             
-            Rails.logger.info "🚗 UPDATE PASSAGERS - Passagers après modification: #{emprunt.passager_ids}"
+            Rails.logger.info "🚗 UPDATE PASSAGERS - Passagers après modification: #{EmpruntService.passager_ids(emprunt)}"
         end
         
         if emprunt.save
