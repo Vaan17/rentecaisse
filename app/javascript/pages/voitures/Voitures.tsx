@@ -29,6 +29,12 @@ export interface IVoiture {
     lien_image_voiture: string
     entreprise_id: number
     site_id: number
+    image?: string
+    name?: string
+    seats?: number
+    doors?: number
+    transmission?: string
+    licensePlate?: string
 }
 
 const Voitures = () => {
@@ -77,8 +83,8 @@ const Voitures = () => {
             {!!filteredCars.length && (
                 <CardContainer>
                     {filteredCars.map(car => {
-                        const VoitureImage = car.lien_image_voiture
-                            ? <img src={car.lien_image_voiture} alt="voiture" style={{ width: "100%", height: "150px", objectFit: "cover" }} />
+                        const VoitureImage = car.image && !car.image.includes('placeholder')
+                            ? <img src={car.image} alt="voiture" style={{ width: "100%", height: "150px", objectFit: "cover" }} />
                             : <div style={{ width: "100%", height: "150px", backgroundColor: "lightgray", display: "flex", justifyContent: "center", alignItems: "center" }}>Image indisponible</div>
 
                         return (
