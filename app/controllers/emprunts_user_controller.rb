@@ -199,7 +199,7 @@ class EmpruntsUserController < ApplicationController
         # Vérifier que la voiture a des clés configurées
         unless Emprunt.car_has_keys?(voiture_id)
             return render json: { 
-                error: "Impossible de créer un emprunt pour cette voiture. Aucune clé n'a été configurée. Veuillez contacter l'administrateur."
+                error: "Impossible de créer un emprunt pour cette voiture. Aucune clé principale ou double n'a été configurée. Veuillez contacter l'administrateur."
             }, status: :unprocessable_entity
         end
 

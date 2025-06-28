@@ -27,16 +27,20 @@ class Emprunt < ApplicationRecord
 
   # Méthodes utiles pour gérer les clés
   def self.car_has_keys?(voiture_id)
-    Cle.where(voiture_id: voiture_id).exists?
+    Cle.where(voiture_id: voiture_id, statut_cle: ['Principale', 'Double']).exists?
   end
   
   def self.find_primary_key_for_car(voiture_id)
-    # Chercher d'abord une clé PRIMAIRE
-    primary_key = Cle.where(voiture_id: voiture_id, statut_cle: 'PRIMAIRE').first
+    # 1. Chercher d'abord une clé "Principale"
+    primary_key = Cle.where(voiture_id: voiture_id, statut_cle: 'Principale').first
     return primary_key if primary_key
     
-    # Fallback : prendre la première clé disponible
-    Cle.where(voiture_id: voiture_id).first
+    # 2. Si pas de clé principale, chercher une clé "Double"
+    double_key = Cle.where(voiture_id: voiture_id, statut_cle: 'Double').first
+    return double_key if double_key
+    
+    # 3. Si aucune clé avec les statuts attendus, retourner nil
+    nil
   end
   
   def assign_primary_key
@@ -47,7 +51,8 @@ class Emprunt < ApplicationRecord
       self.cle_id = primary_key.id
       Rails.logger.info "🔑 AUTO-ASSIGN - Clé #{primary_key.id} (#{primary_key.statut_cle}) assignée à l'emprunt"
     else
-      Rails.logger.error "❌ AUTO-ASSIGN - Aucune clé trouvée pour la voiture #{voiture_id}"
+      errors.add(:base, "Aucune clé principale ou double n'est disponible pour cette voiture. Contactez l'administrateur.")
+      Rails.logger.error "❌ AUTO-ASSIGN - Aucune clé appropriée trouvée pour la voiture #{voiture_id}"
     end
   end
 
@@ -131,8 +136,11 @@ class Emprunt < ApplicationRecord
   def voiture_has_keys
     return unless voiture_id.present?
     
-    unless self.class.car_has_keys?(voiture_id)
-      errors.add(:base, "Cette voiture n'a aucune clé configurée. L'administrateur doit créer au moins une clé avant de pouvoir créer des emprunts.")
+    # Vérifier qu'il existe au moins une clé "Principale" ou "Double" pour cette voiture
+    has_appropriate_keys = Cle.where(voiture_id: voiture_id, statut_cle: ['Principale', 'Double']).exists?
+    
+    unless has_appropriate_keys
+      errors.add(:base, "Cette voiture n'a aucune clé principale ou double configurée. L'administrateur doit créer au moins une clé avant de pouvoir créer des emprunts.")
     end
   end
   

@@ -26,8 +26,8 @@ class EmpruntService
         utilisateur_demande_id: utilisateur_id,
         cle_id: params[:cle_id],
         localisation_id: params[:localisation_id],
-        date_creation_emprunt: DateTime.now,
-        date_modification_emprunt: DateTime.now
+        created_at: DateTime.now,
+        updated_at: DateTime.now
       )
       
       # Créer la liste de passagers si nécessaire
@@ -58,7 +58,7 @@ class EmpruntService
       emprunt.description = params[:description] if params[:description].present?
       emprunt.cle_id = params[:cle_id] if params[:cle_id].present?
       emprunt.localisation_id = params[:localisation_id] if params[:localisation_id].present?
-      emprunt.date_modification_emprunt = DateTime.now
+      emprunt.updated_at = DateTime.now
       
       # Mettre à jour la liste des passagers si nécessaire
       if params[:passagers].present?
@@ -82,7 +82,7 @@ class EmpruntService
   # Valide un emprunt
   def self.valider_emprunt(emprunt)
     emprunt.statut_emprunt = "validé"
-    emprunt.date_modification_emprunt = DateTime.now
+    emprunt.updated_at = DateTime.now
     emprunt.save!
     emprunt
   rescue ActiveRecord::RecordInvalid => e
@@ -95,8 +95,8 @@ class EmpruntService
   def self.creer_liste_passagers(utilisateur_id, passagers)
     liste_passager = ListePassager.create!(
       utilisateur_id: utilisateur_id,
-      date_creation_liste: DateTime.now,
-      date_modification_liste: DateTime.now
+      created_at: DateTime.now,
+      updated_at: DateTime.now
     )
     
     # Associer les passagers à la liste
