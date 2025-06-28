@@ -92,4 +92,38 @@ class VoituresController < ApplicationController
 
     render json: { "id" => params["id"] }
   end
+
+  def update_photo
+    voiture = Voiture.find_by(id: params[:id])
+    
+    unless voiture
+      render json: { 
+        success: false, 
+        message: "Voiture non trouvée" 
+      }, status: :not_found
+      return
+    end
+    
+    unless params[:photo]
+      render json: { 
+        success: false, 
+        message: "Aucune photo fournie" 
+      }, status: :unprocessable_entity
+      return
+    end
+    
+    result = VoitureService.update_voiture_photo(voiture, params[:photo])
+    
+    if result[:success]
+      render json: { 
+        success: true, 
+        message: result[:message]
+      }
+    else
+      render json: { 
+        success: false, 
+        message: result[:message]
+      }, status: :unprocessable_entity
+    end
+  end
 end

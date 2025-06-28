@@ -45,6 +45,7 @@ Rails.application.routes.draw do
   put "/api/voitures" => "voitures#update"
   delete "/api/voitures/:id" => "voitures#delete"
   get "/api/voitures/site/:user_id" => "voitures#fetch_voitures_site"
+  post "/api/voitures/:id/photo" => "voitures#update_photo"
 
   # Routes pour les clés
   get "/api/cles" => "cles#fetch_all"
