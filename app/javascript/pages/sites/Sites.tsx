@@ -26,6 +26,7 @@ export interface ISite {
     site_web: string
     lien_image_site: string
     entreprise_id: number
+    image?: string
 }
 
 const Sites = () => {
@@ -65,8 +66,8 @@ const Sites = () => {
             {!!filteredSites.length && (
                 <CardContainer>
                     {filteredSites.map(site => {
-                        const SiteImage = site.lien_image_site
-                            ? <img src={site.lien_image_site} alt="site" style={{ width: "100%", height: "150px", objectFit: "cover" }} />
+                        const SiteImage = site.image && !site.image.includes('placeholder')
+                            ? <img src={site.image} alt="site" style={{ width: "100%", height: "150px", objectFit: "cover" }} />
                             : <div style={{ width: "100%", height: "150px", backgroundColor: "lightgray", display: "flex", justifyContent: "center", alignItems: "center" }}>Image indisponible</div>
 
                         return (

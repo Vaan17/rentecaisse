@@ -22,8 +22,8 @@ const VoitureDetails = () => {
     }, [])
 
     const selectedVoiture = voitures.find(site => site.id === parseInt(id || '0')) ?? {} as IVoiture
-    const VoitureImage = selectedVoiture.lien_image_voiture
-        ? <img src={selectedVoiture.lien_image_voiture} alt="site" style={{ width: "500px", height: "300px", objectFit: "cover" }} />
+    const VoitureImage = selectedVoiture.image && !selectedVoiture.image.includes('placeholder')
+        ? <img src={selectedVoiture.image} alt="voiture" style={{ width: "500px", height: "300px", objectFit: "cover" }} />
         : <div style={{ width: "500px", height: "300px", backgroundColor: "lightgray", display: "flex", justifyContent: "center", alignItems: "center" }}>Image indisponible</div>
 
     useEffect(() => {

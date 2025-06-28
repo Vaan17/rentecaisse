@@ -1,4 +1,9 @@
 class VoitureService
+  # Taille maximale de 5MB
+  MAX_IMAGE_SIZE = 5.megabytes
+  ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif']
+  ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif']
+  
   # Récupère les voitures du site et de l'entreprise de l'utilisateur
   def self.voitures_par_site_et_entreprise(site_id, entreprise_id)
     Voiture.where(site_id: site_id, entreprise_id: entreprise_id)
@@ -48,5 +53,87 @@ class VoitureService
       image_data: Base64.encode64(content),
       content_type: content_type
     }
+  end
+  
+  # Validation de l'image uploadée
+  def self.validate_image(file)
+    Rails.logger.info "Validation de l'image: #{file.original_filename} (#{file.size} bytes, #{file.content_type})"
+
+    # Vérification de la taille
+    if file.size > MAX_IMAGE_SIZE
+      Rails.logger.warn "Image trop volumineuse: #{file.size} bytes"
+      return { success: false, message: "L'image ne doit pas dépasser 5MB" }
+    end
+
+    # Vérification du type MIME
+    unless ALLOWED_MIME_TYPES.include?(file.content_type)
+      Rails.logger.warn "Type MIME non autorisé: #{file.content_type}"
+      return { success: false, message: "Format non supporté. Utilisez JPG, JPEG, PNG ou GIF" }
+    end
+
+    # Vérification de l'extension
+    extension = File.extname(file.original_filename).downcase[1..-1]
+    unless ALLOWED_EXTENSIONS.include?(extension)
+      Rails.logger.warn "Extension non autorisée: #{extension}"
+      return { success: false, message: "Extension de fichier non autorisée" }
+    end
+
+    # Vérification de cohérence entre le type MIME et l'extension
+    mime_extension_map = {
+      'image/jpeg' => ['jpg', 'jpeg'],
+      'image/png' => ['png'],
+      'image/gif' => ['gif']
+    }
+
+    unless mime_extension_map[file.content_type]&.include?(extension)
+      Rails.logger.warn "Incohérence type MIME/extension: #{file.content_type} vs #{extension}"
+      return { success: false, message: "Le type de fichier ne correspond pas à l'extension" }
+    end
+
+    Rails.logger.info "Validation de l'image réussie"
+    { success: true }
+  end
+  
+  # Met à jour la photo d'une voiture
+  def self.update_voiture_photo(voiture, photo)
+    # Validation de l'image
+    validation_result = validate_image(photo)
+    return validation_result unless validation_result[:success]
+
+    begin
+      # Créer le dossier pour la voiture s'il n'existe pas
+      voiture_folder = Rails.root.join('storage', 'vehicules', "vehicules_#{voiture.id}")
+      FileUtils.mkdir_p(voiture_folder)
+
+      # Supprimer l'ancienne photo si elle existe
+      old_photo = Dir.glob("#{voiture_folder}/*").first
+      File.delete(old_photo) if old_photo && File.exist?(old_photo)
+
+      # Générer un nom unique pour la nouvelle photo
+      extension = File.extname(photo.original_filename)
+      filename = "profile_#{Time.now.to_i}#{extension}"
+      filepath = voiture_folder.join(filename)
+
+      # Sauvegarder la nouvelle photo
+      File.binwrite(filepath, photo.read)
+
+      # Mettre à jour le champ lien_image_voiture
+      if voiture.update(lien_image_voiture: filename)
+        { success: true, message: "Photo mise à jour avec succès" }
+      else
+        # Si la mise à jour échoue, supprimer le fichier
+        File.delete(filepath) if File.exist?(filepath)
+        { success: false, message: "Erreur lors de la mise à jour de la base de données" }
+      end
+    rescue Errno::ENOENT => e
+      Rails.logger.error "Erreur de fichier: #{e.message}"
+      { success: false, message: "Erreur lors de la création du dossier" }
+    rescue Errno::EACCES => e
+      Rails.logger.error "Erreur de permissions: #{e.message}"
+      { success: false, message: "Erreur de permissions sur le dossier de stockage" }
+    rescue StandardError => e
+      Rails.logger.error "Erreur lors de l'upload: #{e.message}"
+      { success: false, message: "Erreur lors de l'upload de l'image" }
+    end
   end
 end 

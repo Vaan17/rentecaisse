@@ -3,9 +3,33 @@ class VoituresController < ApplicationController
 
   def fetch_all
     voitures = Voiture.all.where(entreprise_id: @current_user.entreprise_id)
-    voitures = voitures.map(&:to_format)
+    
+    # Transformer les données pour inclure les images encodées en base64
+    voitures_formattees = voitures.map do |voiture|
+      # Données de base de la voiture
+      voiture_data = voiture.to_format
+      
+      # Ajouter les propriétés compatibles avec le front-end emprunts
+      voiture_data[:name] = "#{voiture.marque} #{voiture.modele}"
+      voiture_data[:seats] = voiture.nombre_places
+      voiture_data[:doors] = voiture.nombre_portes
+      voiture_data[:transmission] = voiture.type_boite
+      voiture_data[:licensePlate] = voiture.immatriculation
+      
+      # Par défaut, utiliser l'image placeholder
+      voiture_data[:image] = "/images/car-placeholder.png"
+      
+      # Récupérer l'image de la voiture si disponible
+      image_data = VoitureService.get_voiture_image(voiture.id)
+      if image_data
+        # Remplacer l'image placeholder par l'URL data en base64
+        voiture_data[:image] = "data:#{image_data[:content_type]};base64,#{image_data[:image_data]}"
+      end
+      
+      voiture_data
+    end
 
-    render json: voitures
+    render json: voitures_formattees
   end
 
   def fetch_voitures_site
@@ -75,14 +99,25 @@ class VoituresController < ApplicationController
     params["data"].permit!
 
     attributes = params["data"].to_h
+    voiture_id = attributes["id"]
 
-    if Voiture.exists?(immatriculation: attributes["immatriculation"])
+    # Filtrer les attributs pour ne garder que ceux du modèle Voiture
+    allowed_attributes = attributes.slice(
+      "marque", "modele", "année_fabrication", "immatriculation", 
+      "carburant", "couleur", "puissance", "nombre_portes", 
+      "nombre_places", "type_boite", "statut_voiture", 
+      "lien_image_voiture", "entreprise_id", "site_id"
+    )
+
+    # Vérifier si une AUTRE voiture a la même immatriculation
+    existing_voiture = Voiture.find_by(immatriculation: allowed_attributes["immatriculation"])
+    if existing_voiture && existing_voiture.id != voiture_id.to_i
       render json: { error: "Immatriculation already exists" }, status: :unprocessable_entity
       return
     end
 
-    Voiture.find(attributes["id"]).update(attributes)
-    updatedCar = Voiture.find(attributes["id"])
+    Voiture.find(voiture_id).update(allowed_attributes)
+    updatedCar = Voiture.find(voiture_id)
 
     render json: updatedCar.to_format
   end
@@ -91,5 +126,39 @@ class VoituresController < ApplicationController
     Voiture.find(params["id"]).delete
 
     render json: { "id" => params["id"] }
+  end
+
+  def update_photo
+    voiture = Voiture.find_by(id: params[:id])
+    
+    unless voiture
+      render json: { 
+        success: false, 
+        message: "Voiture non trouvée" 
+      }, status: :not_found
+      return
+    end
+    
+    unless params[:photo]
+      render json: { 
+        success: false, 
+        message: "Aucune photo fournie" 
+      }, status: :unprocessable_entity
+      return
+    end
+    
+    result = VoitureService.update_voiture_photo(voiture, params[:photo])
+    
+    if result[:success]
+      render json: { 
+        success: true, 
+        message: result[:message]
+      }
+    else
+      render json: { 
+        success: false, 
+        message: result[:message]
+      }, status: :unprocessable_entity
+    end
   end
 end
