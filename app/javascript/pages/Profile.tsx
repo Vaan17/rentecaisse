@@ -133,6 +133,7 @@ const SectionWithImage = styled(ProfileSection)`
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
 `;
 
@@ -143,6 +144,18 @@ const RectangularImageContainer = styled.div`
   border-radius: 8px;
   overflow: hidden;
   background-color: #f0f0f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+  }
 `;
 
 const ImagePlaceholder = styled.div`
@@ -154,6 +167,39 @@ const ImagePlaceholder = styled.div`
   background-color: #f0f0f0;
   color: #666;
   font-size: 3rem;
+`;
+
+const SiteImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  transition: opacity 0.3s ease;
+  
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
+const LoadingSpinner = styled.div`
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #FFD700;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+
+const ImageErrorMessage = styled.div`
+  color: #d32f2f;
+  font-size: 0.875rem;
+  text-align: center;
+  padding: 1rem;
 `;
 
 const SectionTitle = styled.h2`
@@ -570,6 +616,7 @@ interface UserProfileData {
     ville: string;
     code_postal: string;
     pays: string;
+    image?: string;
   };
 }
 
@@ -607,6 +654,9 @@ const Profile: React.FC = () => {
   const [userData, setUserData] = useState<UserProfileData | null>(null);
   const [editingFields, setEditingFields] = useState<{ [key: string]: boolean }>({});
   const [userImage, setUserImage] = useState<string | null>(null);
+  const [siteImage, setSiteImage] = useState<string | null>(null);
+  const [siteImageLoading, setSiteImageLoading] = useState(false);
+  const [siteImageError, setSiteImageError] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const navigate = useNavigate();
@@ -620,6 +670,7 @@ const Profile: React.FC = () => {
   useEffect(() => {
     if (userData) {
       fetchUserImage();
+      fetchSiteImage();
     }
   }, [userData]);
 
@@ -666,6 +717,38 @@ const Profile: React.FC = () => {
       }
     } catch (error) {
       console.error('Erreur lors du chargement de l\'image:', error);
+    }
+  };
+
+  const fetchSiteImage = async () => {
+    if (!userData?.site_info?.image) {
+      setSiteImage(null);
+      return;
+    }
+
+    setSiteImageLoading(true);
+    setSiteImageError(null);
+
+    try {
+      // L'image du site est déjà incluse dans les données du profil en base64
+      const imageData = userData.site_info.image;
+      
+      // Vérifier si c'est une image en base64 ou un placeholder
+      if (imageData.startsWith('data:image/')) {
+        setSiteImage(imageData);
+      } else if (imageData.includes('placeholder')) {
+        // C'est un placeholder, ne pas l'afficher
+        setSiteImage(null);
+      } else {
+        // Autre format d'image, l'utiliser tel quel
+        setSiteImage(imageData);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement de l\'image du site:', error);
+      setSiteImageError('Erreur lors du chargement de l\'image du site');
+      setSiteImage(null);
+    } finally {
+      setSiteImageLoading(false);
     }
   };
 
@@ -1098,7 +1181,19 @@ const Profile: React.FC = () => {
 
       <SectionWithImage>
         <RectangularImageContainer>
-          <ImagePlaceholder>📍</ImagePlaceholder>
+          {siteImageLoading ? (
+            <ImagePlaceholder>
+              <LoadingSpinner />
+            </ImagePlaceholder>
+          ) : siteImageError ? (
+            <ImagePlaceholder>
+              <ImageErrorMessage>{siteImageError}</ImageErrorMessage>
+            </ImagePlaceholder>
+          ) : siteImage ? (
+            <SiteImage src={siteImage} alt="Image du site" />
+          ) : (
+            <ImagePlaceholder>📍</ImagePlaceholder>
+          )}
         </RectangularImageContainer>
         <div>
           <SectionTitle>Informations site</SectionTitle>

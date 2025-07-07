@@ -185,6 +185,17 @@ class AuthenticatedPageController < ApplicationController
   end
 
   def get_user_profile
+    # Récupérer les informations du site avec l'image
+    site_info = SiteService.get_site_details(@current_user.site_id)
+    
+    # Ajouter l'image du site si disponible
+    if @current_user.site_id.present?
+      site = Site.find_by(id: @current_user.site_id)
+      if site
+        site_info[:image] = SiteService.get_site_image(site)
+      end
+    end
+    
     render json: {
       personal_info: {
         id: @current_user.id,
@@ -201,7 +212,7 @@ class AuthenticatedPageController < ApplicationController
         categorie_permis: @current_user.categorie_permis
       },
       entreprise_info: EntrepriseService.get_entreprise_details(@current_user.entreprise_id),
-      site_info: SiteService.get_site_details(@current_user.site_id),
+      site_info: site_info,
       photo: UserService.get_user_profile_image(@current_user)
     }
   end
