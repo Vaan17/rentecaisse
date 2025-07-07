@@ -27,6 +27,23 @@ class Emprunt < ApplicationRecord
 
   private
 
+  def to_format
+    {
+      id:,
+      statut_emprunt:,
+      nom_emprunt:,
+      description:,
+      date_debut:,
+      date_fin:,
+      utilisateur_demande_id:,
+      liste_passager_id:,
+      voiture_id:,
+      cle_id:,
+      localisation_id:,
+      updated_at:
+    }
+  end
+
   def date_fin_after_date_debut
     return if date_debut.blank? || date_fin.blank?
 
@@ -34,32 +51,32 @@ class Emprunt < ApplicationRecord
       errors.add(:date_fin, "doit être postérieure à la date de début")
     end
   end
-  
+
   def capacite_voiture_respectee
     return unless voiture_id.present?
-    
+
     voiture_obj = voiture || Voiture.find_by(id: voiture_id)
     return unless voiture_obj.present?
-    
+
     # Utiliser le service pour calculer le nombre d'occupants
     nombre_total_occupants = EmpruntService.nombre_total_occupants(self)
-    
+
     if nombre_total_occupants > voiture_obj.nombre_places
       errors.add(:base, "Le nombre total d'occupants (#{nombre_total_occupants}) dépasse la capacité du véhicule (#{voiture_obj.nombre_places} places)")
     end
   end
-  
+
   def voiture_has_keys
     return unless voiture_id.present?
-    
+
     # Vérifier via le service qu'il existe au moins une clé "Principale" ou "Double" pour cette voiture
     unless EmpruntService.car_has_keys?(voiture_id)
       errors.add(:base, "Cette voiture n'a aucune clé principale ou double configurée. L'administrateur doit créer au moins une clé avant de pouvoir créer des emprunts.")
     end
   end
-  
+
   # Callback qui délègue au service
   def cleanup_liste_passager_callback
     EmpruntService.cleanup_liste_passager(self)
   end
-end 
+end
