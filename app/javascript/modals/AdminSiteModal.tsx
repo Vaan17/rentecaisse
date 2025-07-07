@@ -175,8 +175,28 @@ const schema = Yup.object().shape({
     pays: Yup.string().required("Champ requis."),
     telephone: Yup.string().required("Champ requis."),
     email: Yup.string().email("Email invalide.").required("Champ requis."),
-    site_web: Yup.string().url("URL invalide.").nullable(),
-    lien_image_site: Yup.string().url("URL invalide.").nullable(),
+    site_web: Yup.string()
+        .nullable()
+        .transform((value) => value === "" ? null : value)
+        .test('url', 'URL invalide.', (value) => {
+            if (!value) return true;
+            try {
+                return Yup.string().url().isValidSync(value);
+            } catch {
+                return false;
+            }
+        }),
+    lien_image_site: Yup.string()
+        .nullable()
+        .transform((value) => value === "" ? null : value)
+        .test('url', 'URL invalide.', (value) => {
+            if (!value) return true;
+            try {
+                return Yup.string().url().isValidSync(value);
+            } catch {
+                return false;
+            }
+        }),
 })
 
 const AdminSiteModal = ({
@@ -192,15 +212,35 @@ const AdminSiteModal = ({
     const [siteImage, setSiteImage] = useState<string | null>(null)
     const [uploadError, setUploadError] = useState<string | null>(null)
     const [isUploading, setIsUploading] = useState(false)
+    const [selectedFile, setSelectedFile] = useState<File | null>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     const methods = useForm({
         resolver: yupResolver(schema),
+        mode: 'onChange', // Validation en temps réel
     })
 
     useEffect(() => {
         if (selectedSite) {
-            methods.reset(selectedSite)
+            // Nettoyer les données du site pour éviter les erreurs de validation
+            const cleanedSiteData = {
+                ...selectedSite,
+                // Nettoyer lien_image_site : si ce n'est pas une URL valide, le mettre à null
+                lien_image_site: (selectedSite.lien_image_site && 
+                                  (selectedSite.lien_image_site.startsWith('http://') || 
+                                   selectedSite.lien_image_site.startsWith('https://'))) 
+                                 ? selectedSite.lien_image_site 
+                                 : null,
+                // Nettoyer site_web : si ce n'est pas une URL valide, le mettre à null  
+                site_web: (selectedSite.site_web && 
+                          (selectedSite.site_web.startsWith('http://') || 
+                           selectedSite.site_web.startsWith('https://'))) 
+                         ? selectedSite.site_web 
+                         : null
+            }
+            
+            console.log('🔧 Données nettoyées:', cleanedSiteData)
+            methods.reset(cleanedSiteData)
             // Charger l'image du site si elle existe
             fetchSiteImage(selectedSite.id)
         } else {
@@ -209,6 +249,7 @@ const AdminSiteModal = ({
             })
             setSiteImage(null)
             setUploadError(null)
+            setSelectedFile(null)
         }
     }, [selectedSite]);
 
@@ -266,97 +307,87 @@ const AdminSiteModal = ({
         }
         reader.readAsDataURL(file)
 
-        // Si on édite un site existant, on upload directement
-        if (selectedSite) {
-            setIsUploading(true)
-            const formData = new FormData()
-            formData.append('photo', file)
-
-            try {
-                const response = await axiosSecured.post(`/api/sites/${selectedSite.id}/photo`, formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                })
-
-                if (response.data.success) {
-                    toast.success(response.data.message)
-                    // Rafraîchir les données du site dans le store
-                    const updatedSites = await SiteAPI.fetchAll()
-                    const updatedSite = updatedSites.find(s => s.id === selectedSite.id)
-                    if (updatedSite) {
-                        dispatch(addSite(updatedSite))
-                    }
-                } else {
-                    setUploadError(response.data.message || 'Erreur lors de l\'upload')
-                }
-            } catch (error) {
-                console.error('Erreur lors de l\'upload:', error)
-                setUploadError('Erreur lors de l\'upload de l\'image')
-            } finally {
-                setIsUploading(false)
-            }
-        } else {
-            // Si c'est un nouveau site, on garde le fichier pour l'upload après création
-            (fileInputRef.current as any).fileToUpload = file
-        }
+        // Stocker le fichier pour l'envoi lors de la soumission
+        setSelectedFile(file)
     }
 
     const handleDeleteImage = () => {
         setSiteImage(null)
         setUploadError(null)
+        setSelectedFile(null)
         if (fileInputRef.current) {
             fileInputRef.current.value = ''
-            ;(fileInputRef.current as any).fileToUpload = null
         }
     }
 
     const handleClose = () => {
         setSiteImage(null)
         setUploadError(null)
+        setSelectedFile(null)
         onClose()
     }
 
     const onSubmit = async (values) => {
+        console.log('🔥 onSubmit appelé !', { values, selectedFile, selectedSite })
         const { key, ...formValues } = values
+        setIsUploading(true)
 
-        if (!selectedSite) {
-            const site = await SiteAPI.createSite(formValues)
-            dispatch(addSite(site))
-            
-            // Upload de l'image après création si un fichier a été sélectionné
-            const fileToUpload = (fileInputRef.current as any)?.fileToUpload
-            if (fileToUpload && site?.id) {
-                const formData = new FormData()
-                formData.append('photo', fileToUpload)
-                
-                try {
-                    const response = await axiosSecured.post(`/api/sites/${site.id}/photo`, formData, {
-                        headers: {
-                            'Content-Type': 'multipart/form-data'
-                        }
-                    })
+        try {
+            if (!selectedSite) {
+                // Création d'un nouveau site
+                if (selectedFile) {
+                    // Avec image : créer d'abord le site, puis uploader l'image
+                    const site = await SiteAPI.createSite(formValues)
                     
-                    if (response.data.success) {
-                        toast.success('Site créé et image uploadée avec succès')
-                        // Rafraîchir les données du site dans le store
-                        const updatedSites = await SiteAPI.fetchAll()
-                        const updatedSite = updatedSites.find(s => s.id === site.id)
-                        if (updatedSite) {
-                            dispatch(addSite(updatedSite))
+                    if (site?.id) {
+                        const formData = new FormData()
+                        formData.append('photo', selectedFile)
+                        
+                        try {
+                            await axiosSecured.post(`/api/sites/${site.id}/photo`, formData, {
+                                headers: {
+                                    'Content-Type': 'multipart/form-data'
+                                }
+                            })
+                            
+                            // Récupérer les données mises à jour avec l'image
+                            const updatedSites = await SiteAPI.fetchAll()
+                            const updatedSite = updatedSites.find(s => s.id === site.id)
+                            if (updatedSite) {
+                                dispatch(addSite(updatedSite))
+                            }
+                            
+                            toast.success('Site créé et image uploadée avec succès')
+                        } catch (error) {
+                            console.error('Erreur lors de l\'upload:', error)
+                            dispatch(addSite(site))
+                            toast.error('Site créé mais erreur lors de l\'upload de l\'image')
                         }
                     }
-                } catch (error) {
-                    console.error('Erreur lors de l\'upload:', error)
-                    toast.error('Site créé mais erreur lors de l\'upload de l\'image')
+                } else {
+                    // Sans image : création simple
+                    const site = await SiteAPI.createSite(formValues)
+                    dispatch(addSite(site))
+                }
+            } else {
+                // Modification d'un site existant
+                if (selectedFile) {
+                    // Avec nouvelle image : utiliser la nouvelle API
+                    const updatedSite = await SiteAPI.editSiteWithPhoto(selectedSite.id, formValues, selectedFile)
+                    dispatch(addSite(updatedSite))
+                } else {
+                    // Sans nouvelle image : modification normale
+                    const updatedSite = await SiteAPI.editSite(formValues)
+                    dispatch(addSite(updatedSite))
                 }
             }
-        } else {
-            const site = await SiteAPI.editSite(formValues)
-            dispatch(addSite(site))
-        }
 
-        handleClose()
+            handleClose()
+        } catch (error) {
+            console.error('Erreur lors de la soumission:', error)
+        } finally {
+            setIsUploading(false)
+        }
     }
 
     return (
@@ -432,7 +463,22 @@ const AdminSiteModal = ({
                         </ImageUploadSection>
                     </ModalBody>
                     <ModalFooter fullWidth directionReverse gap>
-                        <Button variant="contained" color="primary" onClick={methods.handleSubmit(onSubmit)}>
+                        <Button 
+                            variant="contained" 
+                            color="primary" 
+                            onClick={() => {
+                                console.log('🔥 Bouton cliqué, formState:', methods.formState.errors)
+                                console.log('🔥 FormValues:', methods.getValues())
+                                console.log('🔥 SelectedFile:', selectedFile)
+                                methods.handleSubmit(
+                                    onSubmit,
+                                    (errors) => {
+                                        console.error('❌ Erreurs de validation:', errors)
+                                        toast.error('Veuillez corriger les erreurs dans le formulaire')
+                                    }
+                                )()
+                            }}
+                        >
                             {!selectedSite ? "Créer" : "Enregistrer"}
                         </Button>
                         <Button variant="text" color="primary" onClick={handleClose}>

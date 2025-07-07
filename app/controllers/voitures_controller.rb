@@ -123,7 +123,25 @@ class VoituresController < ApplicationController
   end
 
   def delete
-    Voiture.find(params["id"]).delete
+    voiture = Voiture.find(params["id"])
+    
+    # Supprimer le dossier d'images de la voiture s'il existe
+    if voiture.lien_image_voiture.present? || Dir.exist?(Rails.root.join('storage', 'vehicules', "vehicules_#{voiture.id}"))
+      image_folder_path = Rails.root.join('storage', 'vehicules', "vehicules_#{voiture.id}")
+      
+      if Dir.exist?(image_folder_path)
+        begin
+          FileUtils.remove_dir(image_folder_path)
+          Rails.logger.info "🗑️ VOITURE_DELETE - Dossier d'images supprimé: #{image_folder_path}"
+        rescue StandardError => e
+          Rails.logger.error "❌ VOITURE_DELETE - Erreur lors de la suppression du dossier d'images: #{e.message}"
+        end
+      end
+    end
+    
+    # Supprimer la voiture de la base de données
+    voiture.destroy  # Utiliser destroy au lieu de delete pour déclencher les callbacks
+    Rails.logger.info "🗑️ VOITURE_DELETE - Voiture #{params['id']} supprimée avec succès"
 
     render json: { "id" => params["id"] }
   end
