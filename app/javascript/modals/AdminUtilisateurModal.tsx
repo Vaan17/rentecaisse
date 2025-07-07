@@ -48,18 +48,6 @@ const ModalTitle = styled.div`
     font-weight: 700;
 `
 
-const schema = Yup.object().shape({
-    email: Yup.string().email("Format d'email invalide").required("L'email est requis"),
-    password: Yup.string()
-        .required("Le mot de passe est requis")
-        .min(12, "Le mot de passe doit contenir au moins 12 caractères")
-        .matches(/[A-Z]/, "Le mot de passe doit contenir au moins une lettre majuscule")
-        .matches(/[a-z]/, "Le mot de passe doit contenir au moins une lettre minuscule")
-        .matches(/[0-9]/, "Le mot de passe doit contenir au moins un chiffre")
-        .matches(/[^A-Za-z0-9]/, "Le mot de passe doit contenir au moins un caractère spécial"),
-    site_id: Yup.number().required("Le site est requis"),
-})
-
 const AdminUtilisateurModal = ({
     isOpen,
     selectedUser,
@@ -73,6 +61,30 @@ const AdminUtilisateurModal = ({
 }) => {
     const dispatch = useDispatch()
     const sites = useSites()
+
+    const schema = Yup.object().shape({
+        email: Yup.string().email("Format d'email invalide").required("L'email est requis"),
+        password: Yup.string()
+            .transform(value => (value === "" ? undefined : value))
+            .when([], {
+                is: () => !selectedUser, // If we are creating a user
+                then: (schema) => schema
+                    .required("Le mot de passe est requis")
+                    .min(12, "Le mot de passe doit contenir au moins 12 caractères")
+                    .matches(/[A-Z]/, "Le mot de passe doit contenir au moins une lettre majuscule")
+                    .matches(/[a-z]/, "Le mot de passe doit contenir au moins une lettre minuscule")
+                    .matches(/[0-9]/, "Le mot de passe doit contenir au moins un chiffre")
+                    .matches(/[^A-Za-z0-9]/, "Le mot de passe doit contenir au moins un caractère spécial"),
+                otherwise: (schema) => schema
+                    .notRequired()
+                    .min(12, "Le mot de passe doit contenir au moins 12 caractères")
+                    .matches(/[A-Z]/, "Le mot de passe doit contenir au moins une lettre majuscule")
+                    .matches(/[a-z]/, "Le mot de passe doit contenir au moins une lettre minuscule")
+                    .matches(/[0-9]/, "Le mot de passe doit contenir au moins un chiffre")
+                    .matches(/[^A-Za-z0-9]/, "Le mot de passe doit contenir au moins un caractère spécial"),
+            }),
+        site_id: Yup.number().required("Le site est requis"),
+    })
 
     const methods = useForm({
         resolver: yupResolver(schema),
