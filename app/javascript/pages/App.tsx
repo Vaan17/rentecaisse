@@ -37,6 +37,7 @@ import AdminSites from "./admin/AdminSites.tsx"
 import AdminUtilisateurs from "./admin/AdminUtilisateurs.tsx"
 import AdminCles from "./admin/AdminCles.tsx"
 import ReservationVoiturePage from './emprunts/ReservationVoiturePage'
+import AdminEmprunts from "./admin/AdminEmprunts.tsx"
 
 const AppContainer = styled.div`
 	width: 100vw;
@@ -126,6 +127,7 @@ const App = () => {
 												<Route path="/admin/voitures" element={<AdminVoitures />} />
 												<Route path="/admin/sites" element={<AdminSites />} />
 												<Route path="/admin/cles" element={<AdminCles />} />
+												<Route path="/admin/emprunts" element={<AdminEmprunts />} />
 												{/* Fallback */}
 												<Route path="*" element={<Navigate to="/home" replace />} />
 											</Routes>

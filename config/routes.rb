@@ -89,7 +89,7 @@ Rails.application.routes.draw do
   post "/api/emprunts/:id/soumettre_validation" => "emprunts#soumettre_validation"
   put "/api/emprunts" => "emprunts#update"
   delete "/api/emprunts/:id" => "emprunts#delete"
-  delete "/api/emprunts/:id" => "emprunts_user#destroy"
+  delete "/api/emprunts/:id" => "emprunts#destroy"
 
 
   # Routes pour la gestion de suppression de compte

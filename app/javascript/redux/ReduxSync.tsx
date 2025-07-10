@@ -6,6 +6,7 @@ import { getUser } from './user/userResources'
 import { getUsers } from './data/user/userResources'
 import { toast } from 'react-toastify'
 import { getCles } from './data/cle/cleResources'
+import { getEmprunts } from './data/emprunt/empruntResources'
 
 const ReduxSync = ({ children }) => {
     const dispatch = useDispatch()
@@ -20,6 +21,7 @@ const ReduxSync = ({ children }) => {
                     dispatch(getVoitures()),
                     dispatch(getSites()),
                     dispatch(getCles()),
+                    dispatch(getEmprunts())
                 ])
             } catch (error) {
                 toast.error("Erreur lors de la récupération des données initiales.")

@@ -25,8 +25,6 @@ class Emprunt < ApplicationRecord
   # Callbacks - utilise le service pour la logique
   after_destroy :cleanup_liste_passager_callback
 
-  private
-
   def to_format
     {
       id:,
@@ -43,6 +41,8 @@ class Emprunt < ApplicationRecord
       updated_at:
     }
   end
+
+  private
 
   def date_fin_after_date_debut
     return if date_debut.blank? || date_fin.blank?
