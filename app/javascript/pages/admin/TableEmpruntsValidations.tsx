@@ -12,6 +12,8 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import useCars from '../../hook/useCars';
 import useUsers from '../../hook/useUsers';
+import ReservationModal from '../emprunts/components/ReservationModal'
+import LocalizationProvider from '../emprunts/providers/LocalizationProvider'
 
 const SChip = styled(Chip) <{ $color: string }>`
     background-color: ${({ $color }) => $color} !important;
@@ -192,6 +194,22 @@ const TableEmpruntsValidations = () => {
                         setPage(newPage)
                     }}
                 />
+                <LocalizationProvider>
+                    <ReservationModal
+                        open={isOpen}
+                        onClose={() => setIsOpen(false)}
+                        car={cars[selectedEmprunt?.voiture_id]}
+                        startTime={new Date(selectedEmprunt?.date_debut)}
+                        endTime={new Date(selectedEmprunt?.date_fin)}
+                        onSave={() => null}
+                        userId={selectedEmprunt?.utilisateur_demande_id}
+                        location={selectedEmprunt?.localisation_id}
+                        passenge={selectedEmprunt?.liste_passager_id}
+                        existingReservation={selectedEmprunt}
+                        onRefreshLocations={() => null}
+                        isAdminEdition
+                    />
+                </LocalizationProvider>
                 {/* <AdminUtilisateurModal
                     isOpen={isOpen}
                     selectedUser={selectedUser}

@@ -36,12 +36,12 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
   endTime,
   onSave,
   userId,
-
   locations = [],
   passengers = [],
   existingReservation = null,
   isReadOnly = false,
-  onRefreshLocations
+  onRefreshLocations,
+  isAdminEdition = false
 }) => {
   // États pour gérer les dates de début et de fin
   const [start, setStart] = useState<dayjs.Dayjs | null>(startTime ? dayjs(startTime) : null);
@@ -49,37 +49,37 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState<boolean>(false);
   const [addLocationModalOpen, setAddLocationModalOpen] = useState<boolean>(false);
-  
+
   // États pour les nouveaux champs
   const [nomEmprunt, setNomEmprunt] = useState<string>('');
   const [description, setDescription] = useState<string>('');
 
   const [selectedLocationId, setSelectedLocationId] = useState<number | ''>('');
   const [selectedPassengers, setSelectedPassengers] = useState<number[]>([]);
-  
+
   // Vérifier si l'emprunt peut être supprimé (appartient à l'utilisateur et est en brouillon ou en attente de validation)
-  const canDelete = existingReservation && 
-                    existingReservation.utilisateur_id === userId && 
-                    (existingReservation.status === ReservationStatus.DRAFT || 
-                     existingReservation.status === ReservationStatus.PENDING_VALIDATION);
-                    
+  const canDelete = existingReservation &&
+    existingReservation.utilisateur_id === userId &&
+    (existingReservation.status === ReservationStatus.DRAFT ||
+      existingReservation.status === ReservationStatus.PENDING_VALIDATION);
+
   // Vérifier si l'emprunt peut être modifié (appartient à l'utilisateur et est en brouillon)
-  const canEdit = existingReservation && 
-                  existingReservation.utilisateur_id === userId && 
-                  existingReservation.status === ReservationStatus.DRAFT;
+  const canEdit = existingReservation &&
+    existingReservation.utilisateur_id === userId &&
+    existingReservation.status === ReservationStatus.DRAFT;
 
   // Vérifier si l'emprunt peut être soumis pour validation (appartient à l'utilisateur et est en brouillon)
   const canSubmitForValidation = canEdit;
-  
+
 
 
   // Mettre à jour les états lorsque les props changent
   useEffect(() => {
     if (open) {
-      
+
       // Réinitialiser les champs de base
       setStart(startTime ? dayjs(startTime) : null);
-      
+
       // Si l'heure de fin n'est pas spécifiée, définir par défaut à 1 heure après l'heure de début
       if (startTime && !endTime) {
         const defaultEnd = new Date(startTime);
@@ -88,13 +88,13 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
       } else {
         setEnd(endTime ? dayjs(endTime) : null);
       }
-      
+
       setError(null);
-      
+
       // Réinitialiser les nouveaux champs
       if (existingReservation) {
         // Si on modifie un emprunt existant, pré-remplir les champs
-                setNomEmprunt(existingReservation.nom_emprunt || '');
+        setNomEmprunt(existingReservation.nom_emprunt || '');
         setDescription(existingReservation.description || '');
         setSelectedLocationId(existingReservation.localisation_id ? Number(existingReservation.localisation_id) : '');
         // Récupérer les passagers existants depuis la réponse API
@@ -137,9 +137,9 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
     setError(null);
     return true;
   };
-  
 
-  
+
+
   // Gérer le changement de la localisation
   const handleLocationChange = (locationId: number | '') => {
     setSelectedLocationId(locationId);
@@ -159,15 +159,15 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
   const handleLocationAdded = async (newLocation: any) => {
     // Sélectionner automatiquement la nouvelle localisation
     setSelectedLocationId(newLocation.id);
-    
+
     // Recharger la liste des localisations depuis le parent
     if (onRefreshLocations) {
       await onRefreshLocations();
     }
-    
+
     setAddLocationModalOpen(false);
   };
-  
+
   // Gérer le changement des passagers
   const handlePassengersChange = (selectedIds: number[]) => {
     setSelectedPassengers(selectedIds);
@@ -199,11 +199,11 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
       setError(`Le nombre total d'occupants (${selectedPassengers.length + 1}) dépasse la capacité du véhicule (${car.seats} places)`);
       return;
     }
-    
+
     try {
       const dateDebut = start.toISOString();
       const dateFin = end.toISOString();
-      
+
       const reservationData = {
         voiture_id: car.id,
         date_debut: dateDebut,
@@ -213,7 +213,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
         localisation_id: selectedLocationId ? Number(selectedLocationId) : undefined,
         passagers: selectedPassengers.length > 0 ? selectedPassengers : []
       };
-      
+
       if (existingReservation) {
         // Mettre à jour un emprunt existant
         await updateEmprunt(existingReservation.id, reservationData);
@@ -221,7 +221,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
         // Créer un nouvel emprunt
         await createEmprunt(reservationData);
       }
-      
+
       // Notifier le composant parent
       onSave({
         carId: car.id,
@@ -233,7 +233,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
 
         localisation_id: selectedLocationId as number
       });
-      
+
       onClose();
     } catch (error: any) {
       console.error('Erreur lors de la soumission de l\'emprunt:', error);
@@ -253,11 +253,11 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
   // Gérer la soumission d'un emprunt pour validation
   const handleSubmitForValidation = async () => {
     if (!existingReservation) return;
-    
+
     try {
       // Appel au service pour changer le statut
       await soumettreEmpruntPourValidation(existingReservation.id);
-      
+
       // Notifier le composant parent
       onSave({
         carId: existingReservation.carId,
@@ -271,7 +271,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
         localisation_id: existingReservation.localisation_id,
         liste_passager_id: existingReservation.liste_passager_id
       });
-      
+
       // Fermer la modale
       onClose();
     } catch (error) {
@@ -283,13 +283,13 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
   // Gérer la suppression d'un emprunt
   const handleDelete = async () => {
     if (!existingReservation) return;
-    
+
     try {
       await deleteEmprunt(existingReservation.id);
-      
+
       // Fermer la boîte de dialogue de confirmation
       closeDeleteConfirm();
-      
+
       // Notifier le composant parent pour rafraîchir les données
       onSave({
         carId: car?.id || 0,
@@ -297,7 +297,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
         endTime: new Date(),
         status: ReservationStatus.EMPTY
       });
-      
+
       // Fermer la modale
       onClose();
     } catch (error) {
@@ -311,12 +311,12 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
       closeDeleteConfirm();
     }
   };
-  
+
   // Ouvrir la boîte de dialogue de confirmation de suppression
   const openDeleteConfirm = () => {
     setConfirmDeleteOpen(true);
   };
-  
+
   // Fermer la boîte de dialogue de confirmation de suppression
   const closeDeleteConfirm = () => {
     setConfirmDeleteOpen(false);
@@ -324,8 +324,8 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
 
   return (
     <>
-      <Dialog 
-        open={open} 
+      <Dialog
+        open={open}
         onClose={onClose}
         maxWidth="md"
         fullWidth
@@ -335,19 +335,19 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
             {existingReservation ? 'Modifier la réservation' : 'Réserver un véhicule'}
           </Typography>
         </DialogTitle>
-        
+
         <Divider />
-        
+
         <DialogContent>
           {car && (
             <Box sx={{ mb: 3 }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
                 Véhicule sélectionné
               </Typography>
-              <Box 
-                sx={{ 
-                  p: 2, 
-                  backgroundColor: 'grey.100', 
+              <Box
+                sx={{
+                  p: 2,
+                  backgroundColor: 'grey.100',
                   borderRadius: 1,
                   display: 'flex',
                   alignItems: 'center'
@@ -362,17 +362,17 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
               </Box>
             </Box>
           )}
-          
+
           {/* Informations sur le demandeur */}
           {existingReservation && existingReservation.utilisateur_prenom && existingReservation.utilisateur_nom && (
             <Box sx={{ mb: 3 }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
                 Informations sur la demande
               </Typography>
-              <Box 
-                sx={{ 
-                  p: 2, 
-                  backgroundColor: 'grey.100', 
+              <Box
+                sx={{
+                  p: 2,
+                  backgroundColor: 'grey.100',
                   borderRadius: 1
                 }}
               >
@@ -389,10 +389,10 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
                 Clé assignée
               </Typography>
-              <Box 
-                sx={{ 
-                  p: 2, 
-                  backgroundColor: 'grey.100', 
+              <Box
+                sx={{
+                  p: 2,
+                  backgroundColor: 'grey.100',
                   borderRadius: 1
                 }}
               >
@@ -408,43 +408,46 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
               </Box>
             </Box>
           )}
-          
+
           {isReadOnly && (
             <Alert severity="info" sx={{ mb: 2 }}>
-              {existingReservation && existingReservation.utilisateur_id !== userId 
+              {existingReservation && existingReservation.utilisateur_id !== userId
                 ? "Vous consultez un emprunt créé par un autre utilisateur. Vous ne pouvez pas le modifier."
                 : existingReservation && existingReservation.status !== ReservationStatus.DRAFT
-                ? "Cet emprunt n'est plus en statut brouillon. Seuls les emprunts en brouillon peuvent être modifiés."
-                : "Vous ne pouvez pas modifier cet emprunt."
+                  ? "Cet emprunt n'est plus en statut brouillon. Seuls les emprunts en brouillon peuvent être modifiés."
+                  : "Vous ne pouvez pas modifier cet emprunt."
               }
             </Alert>
           )}
-          
+
           <Stack spacing={3}>
-            {/* Nom de l'emprunt */}
-            <TextField
-              label="Nom de l'emprunt"
-              fullWidth
-              value={nomEmprunt}
-              onChange={(e) => setNomEmprunt(e.target.value)}
-              required
-              disabled={isReadOnly}
-              error={!nomEmprunt && !!error}
-            />
-            
-            {/* Description */}
-            <TextField
-              label="Description"
-              fullWidth
-              multiline
-              rows={3}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              required
-              disabled={isReadOnly}
-              error={!description && !!error}
-            />
-            
+            {!isAdminEdition && (
+              <>
+                {/* Nom de l'emprunt */}
+                <TextField
+                  label="Nom de l'emprunt"
+                  fullWidth
+                  value={nomEmprunt}
+                  onChange={(e) => setNomEmprunt(e.target.value)}
+                  required
+                  disabled={isReadOnly}
+                  error={!nomEmprunt && !!error}
+                />
+
+                {/* Description */}
+                <TextField
+                  label="Description"
+                  fullWidth
+                  multiline
+                  rows={3}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  required
+                  disabled={isReadOnly}
+                  error={!description && !!error}
+                />
+              </>
+            )}
             {/* Dates */}
             <DateTimePicker
               label="Date et heure de début"
@@ -461,7 +464,6 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
               }}
               views={['year', 'month', 'day', 'hours', 'minutes']}
             />
-            
             <DateTimePicker
               label="Date et heure de fin"
               value={end}
@@ -477,9 +479,6 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
               }}
               views={['year', 'month', 'day', 'hours', 'minutes']}
             />
-            
-
-            
             {/* Sélection de localisation */}
             <LocationSelector
               locations={locations}
@@ -489,7 +488,6 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
               onAddLocation={handleAddLocationOpen}
               showAddButton={!isReadOnly}
             />
-            
             {/* Sélection de passagers */}
             <PassengerSelector
               passengers={passengers}
@@ -500,7 +498,6 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
               excludeUserId={userId}
             />
           </Stack>
-          
           {error && (
             <Box sx={{ mt: 2 }}>
               <Alert severity="error">
@@ -509,13 +506,13 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
             </Box>
           )}
         </DialogContent>
-        
+
         <DialogActions sx={{ px: 3, pb: 3 }}>
           <Button onClick={onClose} variant="outlined">
             Annuler
           </Button>
           {canDelete && (
-            <Button 
+            <Button
               onClick={openDeleteConfirm}
               variant="contained"
               color="error"
@@ -525,27 +522,27 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
             </Button>
           )}
           {canSubmitForValidation && (
-            <Button 
-              onClick={handleSubmitForValidation} 
-              variant="contained" 
+            <Button
+              onClick={handleSubmitForValidation}
+              variant="contained"
               color="success"
             >
               Valider
             </Button>
           )}
           {!isReadOnly && canEdit && existingReservation ? (
-            <Button 
-              onClick={handleSubmit} 
-              variant="contained" 
+            <Button
+              onClick={handleSubmit}
+              variant="contained"
               color="primary"
               disabled={!!error || !start || !end || !car || !nomEmprunt || !description}
             >
               Mettre à jour
             </Button>
           ) : !isReadOnly && !existingReservation ? (
-            <Button 
-              onClick={handleSubmit} 
-              variant="contained" 
+            <Button
+              onClick={handleSubmit}
+              variant="contained"
               color="primary"
               disabled={!!error || !start || !end || !car || !nomEmprunt || !description}
             >
@@ -554,7 +551,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
           ) : null}
         </DialogActions>
       </Dialog>
-      
+
       {/* Boîte de dialogue de confirmation de suppression */}
       <ConfirmDialog
         open={confirmDeleteOpen}

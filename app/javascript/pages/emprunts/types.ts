@@ -96,6 +96,7 @@ export interface ReservationModalProps {
   existingReservation?: Reservation | null;
   isReadOnly?: boolean;
   onRefreshLocations?: () => Promise<void>;
+  isAdminEdition?: boolean
 }
 
 // Interface pour les props du calendrier
