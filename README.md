@@ -228,4 +228,4 @@ Cette commande combine toutes les commandes précédentes :
 - DBeaver ou tout autre client SQL est fermé
 - PostgreSQL est bien démarré (`sudo service postgresql start`)
 
-test
+test test2
