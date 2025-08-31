@@ -227,3 +227,5 @@ Cette commande combine toutes les commandes précédentes :
 - Le serveur Rails n'est pas en cours d'exécution
 - DBeaver ou tout autre client SQL est fermé
 - PostgreSQL est bien démarré (`sudo service postgresql start`)
+
+test test2

@@ -1,29 +1,20 @@
-class EmpruntsUserController < ApplicationController
+class EmpruntsController < ApplicationController
     before_action :verify_authentication
 
-    def get_emprunts_users
-        Rails.logger.info "Début de get_emprunts_users"
-        listeEmprunts = Emprunt.all.map do |emprunt|
-            Rails.logger.info "Traitement de l'emprunt #{emprunt.id}"
-            {
-                numero: emprunt.id,
-                nom_emprunt: emprunt.nom_emprunt,
-                dateDebut: emprunt.date_debut,
-                dateFin: emprunt.date_fin,
-                vehicule: emprunt.cle&.voiture&.marque || "Véhicule non spécifié",
-                vehicule_id: emprunt.cle&.voiture&.id,
-                passagers: emprunt.liste_passager.present? ? 1 : 0,
-                destination: emprunt.localisation&.nom_localisation || "Destination non spécifiée",
-                statut: emprunt.statut_emprunt,
-                demandeur: emprunt.utilisateur_demande&.nom || "Utilisateur non spécifié",
-                description: emprunt.description
-            }
+    def fetch_all
+        # get all users from the same entreprise
+        entrepriseUsers = Utilisateur.all.where(entreprise_id: @current_user.entreprise_id)
+        userIds = entrepriseUsers.map do |user|
+            user.id
         end
 
-        Rails.logger.info "Nombre d'emprunts trouvés: #{listeEmprunts.size}"
-        Rails.logger.info "Emprunts: #{listeEmprunts.inspect}"
+        # get all emprunts from all users with the same entreprise
+        emprunts = Emprunt.all.where(utilisateur_demande_id: userIds)
+        emprunts = emprunts.map do |emprunt|
+            emprunt.to_format
+        end
 
-        render json: listeEmprunts
+        render json: emprunts
     end
 
     def get_emprunts_user_by_id
@@ -31,13 +22,24 @@ class EmpruntsUserController < ApplicationController
 
         render json: emprunts_user
     end
-    
-    def fetch_all
-        emprunts = Emprunt.all
-    
-        render json: emprunts
+
+    # def update
+    #     params["data"].permit!
+
+    #     attributes = params["data"].to_h
+
+    #     Emprunt.find(attributes["id"]).update(attributes)
+    #     updatedEmprunt = Emprunt.find(attributes["id"])
+
+    #     render json: updatedEmprunt.to_format
+    # end
+
+    def delete
+        Emprunt.find(params["id"]).delete
+
+        render json: { "id" => params["id"] }
     end
-    
+
     # Récupérer les emprunts pour une voiture et une période donnée
     def get_emprunts_par_voiture
         voiture_id = params[:voiture_id]
@@ -292,29 +294,29 @@ class EmpruntsUserController < ApplicationController
         emprunt.description = params[:description] if params[:description].present?
         emprunt.localisation_id = params[:localisation_id] if params.key?(:localisation_id)
         emprunt.updated_at = DateTime.now
-        
+
         Rails.logger.info "🔑 MODIFICATION EMPRUNT - Clé préservée: #{emprunt.cle_id}"
-        
+
         # Mettre à jour la liste des passagers avec la nouvelle structure
         if params.key?(:passagers)
             Rails.logger.info "🚗 UPDATE PASSAGERS - Paramètres reçus: #{params[:passagers]}"
             Rails.logger.info "🚗 UPDATE PASSAGERS - Passagers actuels: #{EmpruntService.passager_ids(emprunt)}"
-            
+
             if params[:passagers].present?
                 # Filtrer les passagers pour exclure le conducteur
                 passagers_valides = params[:passagers].reject { |id| id.to_i == @current_user.id }
                 Rails.logger.info "🚗 UPDATE PASSAGERS - Passagers valides après filtrage: #{passagers_valides}"
-                
+
                 if passagers_valides.any?
                     # Vérifier la capacité du véhicule
                     nombre_total_occupants = 1 + passagers_valides.count # conducteur + passagers
-                    
+
                     if nombre_total_occupants > emprunt.voiture.nombre_places
                         return render json: { 
                             error: "Le nombre total d'occupants (#{nombre_total_occupants}) dépasse la capacité du véhicule (#{emprunt.voiture.nombre_places} places)"
                         }, status: :bad_request
                     end
-                    
+
                     Rails.logger.info "🚗 UPDATE PASSAGERS - Appel mettre_a_jour_passagers avec: #{passagers_valides}"
                     EmpruntService.mettre_a_jour_passagers(emprunt, passagers_valides)
                 else
@@ -325,10 +327,10 @@ class EmpruntsUserController < ApplicationController
                 Rails.logger.info "🚗 UPDATE PASSAGERS - Paramètre passagers vide, suppression de toutes les relations"
                 EmpruntService.mettre_a_jour_passagers(emprunt, [])
             end
-            
+
             Rails.logger.info "🚗 UPDATE PASSAGERS - Passagers après modification: #{EmpruntService.passager_ids(emprunt)}"
         end
-        
+
         if emprunt.save
             # Recharger avec les relations pour le formatage
             emprunt = Emprunt.includes(:utilisateur_demande, :cle, liste_passager: :utilisateurs).find(emprunt.id)
@@ -337,21 +339,21 @@ class EmpruntsUserController < ApplicationController
             render json: { error: emprunt.errors.full_messages }, status: :unprocessable_entity
         end
     end
-    
+
     # Supprimer un emprunt
     def destroy
         emprunt = Emprunt.find(params[:id])
-        
+
         # Vérifier que l'utilisateur actuel est bien le créateur de l'emprunt
         if emprunt.utilisateur_demande_id != @current_user.id
             return render json: { error: "Vous n'êtes pas autorisé à supprimer cet emprunt" }, status: :forbidden
         end
-        
+
         # Vérifier que l'emprunt est en brouillon ou en attente de validation
         unless ["brouillon", "en_attente_validation"].include?(emprunt.statut_emprunt)
             return render json: { error: "Seuls les emprunts en brouillon ou en attente de validation peuvent être supprimés" }, status: :forbidden
         end
-        
+
         # Supprimer l'emprunt
         if emprunt.destroy
             render json: { message: "Emprunt supprimé avec succès" }
@@ -359,58 +361,75 @@ class EmpruntsUserController < ApplicationController
             render json: { error: "Impossible de supprimer l'emprunt" }, status: :unprocessable_entity
         end
     end
-    
+
     # Valider un emprunt (pour les administrateurs)
     def valider
         emprunt = Emprunt.find(params[:id])
         current_user = @current_user
-        
+
         # Vérifier que l'utilisateur est un administrateur
         unless current_user.admin_entreprise || current_user.admin_rentecaisse
             return render json: { error: "Vous n'êtes pas autorisé à valider cet emprunt" }, status: :forbidden
         end
-        
+
         # Mettre à jour le statut de l'emprunt
         emprunt.statut_emprunt = "validé"
-        emprunt.updated_at = DateTime.now
-        
+
         if emprunt.save
             render json: emprunt
         else
             render json: { error: emprunt.errors.full_messages }, status: :unprocessable_entity
         end
     end
-    
+
+    def terminer
+        emprunt = Emprunt.find(params[:id])
+        current_user = @current_user
+
+        # Vérifier que l'utilisateur est un administrateur
+        unless current_user.admin_entreprise || current_user.admin_rentecaisse
+            return render json: { error: "Vous n'êtes pas autorisé à terminer cet emprunt" }, status: :forbidden
+        end
+
+        # Mettre à jour le statut de l'emprunt
+        emprunt.statut_emprunt = "terminé"
+
+        if emprunt.save
+            render json: emprunt
+        else
+            render json: { error: emprunt.errors.full_messages }, status: :unprocessable_entity
+        end
+    end
+
     # Soumettre un emprunt pour validation
     def soumettre_validation
         emprunt = Emprunt.find(params[:id])
-        
+
         # Vérifier que l'utilisateur actuel est bien le créateur de l'emprunt
         if emprunt.utilisateur_demande_id != @current_user.id
             return render json: { error: "Vous n'êtes pas autorisé à soumettre cet emprunt pour validation" }, status: :forbidden
         end
-        
+
         # Vérifier que l'emprunt est en brouillon
         if emprunt.statut_emprunt != "brouillon"
             return render json: { error: "Seuls les emprunts en brouillon peuvent être soumis pour validation" }, status: :forbidden
         end
-        
+
         # Mettre à jour le statut de l'emprunt
         emprunt.statut_emprunt = "en_attente_validation"
         emprunt.updated_at = DateTime.now
-        
+
         if emprunt.save
             render json: emprunt
         else
             render json: { error: emprunt.errors.full_messages }, status: :unprocessable_entity
         end
     end
-    
+
     private
-    
+
     # Formater la réponse d'un emprunt avec toutes les informations
     def format_emprunt_response(emprunt)
-        
         # Mapper le statut
         status = case emprunt.statut_emprunt
                  when "validé"
@@ -429,7 +448,7 @@ class EmpruntsUserController < ApplicationController
                  else
                      "empty"
                  end
-        
+
         # Récupérer les informations des passagers
         passagers_info = if emprunt.liste_passager.present?
             emprunt.liste_passager.utilisateurs.map do |passager|
@@ -443,7 +462,7 @@ class EmpruntsUserController < ApplicationController
         else
             []
         end
-        
+
         # Récupérer les informations de la clé assignée
         cle_info = if emprunt.cle.present?
             {
@@ -453,7 +472,7 @@ class EmpruntsUserController < ApplicationController
         else
             nil
         end
-        
+
         {
             id: emprunt.id,
             carId: emprunt.voiture_id,
@@ -472,21 +491,21 @@ class EmpruntsUserController < ApplicationController
             cle_info: cle_info
         }
     end
-    
+
     # Vérifier s'il y a des chevauchements avec d'autres emprunts
     def verifier_chevauchements(voiture_id, date_debut, date_fin, emprunt_id = nil)
         # Convertir les dates si nécessaire
         date_debut = DateTime.parse(date_debut) if date_debut.is_a?(String)
         date_fin = DateTime.parse(date_fin) if date_fin.is_a?(String)
-        
+
         # Rechercher les emprunts qui se chevauchent
         query = Emprunt.where(voiture_id: voiture_id)
                      .where("(date_debut <= ? AND date_fin >= ?) OR (date_debut >= ? AND date_fin <= ?) OR (date_debut <= ? AND date_fin >= ?)", 
                            date_fin, date_debut, date_debut, date_fin, date_debut, date_debut)
-        
+
         # Exclure l'emprunt en cours de modification s'il est spécifié
         query = query.where.not(id: emprunt_id) if emprunt_id.present?
-        
+
         query
     end
 end
