@@ -11,6 +11,10 @@ import 'dayjs/locale/fr';
 import styled from 'styled-components';
 import useCars from '../../hook/useCars';
 import useUsers from '../../hook/useUsers';
+import _ from 'lodash';
+import ConfirmationModal from '../../utils/components/ConfirmationModal';
+import EmpruntAPI from '../../redux/data/emprunt/EmpruntAPI';
+import { removeEmprunt } from '../../redux/data/emprunt/empruntReducer';
 
 const SChip = styled(Chip) <{ $color: string }>`
     background-color: ${({ $color }) => $color} !important;
@@ -66,7 +70,19 @@ const TableEmprunts = () => {
         { id: 'cancel', label: '', colWidth: 50 },
     ]
 
-    const filteredEmprunts = Object.values(emprunts)
+    const ehancedEmprunts = useMemo(() => {
+        const clonedEmprunts = _.cloneDeep(Object.values(emprunts))
+
+        return clonedEmprunts.map((emprunt) => {
+            if (emprunt.statut_emprunt === "validé" && dayjs(emprunt.date_debut).isBefore(dayjs())) {
+                emprunt.statut_emprunt = "en_cours"
+            }
+
+            return emprunt
+        })
+    }, [emprunts])
+
+    const filteredEmprunts = Object.values(ehancedEmprunts)
         .filter(emprunt => !["en_attente_validation", "terminé"].includes(emprunt.statut_emprunt))
         // on garde que les emprunt en cours si la date de fin n'est pas dépassée !
         .filter(emprunt => {
@@ -81,6 +97,16 @@ const TableEmprunts = () => {
     const visibleRows = useMemo(() => {
         return filteredEmprunts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
     }, [filteredEmprunts, page, rowsPerPage]);
+
+    const handleCancel = async () => {
+        if (!selectedEmprunt) return
+
+        const res = await EmpruntAPI.deleteEmprunt(selectedEmprunt.id)
+        dispatch(removeEmprunt(res))
+
+        setIsOpenConfirmModal(false)
+        setSelectedEmprunt(undefined)
+    }
 
     return (
         <>
@@ -191,24 +217,16 @@ const TableEmprunts = () => {
                         setPage(newPage)
                     }}
                 />
-                {/* <AdminUtilisateurModal
-                    isOpen={isOpen}
-                    selectedUser={selectedUser}
-                    onClose={() => {
-                        setIsOpen(false)
-                        setSelectedUser(undefined)
-                    }}
-                /> */}
-                {/* <ConfirmationModal
+                <ConfirmationModal
                     isOpen={isOpenConfirmModal}
-                    message="Êtes-vous sûr de vouloir exclure ce membre ? (Vous pourrez le réinviter plus tard)"
-                    onConfirm={() => handleKick()}
+                    message="Êtes-vous sûr de vouloir annuler l'emprunt à venir de cet utilisateur ?"
+                    onConfirm={() => handleCancel()}
                     onClose={() => {
                         setIsOpenConfirmModal(false)
-                        setSelectedUser(undefined)
+                        setSelectedEmprunt(undefined)
                     }}
                     onConfirmName="Confirmer"
-                /> */}
+                />
             </Flex>
         </>
     )

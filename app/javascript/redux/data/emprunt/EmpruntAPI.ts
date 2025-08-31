@@ -48,9 +48,29 @@ const deleteEmprunt = async (empruntId) => {
 	}
 };
 
+const acceptEmprunt = async (empruntId) => {
+	try {
+		const res = await axiosSecured.post(`/api/emprunts/${empruntId}/valider`);
+		return res.data;
+	} catch (error) {
+		toast.error("Erreur lors de la validation de l'emprunt.");
+	}
+};
+
+const finishEmprunt = async (empruntId) => {
+	try {
+		const res = await axiosSecured.post(`/api/emprunts/${empruntId}/terminer`);
+		return res.data;
+	} catch (error) {
+		toast.error("Erreur lors de la finalisation de l'emprunt.");
+	}
+};
+
 export default {
 	fetchAll,
 	createEmprunt,
 	editEmprunt,
 	deleteEmprunt,
+	acceptEmprunt,
+	finishEmprunt,
 };

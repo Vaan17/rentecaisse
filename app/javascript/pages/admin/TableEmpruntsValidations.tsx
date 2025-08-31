@@ -14,6 +14,9 @@ import useCars from '../../hook/useCars';
 import useUsers from '../../hook/useUsers';
 import ReservationModal from '../emprunts/components/ReservationModal'
 import LocalizationProvider from '../emprunts/providers/LocalizationProvider'
+import ConfirmationModal from '../../utils/components/ConfirmationModal'
+import EmpruntAPI from '../../redux/data/emprunt/EmpruntAPI'
+import { addEmprunt, removeEmprunt } from '../../redux/data/emprunt/empruntReducer'
 
 const SChip = styled(Chip) <{ $color: string }>`
     background-color: ${({ $color }) => $color} !important;
@@ -81,6 +84,22 @@ const TableEmpruntsValidations = () => {
         return filteredEmprunts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
     }, [filteredEmprunts, page, rowsPerPage]);
 
+
+    const handleAccept = async (empruntId: number) => {
+        const res = await EmpruntAPI.acceptEmprunt(empruntId)
+        dispatch(addEmprunt(res))
+    }
+
+    const handleReject = async () => {
+        if (!selectedEmprunt) return
+
+        const res = await EmpruntAPI.deleteEmprunt(selectedEmprunt.id)
+        dispatch(removeEmprunt(res))
+
+        setIsOpenConfirmModal(false)
+        setSelectedEmprunt(undefined)
+    }
+
     return (
         <>
             <Flex fullWidth directionColumn gap="1em">
@@ -107,8 +126,6 @@ const TableEmpruntsValidations = () => {
                         </TableHead>
                         <TableBody>
                             {visibleRows.map((emprunt, index) => {
-                                const labelId = `enhanced-table-checkbox-${index}`;
-
                                 return (
                                     <TableRow
                                         key={emprunt.id}
@@ -133,13 +150,13 @@ const TableEmpruntsValidations = () => {
                                             <Tooltip title="Valider" arrow>
                                                 <IconButton onClick={() => {
                                                     setSelectedEmprunt(emprunt)
-                                                    // handleAccept(emprunt.id)
+                                                    handleAccept(emprunt.id)
                                                 }}>
                                                     <CheckCircleIcon />
                                                 </IconButton>
                                             </Tooltip>
                                         </TableCell>
-                                        <TableCell padding='none'>
+                                        {/* <TableCell padding='none'>
                                             <Tooltip title="Modifier" arrow>
                                                 <IconButton onClick={() => {
                                                     setSelectedEmprunt(emprunt)
@@ -148,7 +165,7 @@ const TableEmpruntsValidations = () => {
                                                     <EditIcon />
                                                 </IconButton>
                                             </Tooltip>
-                                        </TableCell>
+                                        </TableCell> */}
                                         <TableCell padding='none' >
                                             <Tooltip title="Refuser" arrow>
                                                 <IconButton onClick={() => {
@@ -194,7 +211,7 @@ const TableEmpruntsValidations = () => {
                         setPage(newPage)
                     }}
                 />
-                <LocalizationProvider>
+                {/* <LocalizationProvider>
                     <ReservationModal
                         open={isOpen}
                         onClose={() => setIsOpen(false)}
@@ -209,25 +226,17 @@ const TableEmpruntsValidations = () => {
                         onRefreshLocations={() => null}
                         isAdminEdition
                     />
-                </LocalizationProvider>
-                {/* <AdminUtilisateurModal
-                    isOpen={isOpen}
-                    selectedUser={selectedUser}
-                    onClose={() => {
-                        setIsOpen(false)
-                        setSelectedUser(undefined)
-                    }}
-                /> */}
-                {/* <ConfirmationModal
+                </LocalizationProvider> */}
+                <ConfirmationModal
                     isOpen={isOpenConfirmModal}
-                    message="Êtes-vous sûr de vouloir exclure ce membre ? (Vous pourrez le réinviter plus tard)"
-                    onConfirm={() => handleKick()}
+                    message="Êtes-vous sur de vouloir refuser la demande d'emprunt de cet utilisateur ?"
+                    onConfirm={() => handleReject()}
                     onClose={() => {
                         setIsOpenConfirmModal(false)
-                        setSelectedUser(undefined)
+                        setSelectedEmprunt(undefined)
                     }}
                     onConfirmName="Confirmer"
-                /> */}
+                />
             </Flex>
         </>
     )

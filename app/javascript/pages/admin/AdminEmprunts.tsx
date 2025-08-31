@@ -7,12 +7,13 @@ import TableEmpruntsValidations from './TableEmpruntsValidations';
 import TableEmpruntsFins from './TableEmpruntsFins';
 import TableEmpruntsHistorique from './TableEmpruntsHistorique';
 import useEmprunts from '../../hook/useEmprunts';
+import dayjs from 'dayjs';
 
 const AdminEmprunts = () => {
     const [tabValue, setTabValue] = useState(1)
     const emprunts = useEmprunts()
     const nbToValidate = Object.values(emprunts).filter(emprunt => emprunt.statut_emprunt === "en_attente_validation").length
-    const nbToFinish = Object.values(emprunts).filter(emprunt => emprunt.statut_emprunt === "en_cours").length
+    const nbToFinish = Object.values(emprunts).filter(emprunt => emprunt.statut_emprunt === "validé" && dayjs(emprunt.date_fin).isBefore(dayjs())).length
     const isAdmin = true // Replace with actual admin check logic
 
     if (!isAdmin) return <Flex>Vous n'avez pas accès à cette page.</Flex>

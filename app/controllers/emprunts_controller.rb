@@ -374,7 +374,25 @@ class EmpruntsController < ApplicationController
 
         # Mettre à jour le statut de l'emprunt
         emprunt.statut_emprunt = "validé"
-        emprunt.updated_at = DateTime.now
+
+        if emprunt.save
+            render json: emprunt
+        else
+            render json: { error: emprunt.errors.full_messages }, status: :unprocessable_entity
+        end
+    end
+
+    def terminer
+        emprunt = Emprunt.find(params[:id])
+        current_user = @current_user
+
+        # Vérifier que l'utilisateur est un administrateur
+        unless current_user.admin_entreprise || current_user.admin_rentecaisse
+            return render json: { error: "Vous n'êtes pas autorisé à terminer cet emprunt" }, status: :forbidden
+        end
+
+        # Mettre à jour le statut de l'emprunt
+        emprunt.statut_emprunt = "terminé"
 
         if emprunt.save
             render json: emprunt

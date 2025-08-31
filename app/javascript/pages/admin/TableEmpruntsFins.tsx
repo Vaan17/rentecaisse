@@ -10,6 +10,10 @@ import styled from 'styled-components';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import useCars from '../../hook/useCars';
 import useUsers from '../../hook/useUsers';
+import _ from 'lodash';
+import ConfirmationModal from '../../utils/components/ConfirmationModal'
+import EmpruntAPI from '../../redux/data/emprunt/EmpruntAPI'
+import { addEmprunt } from '../../redux/data/emprunt/empruntReducer'
 
 const SChip = styled(Chip) <{ $color: string }>`
     background-color: ${({ $color }) => $color} !important;
@@ -64,7 +68,19 @@ const TableEmpruntsFins = () => {
         { id: 'finish', label: '', colWidth: 50 },
     ]
 
-    const filteredEmprunts = Object.values(emprunts)
+    const ehancedEmprunts = useMemo(() => {
+        const clonedEmprunts = _.cloneDeep(Object.values(emprunts))
+
+        return clonedEmprunts.map((emprunt) => {
+            if (emprunt.statut_emprunt === "validé" && dayjs(emprunt.date_fin).isBefore(dayjs())) {
+                emprunt.statut_emprunt = "en_cours"
+            }
+
+            return emprunt
+        })
+    }, [emprunts])
+
+    const filteredEmprunts = Object.values(ehancedEmprunts)
         // on garde que les emprunt en cours, et donc la date de fin est dépassée !
         .filter(emprunt => emprunt.statut_emprunt === "en_cours" && dayjs(emprunt.date_fin).isBefore(dayjs()))
         .filter(emprunt => {
@@ -75,6 +91,14 @@ const TableEmpruntsFins = () => {
     const visibleRows = useMemo(() => {
         return filteredEmprunts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
     }, [filteredEmprunts, page, rowsPerPage]);
+
+    const handleFinish = async () => {
+        const res = await EmpruntAPI.finishEmprunt(selectedEmprunt?.id)
+        dispatch(addEmprunt(res))
+
+        setIsOpenConfirmModal(false)
+        setSelectedEmprunt(undefined)
+    }
 
     return (
         <>
@@ -128,7 +152,7 @@ const TableEmpruntsFins = () => {
                                             <Tooltip title="Terminer" arrow>
                                                 <IconButton onClick={() => {
                                                     setSelectedEmprunt(emprunt)
-                                                    // handleAccept(emprunt.id)
+                                                    setIsOpenConfirmModal(true)
                                                 }}>
                                                     <CheckCircleIcon />
                                                 </IconButton>
@@ -169,24 +193,16 @@ const TableEmpruntsFins = () => {
                         setPage(newPage)
                     }}
                 />
-                {/* <AdminUtilisateurModal
-                    isOpen={isOpen}
-                    selectedUser={selectedUser}
-                    onClose={() => {
-                        setIsOpen(false)
-                        setSelectedUser(undefined)
-                    }}
-                /> */}
-                {/* <ConfirmationModal
+                <ConfirmationModal
                     isOpen={isOpenConfirmModal}
-                    message="Êtes-vous sûr de vouloir exclure ce membre ? (Vous pourrez le réinviter plus tard)"
-                    onConfirm={() => handleKick()}
+                    message="Confirmer la fin de l'emprunt, le retour du véhicule et la remise de la clé ?"
+                    onConfirm={() => handleFinish()}
                     onClose={() => {
                         setIsOpenConfirmModal(false)
-                        setSelectedUser(undefined)
+                        setSelectedEmprunt(undefined)
                     }}
                     onConfirmName="Confirmer"
-                /> */}
+                />
             </Flex>
         </>
     )

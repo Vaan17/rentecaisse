@@ -86,6 +86,7 @@ Rails.application.routes.draw do
   get "/api/emprunts/:id" => "emprunts#get_emprunts_by_id"
   post "/api/emprunts" => "emprunts#create"
   post "/api/emprunts/:id/valider" => "emprunts#valider"
+  post "/api/emprunts/:id/terminer" => "emprunts#terminer"
   post "/api/emprunts/:id/soumettre_validation" => "emprunts#soumettre_validation"
   put "/api/emprunts" => "emprunts#update"
   delete "/api/emprunts/:id" => "emprunts#delete"
