@@ -92,7 +92,6 @@ const AdminCleModal = ({
     }
 
     const onSubmit = async (values) => {
-        debugger
         if (!selectedKey) {
             const cle = await CleAPI.createCle(values)
             dispatch(addKey(cle))
