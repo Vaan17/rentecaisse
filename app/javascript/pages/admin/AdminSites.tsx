@@ -12,6 +12,7 @@ import { useDispatch } from 'react-redux'
 import type { ISite } from '../sites/Sites';
 import AdminSiteModal from '../../modals/AdminSiteModal';
 import { removeSite } from '../../redux/data/site/siteReducer';
+import useUser from '../../hook/useUser';
 
 const SButton = styled(Button)`
     min-width: fit-content !important;
@@ -28,7 +29,8 @@ const AdminSites = () => {
     const [isOpenConfirmModal, setIsOpenConfirmModal] = useState(false)
     const [page, setPage] = useState(0)
     const [rowsPerPage, setRowsPerPage] = useState(10)
-    const isAdmin = true // Replacer par une vérification réelle de l'utilisateur
+    const user = useUser()
+    const isAdmin = user.admin_entreprise || user.admin_rentecaisse;
 
     const filterOptions = [
         {
@@ -77,7 +79,7 @@ const AdminSites = () => {
         return filteredSites.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
     }, [filteredSites, page, rowsPerPage]);
 
-    if (!isAdmin) return <Flex>Vous n'avez pas accès à cette page.</Flex>
+    if (!isAdmin) return <Alert severity="error"><b>Vous n'avez pas la permission d'accéder à cette fonctionnalitée.</b></Alert>
 
     return (
         <>

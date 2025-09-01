@@ -86,7 +86,7 @@ const App = () => {
 						<Route path="/reset-password" element={<ResetPasswordPage />} />
 						<Route path="/cgv" element={<CGVPage />} />
 						<Route path="/cgu" element={<CGUPage />} />
-						<Route path="/mentions_legales" element={<MentionsLegalesPage />} />
+						{/* <Route path="/mentions_legales" element={<MentionsLegalesPage />} /> */}
 						<Route path="/confirm_email" element={<ConfirmEmailPage />} />
 						{/* Routes authentifiées (plus de wrapper RequireAuth) */}
 						<Route

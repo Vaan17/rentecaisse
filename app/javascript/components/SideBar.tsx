@@ -15,6 +15,7 @@ import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import CommuteIcon from '@mui/icons-material/Commute';
 import KeyIcon from '@mui/icons-material/Key';
+import useUser from '../hook/useUser';
 
 const SidebarContainer = styled(Flex) <{ $isExpended: boolean }>`
 	width: 40px;
@@ -87,7 +88,8 @@ interface MenuItem {
 }
 
 const SideBar = () => {
-	const isAdmin = true; // À remplacer par votre logique d'authentification
+	const user = useUser()
+	const isAdmin = user.admin_entreprise || user.admin_rentecaisse;
 	const [isExpended, setIsExpended] = useState(isDesktop)
 	const navigate = useNavigate()
 

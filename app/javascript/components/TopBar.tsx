@@ -171,12 +171,12 @@ const TopBar = () => {
 			subtitle: "Consultez les CGU de Rentecaisse",
 			path: "/cgu",
 		},
-		{
-			icon: <DescriptionIcon />,
-			title: "Mentions légales",
-			subtitle: "Consultez les mentions légales de Rentecaisse",
-			path: "/mentions_legales",
-		},
+		// {
+		// 	icon: <DescriptionIcon />,
+		// 	title: "Mentions légales",
+		// 	subtitle: "Consultez les mentions légales de Rentecaisse",
+		// 	path: "/mentions_legales",
+		// },
 	]
 
 	return (

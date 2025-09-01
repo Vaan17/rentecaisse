@@ -1,18 +1,20 @@
 import React, { useState } from 'react'
 import { Flex } from '../../components/style/flex'
-import { Box, Chip, Tabs } from '@mui/material'
+import { Alert, Box, Chip, Tabs } from '@mui/material'
 import Tab from '@mui/material/Tab';
 import TableUtilisateur from './TableUtilisateurs';
 import TableInscriptions from './TableInscriptions';
 import useUsers from '../../hook/useUsers';
+import useUser from '../../hook/useUser';
 
 const AdminUtilisateurs = () => {
     const [tabValue, setTabValue] = useState(1)
     const users = useUsers()
     const nbPendingInscriptions = Object.values(users).filter(user => !user.confirmation_entreprise).length
-    const isAdmin = true // Replace with actual admin check logic
+    const user = useUser()
+    const isAdmin = user.admin_entreprise || user.admin_rentecaisse;
 
-    if (!isAdmin) return <Flex>Vous n'avez pas accès à cette page.</Flex>
+    if (!isAdmin) return <Alert severity="error"><b>Vous n'avez pas la permission d'accéder à cette fonctionnalitée.</b></Alert>
 
     return (
         <Flex fullWidth directionColumn alignItemsStart gap="1em">
