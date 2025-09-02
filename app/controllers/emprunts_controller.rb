@@ -121,7 +121,7 @@ class EmpruntsController < ApplicationController
                         "draft"
                      elsif emprunt.statut_emprunt == "en_attente_validation"
                         "pending_validation"
-                     elsif emprunt.statut_emprunt == "completed"
+                     elsif emprunt.statut_emprunt == "Terminé"
                         "completed"
                      else
                         "empty"
@@ -392,7 +392,7 @@ class EmpruntsController < ApplicationController
         end
 
         # Mettre à jour le statut de l'emprunt
-        emprunt.statut_emprunt = "terminé"
+        emprunt.statut_emprunt = "Terminé"
 
         if emprunt.save
             render json: emprunt
@@ -426,6 +426,37 @@ class EmpruntsController < ApplicationController
         end
     end
 
+    # Récupérer le nombre d'emprunts en attente de validation pour l'entreprise et le site de l'utilisateur
+    def get_pending_count
+        # Vérifier que l'utilisateur est un administrateur
+        unless @current_user.admin_entreprise || @current_user.admin_rentecaisse
+            return render json: { error: "Vous n'êtes pas autorisé à accéder à cette information" }, status: :forbidden
+        end
+        
+        entreprise_id = @current_user.entreprise_id
+        site_id = @current_user.site_id
+        
+        # Utiliser le service pour compter les emprunts en attente
+        count = EmpruntService.count_pending_validations(entreprise_id, site_id)
+        
+        render json: { pending_count: count }
+    end
+
+    # Récupérer le nombre d'emprunts à terminer pour l'entreprise et le site de l'utilisateur
+    def get_to_complete_count
+        # Vérifier que l'utilisateur est un administrateur
+        unless @current_user.admin_entreprise || @current_user.admin_rentecaisse
+            return render json: { error: "Vous n'êtes pas autorisé à accéder à cette information" }, status: :forbidden
+        end
+        
+        entreprise_id = @current_user.entreprise_id
+        site_id = @current_user.site_id
+        
+        # Utiliser le service pour compter les emprunts à terminer
+        count = EmpruntService.count_expired_validations(entreprise_id, site_id)
+        
+        render json: { to_complete_count: count }
+    end
     private
 
     # Formater la réponse d'un emprunt avec toutes les informations

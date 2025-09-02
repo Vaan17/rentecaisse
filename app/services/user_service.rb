@@ -191,6 +191,13 @@ class UserService
     }
   end
 
+  # Compte les utilisateurs en attente de validation pour une entreprise et un site
+  def self.count_pending_validations(entreprise_id, site_id)
+    Utilisateur.where(entreprise_id: entreprise_id, site_id: site_id)
+               .where(confirmation_entreprise: false)
+               .count
+  end
+
   private
 
   def self.validate_field(field, value)

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import styled, { css } from 'styled-components';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -15,6 +15,10 @@ import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import CommuteIcon from '@mui/icons-material/Commute';
 import KeyIcon from '@mui/icons-material/Key';
+import NotificationBadge from './NotificationBadge';
+import usePendingEmprunts from '../hook/usePendingEmprunts';
+import useEmpruntsToComplete from '../hook/useEmpruntsToComplete';
+import usePendingUsers from '../hook/usePendingUsers';
 import useUser from '../hook/useUser';
 
 const SidebarContainer = styled(Flex) <{ $isExpended: boolean }>`
@@ -85,13 +89,22 @@ interface MenuItem {
 	title: string;
 	subtitle: string;
 	path: string;
+	showBadge?: boolean;
 }
 
+const MenuItemWrapper = styled.div`
+	position: relative;
+	width: 100%;
+`;
+
 const SideBar = () => {
-	const user = useUser()
+	const user = useUser();
 	const isAdmin = user.admin_entreprise || user.admin_rentecaisse;
 	const [isExpended, setIsExpended] = useState(isDesktop)
 	const navigate = useNavigate()
+	const { pendingCount } = usePendingEmprunts(30000); // Polling toutes les 30 secondes
+	const { toCompleteCount } = useEmpruntsToComplete(30000); // Polling toutes les 30 secondes
+	const { pendingUsersCount } = usePendingUsers(30000); // Polling toutes les 30 secondes
 
 	const regularMenuItems: MenuItem[] = [
 		{
@@ -132,12 +145,14 @@ const SideBar = () => {
 			title: "Administration des membres",
 			subtitle: "Permet de gérer les membres",
 			path: "/admin/utilisateurs",
+			showBadge: true,
 		},
 		{
 			icon: <ContentPasteIcon />,
 			title: "Administration des emprunts",
 			subtitle: "Permet de gérer les emprunts",
 			path: "/admin/emprunts",
+			showBadge: true,
 		},
 		{
 			icon: <PlaceIcon />,
@@ -212,20 +227,70 @@ const SideBar = () => {
 								arrow
 								disableHoverListener={isExpended}
 							>
-								<FlexItem
-									key={menu.title}
-									fullWidth
-									justifyCenter
-									gap
-									onClick={() => navigate(menu.path)}
-									$isExpended={isExpended}
-								>
-									{menu.icon}
-									{isExpended && <Flex fullWidth directionColumn alignItemsStart gap="4px">
-										<ItemTitle>{menu.title}</ItemTitle>
-										<ItemSubtitle>{menu.subtitle}</ItemSubtitle>
-									</Flex>}
-								</FlexItem>
+								<MenuItemWrapper>
+									<FlexItem
+										key={menu.title}
+										fullWidth
+										justifyCenter
+										gap
+										onClick={() => navigate(menu.path)}
+										$isExpended={isExpended}
+									>
+										<Flex alignItemsCenter gap="4px">
+											{menu.icon}
+											{menu.showBadge && !isExpended && (
+												<Flex directionColumn alignItemsCenter gap="2px">
+													{menu.title === "Administration des membres" && pendingUsersCount > 0 && (
+														<NotificationBadge count={0} color="green" />
+													)}
+													{menu.title === "Administration des emprunts" && pendingCount > 0 && (
+														<NotificationBadge count={0} color="orange" />
+													)}
+													{menu.title === "Administration des emprunts" && toCompleteCount > 0 && (
+														<NotificationBadge count={0} color="blue" />
+													)}
+												</Flex>
+											)}
+										</Flex>
+										{isExpended && (
+											<Flex fullWidth directionColumn alignItemsStart gap="4px">
+												<ItemTitle>{menu.title}</ItemTitle>
+												<ItemSubtitle>{menu.subtitle}</ItemSubtitle>
+												{menu.showBadge && (
+													<>
+														{menu.title === "Administration des membres" && pendingUsersCount > 0 && (
+															<NotificationBadge 
+																count={pendingUsersCount} 
+																color="green" 
+																textOnly 
+																textSuffix="à valider"
+																itemType="utilisateur"
+															/>
+														)}
+														{menu.title === "Administration des emprunts" && pendingCount > 0 && (
+															<NotificationBadge 
+																count={pendingCount} 
+																color="orange" 
+																textOnly 
+																textSuffix="à valider" 
+																itemType="emprunt"
+															/>
+														)}
+														{menu.title === "Administration des emprunts" && toCompleteCount > 0 && (
+															<NotificationBadge 
+																count={toCompleteCount} 
+																color="blue" 
+																textOnly 
+																textSuffix="à terminer"
+																itemType="emprunt" 
+															/>
+														)}
+													</>
+												)}
+											</Flex>
+										)}
+									</FlexItem>
+								</MenuItemWrapper>
 							</Tooltip>
 						))}
 					</MenuSection>

@@ -182,6 +182,23 @@ class EmpruntService
   rescue ActiveRecord::RecordInvalid => e
     raise e
   end
+
+  # Compte les emprunts en attente de validation pour une entreprise et un site
+  def self.count_pending_validations(entreprise_id, site_id)
+    Emprunt.joins(:voiture)
+           .where(statut_emprunt: 'en_attente_validation')
+           .where(voitures: { entreprise_id: entreprise_id, site_id: site_id })
+           .count
+  end
+
+  # Compte les emprunts validés expirés (à terminer) pour une entreprise et un site
+  def self.count_expired_validations(entreprise_id, site_id)
+    Emprunt.joins(:voiture)
+           .where(statut_emprunt: 'validé')
+           .where('date_fin < ?', DateTime.now)
+           .where(voitures: { entreprise_id: entreprise_id, site_id: site_id })
+           .count
+  end
   
   private
   

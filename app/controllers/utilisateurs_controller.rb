@@ -79,4 +79,20 @@ class UtilisateursController < ApplicationController
 
     render json: { "id" => params["id"] }
   end
+
+  # Récupérer le nombre d'utilisateurs en attente de validation pour l'entreprise et le site de l'utilisateur
+  def get_pending_count
+    # Vérifier que l'utilisateur est un administrateur d'entreprise
+    unless @current_user.admin_entreprise
+      return render json: { error: "Vous n'êtes pas autorisé à accéder à cette information" }, status: :forbidden
+    end
+    
+    entreprise_id = @current_user.entreprise_id
+    site_id = @current_user.site_id
+    
+    # Utiliser le service pour compter les utilisateurs en attente
+    count = UserService.count_pending_validations(entreprise_id, site_id)
+    
+    render json: { pending_users_count: count }
+  end
 end

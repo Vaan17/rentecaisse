@@ -119,3 +119,25 @@ export const soumettreEmpruntPourValidation = async (empruntId: number): Promise
     throw error;
   }
 };
+
+// Récupérer le nombre d'emprunts en attente de validation
+export const getPendingEmpruntsCount = async (): Promise<number> => {
+  try {
+    const response = await axiosSecured.get('/api/emprunts/pending_count');
+    return response.data.pending_count;
+  } catch (error) {
+    console.error('Erreur lors de la récupération du nombre d\'emprunts en attente:', error);
+    throw error;
+  }
+};
+
+// Récupérer le nombre d'emprunts à terminer
+export const getEmpruntsToCompleteCount = async (): Promise<number> => {
+  try {
+    const response = await axiosSecured.get('/api/emprunts/to_complete_count');
+    return response.data.to_complete_count;
+  } catch (error) {
+    console.error('Erreur lors de la récupération du nombre d\'emprunts à terminer:', error);
+    throw error;
+  }
+};

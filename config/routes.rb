@@ -27,6 +27,7 @@ Rails.application.routes.draw do
   # Routes pour les utilisateurs
   get "/api/user/self" => "utilisateurs#fetch_self"
   get "/api/utilisateurs" => "utilisateurs#fetch_all"
+  get "/api/utilisateurs/pending_count" => "utilisateurs#get_pending_count"
   post "/api/utilisateurs" => "utilisateurs#invite"
   put "/api/utilisateurs/inscriptions/:id" => "utilisateurs#accept"
   put "/api/utilisateurs" => "utilisateurs#update"
@@ -83,6 +84,8 @@ Rails.application.routes.draw do
   get "/api/emprunts" => "emprunts#fetch_all"
   get "/api/emprunts/multiple_voitures" => "emprunts#get_emprunts_par_multiple_voitures"
   get "/api/emprunts/voiture/:voiture_id" => "emprunts#get_emprunts_par_voiture"
+  get "/api/emprunts/pending_count" => "emprunts#get_pending_count"
+  get "/api/emprunts/to_complete_count" => "emprunts#get_to_complete_count"
   get "/api/emprunts/:id" => "emprunts#get_emprunts_by_id"
   post "/api/emprunts" => "emprunts#create"
   post "/api/emprunts/:id/valider" => "emprunts#valider"
@@ -91,8 +94,6 @@ Rails.application.routes.draw do
   put "/api/emprunts" => "emprunts#update"
   delete "/api/emprunts/:id" => "emprunts#delete"
   delete "/api/emprunts/:id" => "emprunts#destroy"
-
-
   # Routes pour la gestion de suppression de compte
   post "/api/user/request_deletion" => "authenticated_page#request_account_deletion"
   post "/api/user/cancel_deletion" => "authenticated_page#cancel_deletion_request"

@@ -37,10 +37,24 @@ const empruntsInfos = {
         label: 'En cours',
         color: 'rgba(244, 67, 54, 0.7)',
     },
-    "terminé": {
+    "Terminé": {
         label: 'Terminé',
         color: 'rgba(33, 150, 243, 0.7)',
+    },
+    "completed": {
+        label: 'Complété',
+        color: 'rgba(33, 150, 243, 0.7)',
+    },
+    // Statut par défaut pour les cas non prévus
+    "default": {
+        label: 'Statut inconnu',
+        color: 'rgba(128, 128, 128, 0.7)',
     }
+}
+
+// Fonction helper pour récupérer les informations de statut de manière sécurisée
+const getEmpruntInfo = (statut: string) => {
+    return empruntsInfos[statut] || empruntsInfos["default"];
 }
 
 const TableEmprunts = () => {
@@ -146,8 +160,8 @@ const TableEmprunts = () => {
                                     >
                                         <TableCell padding='none'>
                                             <SChip
-                                                label={empruntsInfos[emprunt.statut_emprunt].label}
-                                                $color={empruntsInfos[emprunt.statut_emprunt].color}
+                                                label={getEmpruntInfo(emprunt.statut_emprunt).label}
+                                                $color={getEmpruntInfo(emprunt.statut_emprunt).color}
                                             />
                                         </TableCell>
                                         <TableCell padding='none'>{emprunt.nom_emprunt}</TableCell>
