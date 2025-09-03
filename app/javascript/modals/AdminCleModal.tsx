@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect } from 'react'
 import { Button, IconButton, Modal } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close';
 import { Flex } from '../components/style/flex';
@@ -6,15 +6,8 @@ import styled from 'styled-components';
 import { FormProvider, useForm } from "react-hook-form"
 import { yupResolver } from "@hookform/resolvers/yup"
 import Yup from "../utils/yup"
-import FText from '../utils/form/FText';
-import FNumber from '../utils/form/FNumber';
 import FSelect from '../utils/form/FSelect';
-import _ from 'lodash';
-import VoitureAPI from "../redux/data/voiture/VoitureAPI"
 import { useDispatch } from 'react-redux';
-import { addCar } from '../redux/data/voiture/voitureReducer';
-import type { IVoiture } from '../pages/voitures/Voitures';
-import axiosSecured from '../services/apiService';
 import { ICle } from '../hook/useCles';
 import useCars from '../hook/useCars';
 import useSites from '../hook/useSites';
@@ -75,17 +68,27 @@ const AdminCleModal = ({
 
     const methods = useForm({
         resolver: yupResolver(schema),
+        defaultValues: {
+            statut_cle: "",
+            voiture_id: undefined,
+            site_id: undefined
+        }
     })
 
     useEffect(() => {
-        if (selectedKey) {
-            methods.reset(selectedKey)
-        } else {
-            methods.reset({
-                statut_cle: "",
-            })
+        if (isOpen) {
+            if (selectedKey) {
+                methods.reset(selectedKey)
+            } else {
+                // Réinitialisation complète pour l'ajout
+                methods.reset({
+                    statut_cle: "",
+                    voiture_id: undefined,
+                    site_id: undefined
+                })
+            }
         }
-    }, [selectedKey]);
+    }, [isOpen, selectedKey, methods]);
 
     const handleClose = () => {
         onClose()

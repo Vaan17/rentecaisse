@@ -80,7 +80,10 @@ const AdminCles = () => {
                     <CustomFilter options={filterOptions} filterCallback={
                         (filterBy, searchValue) => { setFilterProperties({ filterBy, searchValue }) }
                     } />
-                    <SButton variant="contained" onClick={() => setIsOpen(true)}>
+                    <SButton variant="contained" onClick={() => {
+                        setSelectedKey(undefined)
+                        setIsOpen(true)
+                    }}>
                         Ajouter une clé
                     </SButton>
                 </Flex>
