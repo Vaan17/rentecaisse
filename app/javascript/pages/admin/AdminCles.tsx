@@ -40,8 +40,8 @@ const AdminCles = () => {
 
     const filterOptions = [
         { label: 'Statut', value: 'statut_cle' },
-        { label: 'Voiture', value: 'voiture_id' },
-        { label: 'Site', value: 'site_id' }
+        { label: 'Voiture', value: 'voiture_info' },
+        { label: 'Site', value: 'site_info' }
     ]
 
     const headCells = [
@@ -52,7 +52,16 @@ const AdminCles = () => {
         { id: 'delete', label: '', colWidth: 50 },
     ]
 
-    const filteredKeys = Object.values(keys).filter(cle => {
+    // Enrichir les clés avec les informations de voiture et site pour le filtre
+    const enrichedKeys = Object.values(keys).map(cle => ({
+        ...cle,
+        voiture_info: cars[cle.voiture_id] ? 
+            `${cars[cle.voiture_id].marque} ${cars[cle.voiture_id].modele} (${cars[cle.voiture_id].année_fabrication}) ${cars[cle.voiture_id].couleur} - ${cars[cle.voiture_id].immatriculation}` : 
+            '',
+        site_info: sites[cle.site_id]?.nom_site || ''
+    }))
+
+    const filteredKeys = enrichedKeys.filter(cle => {
         if (!filterProperties.filterBy || !filterProperties.searchValue) return true
         return cle[filterProperties.filterBy]?.toString()?.toLowerCase().includes(filterProperties.searchValue.toLowerCase())
     })
