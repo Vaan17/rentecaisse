@@ -130,56 +130,25 @@ const SiteDetails = () => {
                 <ArrowBack />
             </IconButton>
 
-            {/* Hero Section */}
-            <Card elevation={6} sx={{ borderRadius: 3, overflow: 'hidden', mb: 4 }}>
-                <Box sx={{ position: 'relative', height: 300 }}>
-                    {selectedSite.image && !selectedSite.image.includes('placeholder') ? (
-                        <CardMedia
-                            component="img"
-                            height="300"
-                            image={selectedSite.image}
-                            alt={selectedSite.nom_site}
-                            sx={{ objectFit: 'cover', objectPosition: 'center 30%' }}
-                        />
-                    ) : (
-                        <Box 
-                            sx={{ 
-                                height: '100%',
-                                background: 'linear-gradient(135deg, #FFD700 0%, #FFC700 100%)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                            }}
-                        >
-                            <LocationOn sx={{ fontSize: 60, color: 'white', opacity: 0.7 }} />
-                        </Box>
-                    )}
-                    
-                    {/* Overlay avec titre */}
-                    <Box
-                        sx={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            background: 'linear-gradient(45deg, rgba(0,0,0,0.6) 0%, transparent 50%)',
-                            display: 'flex',
-                            alignItems: 'end',
-                            p: 4
-                        }}
-                    >
-                        <Box>
-                            <Typography variant="h3" color="white" fontWeight="bold" gutterBottom>
-                                {selectedSite.nom_site}
-                            </Typography>
-                            <Typography variant="h6" color="white" sx={{ opacity: 0.9 }}>
-                                <LocationOn sx={{ mr: 1, verticalAlign: 'middle' }} />
-                                {selectedSite.adresse}, {selectedSite.code_postal} {selectedSite.ville}
-                            </Typography>
-                        </Box>
-                    </Box>
-
+            {/* Hero Section - Layout Asymétrique Moderne */}
+            <Card elevation={6} sx={{ 
+                borderRadius: 3, 
+                overflow: 'hidden', 
+                mb: 4,
+                display: 'flex',
+                flexDirection: { xs: 'column', md: 'row' },
+                minHeight: { xs: 'auto', md: 450 }
+            }}>
+                {/* Section Contenu */}
+                <CardContent sx={{ 
+                    flex: { xs: 1, md: 1.5 }, 
+                    p: { xs: 3, md: 4 },
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    position: 'relative',
+                    background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.05) 0%, rgba(255, 199, 0, 0.1) 100%)'
+                }}>
                     {/* Badge véhicules */}
                     <Chip
                         icon={<DirectionsCar />}
@@ -188,9 +157,115 @@ const SiteDetails = () => {
                             position: 'absolute',
                             top: 16,
                             right: 16,
-                            bgcolor: 'rgba(255, 255, 255, 0.95)',
+                            bgcolor: '#FFC700',
+                            color: 'white',
                             fontWeight: 600,
                             fontSize: '0.9rem'
+                        }}
+                    />
+
+                    <Box sx={{ mt: 2 }}>
+                        <Typography variant="h3" fontWeight="bold" gutterBottom color="text.primary">
+                            {selectedSite.nom_site}
+                        </Typography>
+                        
+                        <Typography variant="h6" color="text.secondary" sx={{ mb: 3, display: 'flex', alignItems: 'center' }}>
+                            <LocationOn sx={{ mr: 1, color: '#FFC700' }} />
+                            {selectedSite.adresse}, {selectedSite.code_postal} {selectedSite.ville}
+                        </Typography>
+
+                        {/* Informations rapides */}
+                        <Stack direction="row" spacing={2} sx={{ mb: 3, flexWrap: 'wrap', gap: 1 }}>
+                            <Chip 
+                                icon={<Phone />} 
+                                label={selectedSite.telephone} 
+                                variant="outlined"
+                                size="small"
+                                sx={{ fontSize: '0.8rem' }}
+                            />
+                            <Chip 
+                                icon={<Email />} 
+                                label="Contact"
+                                variant="outlined"
+                                size="small"
+                                clickable
+                                onClick={() => window.open(`mailto:${selectedSite.email}`, '_self')}
+                                sx={{ fontSize: '0.8rem' }}
+                            />
+                            {selectedSite.site_web && (
+                                <Chip 
+                                    icon={<Language />} 
+                                    label="Site Web"
+                                    variant="outlined"
+                                    size="small"
+                                    clickable
+                                    onClick={() => window.open(
+                                        selectedSite.site_web.startsWith('http') 
+                                            ? selectedSite.site_web 
+                                            : `https://${selectedSite.site_web}`, 
+                                        '_blank'
+                                    )}
+                                    sx={{ fontSize: '0.8rem' }}
+                                />
+                            )}
+                        </Stack>
+
+                        <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.6 }}>
+                            Découvrez ce site avec ses {getVehicleCount(selectedSite.id)} véhicules disponibles. 
+                            Contactez-nous pour plus d'informations ou pour organiser une visite.
+                        </Typography>
+                    </Box>
+                </CardContent>
+
+                {/* Section Image */}
+                <Box sx={{ 
+                    flex: 1,
+                    position: 'relative',
+                    minHeight: { xs: 250, md: 'auto' },
+                    aspectRatio: { xs: '16/9', md: '4/3' },
+                    backgroundColor: '#f5f5f5'
+                }}>
+                    {selectedSite.image && !selectedSite.image.includes('placeholder') ? (
+                        <CardMedia
+                            component="img"
+                            image={selectedSite.image}
+                            alt={selectedSite.nom_site}
+                            sx={{ 
+                                width: '100%', 
+                                height: '100%', 
+                                objectFit: 'contain',
+                                backgroundColor: 'transparent'
+                            }}
+                        />
+                    ) : (
+                        <Box 
+                            sx={{ 
+                                width: '100%',
+                                height: '100%',
+                                background: 'linear-gradient(135deg, #FFD700 0%, #FFC700 100%)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexDirection: 'column'
+                            }}
+                        >
+                            <LocationOn sx={{ fontSize: 60, color: 'white', opacity: 0.7, mb: 2 }} />
+                            <Typography variant="h6" color="white" sx={{ opacity: 0.8, textAlign: 'center' }}>
+                                Image du site
+                            </Typography>
+                        </Box>
+                    )}
+                    
+                    {/* Overlay subtil pour améliorer la lisibilité */}
+                    <Box
+                        sx={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            background: 'linear-gradient(to left, transparent 70%, rgba(255,255,255,0.1) 100%)',
+                            pointerEvents: 'none'
                         }}
                     />
                 </Box>

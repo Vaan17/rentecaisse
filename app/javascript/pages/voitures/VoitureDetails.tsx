@@ -112,56 +112,25 @@ const VoitureDetails = () => {
                 <ArrowBack />
             </IconButton>
 
-            {/* Hero Section */}
-            <Card elevation={6} sx={{ borderRadius: 3, overflow: 'hidden', mb: 4 }}>
-                <Box sx={{ position: 'relative', height: 300 }}>
-                    {selectedVoiture.image && !selectedVoiture.image.includes('placeholder') ? (
-                        <CardMedia
-                            component="img"
-                            height="300"
-                            image={selectedVoiture.image}
-                            alt={`${selectedVoiture.marque} ${selectedVoiture.modele}`}
-                            sx={{ objectFit: 'cover', objectPosition: 'center 30%' }}
-                        />
-                    ) : (
-                        <Box 
-                            sx={{ 
-                                height: '100%',
-                                background: 'linear-gradient(135deg, #FFD700 0%, #FFC700 100%)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                            }}
-                        >
-                            <DirectionsCar sx={{ fontSize: 60, color: 'white', opacity: 0.7 }} />
-                        </Box>
-                    )}
-                    
-                    {/* Overlay avec titre */}
-                    <Box
-                        sx={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            background: 'linear-gradient(45deg, rgba(0,0,0,0.6) 0%, transparent 50%)',
-                            display: 'flex',
-                            alignItems: 'end',
-                            p: 4
-                        }}
-                    >
-                        <Box>
-                            <Typography variant="h3" color="white" fontWeight="bold" gutterBottom>
-                                {selectedVoiture.marque} {selectedVoiture.modele}
-                            </Typography>
-                            <Typography variant="h6" color="white" sx={{ opacity: 0.9 }}>
-                                <DirectionsCar sx={{ mr: 1, verticalAlign: 'middle' }} />
-                                {selectedVoiture.immatriculation}
-                            </Typography>
-                        </Box>
-                    </Box>
-
+            {/* Hero Section - Layout Asymétrique Moderne */}
+            <Card elevation={6} sx={{ 
+                borderRadius: 3, 
+                overflow: 'hidden', 
+                mb: 4,
+                display: 'flex',
+                flexDirection: { xs: 'column', md: 'row' },
+                minHeight: { xs: 'auto', md: 450 }
+            }}>
+                {/* Section Contenu */}
+                <CardContent sx={{ 
+                    flex: { xs: 1, md: 1.5 }, 
+                    p: { xs: 3, md: 4 },
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    position: 'relative',
+                    background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.05) 0%, rgba(255, 199, 0, 0.1) 100%)'
+                }}>
                     {/* Badge de statut */}
                     <Chip
                         label={selectedVoiture.statut_voiture}
@@ -175,6 +144,136 @@ const VoitureDetails = () => {
                             color: 'white',
                             fontWeight: 600,
                             fontSize: '0.9rem'
+                        }}
+                    />
+
+                    <Box sx={{ mt: 2 }}>
+                        <Typography variant="h3" fontWeight="bold" gutterBottom color="text.primary">
+                            {selectedVoiture.marque} {selectedVoiture.modele}
+                        </Typography>
+                        
+                        <Typography variant="h6" color="text.secondary" sx={{ mb: 3, display: 'flex', alignItems: 'center' }}>
+                            <DirectionsCar sx={{ mr: 1, color: '#FFC700' }} />
+                            {selectedVoiture.immatriculation}
+                        </Typography>
+
+                        {/* Informations rapides */}
+                        <Stack direction="row" spacing={2} sx={{ mb: 3, flexWrap: 'wrap', gap: 1 }}>
+                            <Chip 
+                                icon={<LocalGasStation />} 
+                                label={`${getFuelIcon(selectedVoiture.carburant)} ${selectedVoiture.carburant}`}
+                                variant="outlined"
+                                size="small"
+                                sx={{ fontSize: '0.8rem' }}
+                            />
+                            <Chip 
+                                icon={<People />} 
+                                label={`${selectedVoiture.nombre_places} places`}
+                                variant="outlined"
+                                size="small"
+                                sx={{ fontSize: '0.8rem' }}
+                            />
+                            <Chip 
+                                icon={<Speed />} 
+                                label={`${selectedVoiture.puissance} CV`}
+                                variant="outlined"
+                                size="small"
+                                sx={{ fontSize: '0.8rem' }}
+                            />
+                            <Chip 
+                                icon={<Settings />} 
+                                label={selectedVoiture.type_boite}
+                                variant="outlined"
+                                size="small"
+                                sx={{ fontSize: '0.8rem' }}
+                            />
+                        </Stack>
+
+                        <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.6 }}>
+                            {selectedVoiture.année_fabrication} • {selectedVoiture.couleur} • 
+                            {selectedVoiture.nombre_portes} portes • 
+                            {selectedVoiture.statut_voiture === 'Fonctionnelle' && ' Disponible pour réservation'}
+                            {selectedVoiture.statut_voiture === 'En réparation' && ' Temporairement indisponible'}
+                            {selectedVoiture.statut_voiture === 'Non fonctionnelle' && ' Hors service'}
+                        </Typography>
+
+                        {siteInfo.nom_site && (
+                            <Box sx={{ mt: 2, p: 2, bgcolor: 'rgba(255, 199, 0, 0.1)', borderRadius: 2 }}>
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                                    Rattaché au site :
+                                </Typography>
+                                <Button
+                                    variant="text"
+                                    startIcon={<LocationOn />}
+                                    onClick={() => navigate(`/sites/${siteInfo.id}`)}
+                                    sx={{
+                                        p: 0,
+                                        minWidth: 'auto',
+                                        color: '#FFC700',
+                                        textTransform: 'none',
+                                        fontWeight: 600,
+                                        '&:hover': {
+                                            backgroundColor: 'transparent',
+                                            textDecoration: 'underline'
+                                        }
+                                    }}
+                                >
+                                    {siteInfo.nom_site}
+                                </Button>
+                            </Box>
+                        )}
+                    </Box>
+                </CardContent>
+
+                {/* Section Image */}
+                <Box sx={{ 
+                    flex: 1,
+                    position: 'relative',
+                    minHeight: { xs: 250, md: 'auto' },
+                    aspectRatio: { xs: '16/9', md: '4/3' },
+                    backgroundColor: '#f5f5f5'
+                }}>
+                    {selectedVoiture.image && !selectedVoiture.image.includes('placeholder') ? (
+                        <CardMedia
+                            component="img"
+                            image={selectedVoiture.image}
+                            alt={`${selectedVoiture.marque} ${selectedVoiture.modele}`}
+                            sx={{ 
+                                width: '100%', 
+                                height: '100%', 
+                                objectFit: 'contain',
+                                backgroundColor: 'transparent'
+                            }}
+                        />
+                    ) : (
+                        <Box 
+                            sx={{ 
+                                width: '100%',
+                                height: '100%',
+                                background: 'linear-gradient(135deg, #FFD700 0%, #FFC700 100%)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexDirection: 'column'
+                            }}
+                        >
+                            <DirectionsCar sx={{ fontSize: 60, color: 'white', opacity: 0.7, mb: 2 }} />
+                            <Typography variant="h6" color="white" sx={{ opacity: 0.8, textAlign: 'center' }}>
+                                Image du véhicule
+                            </Typography>
+                        </Box>
+                    )}
+                    
+                    {/* Overlay subtil pour améliorer la lisibilité */}
+                    <Box
+                        sx={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            background: 'linear-gradient(to left, transparent 70%, rgba(255,255,255,0.1) 100%)',
+                            pointerEvents: 'none'
                         }}
                     />
                 </Box>
