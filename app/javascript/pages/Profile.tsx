@@ -167,6 +167,7 @@ const ImagePlaceholder = styled.div`
   background-color: #f0f0f0;
   color: #666;
   font-size: 3rem;
+  text-align: center;
 `;
 
 const SiteImage = styled.img`
@@ -609,6 +610,7 @@ interface UserProfileData {
     ville: string;
     code_postal: string;
     pays: string;
+    image?: string;
   };
   site_info: {
     nom: string;
@@ -657,6 +659,9 @@ const Profile: React.FC = () => {
   const [siteImage, setSiteImage] = useState<string | null>(null);
   const [siteImageLoading, setSiteImageLoading] = useState(false);
   const [siteImageError, setSiteImageError] = useState<string | null>(null);
+  const [entrepriseImage, setEntrepriseImage] = useState<string | null>(null);
+  const [entrepriseImageLoading, setEntrepriseImageLoading] = useState(false);
+  const [entrepriseImageError, setEntrepriseImageError] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const navigate = useNavigate();
@@ -671,8 +676,14 @@ const Profile: React.FC = () => {
     if (userData) {
       fetchUserImage();
       fetchSiteImage();
+      fetchEntrepriseImage();
     }
   }, [userData]);
+
+  // Debug: Afficher l'état actuel de siteImage
+  useEffect(() => {
+    console.log('🔍 [DEBUG] État actuel de siteImage:', siteImage);
+  }, [siteImage]);
 
   const fetchUserProfile = async () => {
     try {
@@ -721,34 +732,116 @@ const Profile: React.FC = () => {
   };
 
   const fetchSiteImage = async () => {
-    if (!userData?.site_info?.image) {
+    console.log('🔍 [DEBUG] === DÉBUT fetchSiteImage ===');
+    console.log('🔍 [DEBUG] userData existe:', !!userData);
+    console.log('🔍 [DEBUG] userData.site_info:', userData?.site_info);
+    console.log('🔍 [DEBUG] site_info.image existe:', !!userData?.site_info?.image);
+    console.log('🔍 [DEBUG] site_info.image valeur:', userData?.site_info?.image);
+    
+    // Forcer l'initialisation si pas de données
+    if (!userData?.site_info) {
+      console.log('❌ [DEBUG] Pas de site_info - forcer placeholder');
       setSiteImage(null);
+      setSiteImageLoading(false);
+      return;
+    }
+    
+    if (!userData?.site_info?.image) {
+      console.log('❌ [DEBUG] Pas d\'image site trouvée - forcer placeholder');
+      setSiteImage(null);
+      setSiteImageLoading(false);
       return;
     }
 
     setSiteImageLoading(true);
     setSiteImageError(null);
+    console.log('🔍 [DEBUG] Début traitement image...');
 
     try {
-      // L'image du site est déjà incluse dans les données du profil en base64
+      // L'image du site est déjà incluse dans les données du profil
       const imageData = userData.site_info.image;
+      console.log('🔍 [DEBUG] imageData type:', typeof imageData);
+      console.log('🔍 [DEBUG] imageData longueur:', imageData?.length);
+      console.log('🔍 [DEBUG] imageData début:', imageData?.substring(0, 100));
       
-      // Vérifier si c'est une image en base64 ou un placeholder
+      // Vérifier le format de l'image
       if (imageData.startsWith('data:image/')) {
+        console.log('✅ [DEBUG] Image base64 détectée - affichage');
+        setSiteImage(imageData);
+      } else if (imageData.startsWith('/images/placeholders/')) {
+        console.log('✅ [DEBUG] Placeholder SVG détecté - affichage');
         setSiteImage(imageData);
       } else if (imageData.includes('placeholder')) {
-        // C'est un placeholder, ne pas l'afficher
+        console.log('⚠️ [DEBUG] Placeholder générique détecté - forcer fallback');
         setSiteImage(null);
       } else {
-        // Autre format d'image, l'utiliser tel quel
+        console.log('✅ [DEBUG] Autre format d\'image - affichage direct');
         setSiteImage(imageData);
       }
     } catch (error) {
-      console.error('Erreur lors du chargement de l\'image du site:', error);
+      console.error('❌ Erreur lors du chargement de l\'image du site:', error);
       setSiteImageError('Erreur lors du chargement de l\'image du site');
       setSiteImage(null);
     } finally {
       setSiteImageLoading(false);
+      console.log('🔍 [DEBUG] === FIN fetchSiteImage ===');
+    }
+  };
+
+  const fetchEntrepriseImage = async () => {
+    console.log('🔍 [DEBUG] === DÉBUT fetchEntrepriseImage ===');
+    console.log('🔍 [DEBUG] userData existe:', !!userData);
+    console.log('🔍 [DEBUG] userData.entreprise_info:', userData?.entreprise_info);
+    console.log('🔍 [DEBUG] entreprise_info.image existe:', !!userData?.entreprise_info?.image);
+    console.log('🔍 [DEBUG] entreprise_info.image valeur:', userData?.entreprise_info?.image);
+    
+    // Forcer l'initialisation si pas de données
+    if (!userData?.entreprise_info) {
+      console.log('❌ [DEBUG] Pas d\'entreprise_info - forcer placeholder');
+      setEntrepriseImage(null);
+      setEntrepriseImageLoading(false);
+      return;
+    }
+    
+    if (!userData?.entreprise_info?.image) {
+      console.log('❌ [DEBUG] Pas d\'image entreprise trouvée - forcer placeholder');
+      setEntrepriseImage(null);
+      setEntrepriseImageLoading(false);
+      return;
+    }
+
+    setEntrepriseImageLoading(true);
+    setEntrepriseImageError(null);
+    console.log('🔍 [DEBUG] Début traitement image...');
+
+    try {
+      // L'image de l'entreprise est déjà incluse dans les données du profil
+      const imageData = userData.entreprise_info.image;
+      console.log('🔍 [DEBUG] imageData type:', typeof imageData);
+      console.log('🔍 [DEBUG] imageData longueur:', imageData?.length);
+      console.log('🔍 [DEBUG] imageData début:', imageData?.substring(0, 100));
+      
+      // Vérifier le format de l'image
+      if (imageData.startsWith('data:image/')) {
+        console.log('✅ [DEBUG] Image base64 détectée - affichage');
+        setEntrepriseImage(imageData);
+      } else if (imageData.startsWith('/images/placeholders/')) {
+        console.log('✅ [DEBUG] Placeholder SVG détecté - affichage');
+        setEntrepriseImage(imageData);
+      } else if (imageData.includes('placeholder')) {
+        console.log('⚠️ [DEBUG] Placeholder générique détecté - forcer fallback');
+        setEntrepriseImage(null);
+      } else {
+        console.log('✅ [DEBUG] Autre format d\'image - affichage direct');
+        setEntrepriseImage(imageData);
+      }
+    } catch (error) {
+      console.error('❌ Erreur lors du chargement de l\'image de l\'entreprise:', error);
+      setEntrepriseImageError('Erreur lors du chargement de l\'image de l\'entreprise');
+      setEntrepriseImage(null);
+    } finally {
+      setEntrepriseImageLoading(false);
+      console.log('🔍 [DEBUG] === FIN fetchEntrepriseImage ===');
     }
   };
 
@@ -1150,7 +1243,41 @@ const Profile: React.FC = () => {
 
       <SectionWithImage>
         <RectangularImageContainer>
-          <ImagePlaceholder>🏢</ImagePlaceholder>
+          {(() => {
+            console.log('🖼️ [DEBUG] Rendu image entreprise - entrepriseImageLoading:', entrepriseImageLoading);
+            console.log('🖼️ [DEBUG] Rendu image entreprise - entrepriseImageError:', entrepriseImageError);
+            console.log('🖼️ [DEBUG] Rendu image entreprise - entrepriseImage:', entrepriseImage);
+
+            if (entrepriseImageLoading) {
+              console.log('🔄 [DEBUG] Affichage: Loading Spinner entreprise');
+              return (
+                <ImagePlaceholder>
+                  <LoadingSpinner />
+                </ImagePlaceholder>
+              );
+            }
+
+            if (entrepriseImageError) {
+              console.log('❌ [DEBUG] Affichage: Message d\'erreur entreprise');
+              return (
+                <ImagePlaceholder>
+                  <ImageErrorMessage>{entrepriseImageError}</ImageErrorMessage>
+                </ImagePlaceholder>
+              );
+            }
+
+            if (entrepriseImage && !entrepriseImage.includes('placeholder')) {
+              console.log('✅ [DEBUG] Affichage: Image réelle de l\'entreprise');
+              return <SiteImage src={entrepriseImage} alt="Image de l'entreprise" />;
+            }
+
+            console.log('🏢 [DEBUG] Affichage: Placeholder entreprise simple');
+            return (
+              <ImagePlaceholder>
+                🏢
+              </ImagePlaceholder>
+            );
+          })()}
         </RectangularImageContainer>
         <div>
           <SectionTitle>Informations entreprise</SectionTitle>
@@ -1181,19 +1308,41 @@ const Profile: React.FC = () => {
 
       <SectionWithImage>
         <RectangularImageContainer>
-          {siteImageLoading ? (
-            <ImagePlaceholder>
-              <LoadingSpinner />
-            </ImagePlaceholder>
-          ) : siteImageError ? (
-            <ImagePlaceholder>
-              <ImageErrorMessage>{siteImageError}</ImageErrorMessage>
-            </ImagePlaceholder>
-          ) : siteImage ? (
-            <SiteImage src={siteImage} alt="Image du site" />
-          ) : (
-            <ImagePlaceholder>📍</ImagePlaceholder>
-          )}
+          {(() => {
+            console.log('🖼️ [DEBUG] Rendu image - siteImageLoading:', siteImageLoading);
+            console.log('🖼️ [DEBUG] Rendu image - siteImageError:', siteImageError);
+            console.log('🖼️ [DEBUG] Rendu image - siteImage:', siteImage);
+            
+            if (siteImageLoading) {
+              console.log('🔄 [DEBUG] Affichage: Loading Spinner');
+              return (
+                <ImagePlaceholder>
+                  <LoadingSpinner />
+                </ImagePlaceholder>
+              );
+            }
+            
+            if (siteImageError) {
+              console.log('❌ [DEBUG] Affichage: Message d\'erreur');
+              return (
+                <ImagePlaceholder>
+                  <ImageErrorMessage>{siteImageError}</ImageErrorMessage>
+                </ImagePlaceholder>
+              );
+            }
+            
+            if (siteImage && !siteImage.includes('placeholder')) {
+              console.log('✅ [DEBUG] Affichage: Image réelle du site');
+              return <SiteImage src={siteImage} alt="Image du site" />;
+            }
+            
+            console.log('🏢 [DEBUG] Affichage: Placeholder simple');
+            return (
+              <ImagePlaceholder>
+                🏢
+              </ImagePlaceholder>
+            );
+          })()}
         </RectangularImageContainer>
         <div>
           <SectionTitle>Informations site</SectionTitle>
