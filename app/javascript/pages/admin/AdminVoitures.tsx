@@ -94,7 +94,10 @@ const AdminVoitures = () => {
                     <CustomFilter options={filterOptions} filterCallback={
                         (filterBy, searchValue) => { setFilterProperties({ filterBy, searchValue }) }
                     } />
-                    <SButton variant="contained" onClick={() => setIsOpen(true)}>
+                    <SButton variant="contained" onClick={() => {
+                        setSelectedCar(undefined)
+                        setIsOpen(true)
+                    }}>
                         Ajouter une voiture
                     </SButton>
                 </Flex>

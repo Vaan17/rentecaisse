@@ -217,21 +217,56 @@ const AdminVoitureModal = ({
 
     const methods = useForm({
         resolver: yupResolver(schema),
+        defaultValues: {
+            immatriculation: "",
+            modele: "",
+            marque: "",
+            statut_voiture: "Fonctionnelle",
+            année_fabrication: "",
+            carburant: "Essence",
+            couleur: "",
+            puissance: "",
+            nombre_portes: "",
+            nombre_places: "",
+            type_boite: "Manuelle",
+            site_id: "",
+            lien_image_voiture: null
+        }
     })
 
     useEffect(() => {
-        if (selectedCar) {
-            methods.reset(selectedCar)
-            // Charger l'image de la voiture si elle existe
-            fetchVoitureImage(selectedCar.id)
-        } else {
-            methods.reset({
-                statut_voiture: "Fonctionnelle",
-            })
-            setVoitureImage(null)
-            setUploadError(null)
+        if (isOpen) {
+            if (selectedCar) {
+                methods.reset(selectedCar)
+                // Charger l'image de la voiture si elle existe
+                fetchVoitureImage(selectedCar.id)
+            } else {
+                // Réinitialisation complète pour l'ajout
+                methods.reset({
+                    immatriculation: "",
+                    modele: "",
+                    marque: "",
+                    statut_voiture: "Fonctionnelle",
+                    année_fabrication: "",
+                    carburant: "Essence",
+                    couleur: "",
+                    puissance: "",
+                    nombre_portes: "",
+                    nombre_places: "",
+                    type_boite: "Manuelle",
+                    site_id: "",
+                    lien_image_voiture: null
+                })
+                setVoitureImage(null)
+                setUploadError(null)
+                // Nettoyer aussi le fichier de référence
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = ''
+                    ;(fileInputRef.current as any).fileToUpload = null
+                }
+            }
         }
-    }, [selectedCar]);
+    }, [isOpen, selectedCar, methods]);
 
     useEffect(() => {
         const fetchSites = async () => {
