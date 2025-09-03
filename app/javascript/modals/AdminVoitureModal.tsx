@@ -373,12 +373,41 @@ const AdminVoitureModal = ({
         }
     }
 
-    const handleDeleteImage = () => {
-        setVoitureImage(null)
-        setUploadError(null)
-        if (fileInputRef.current) {
-            fileInputRef.current.value = ''
-            ;(fileInputRef.current as any).fileToUpload = null
+    const handleDeleteImage = async () => {
+        // Si c'est une voiture existante avec une image, appeler l'API pour supprimer
+        if (selectedCar && selectedCar.lien_image_voiture) {
+            try {
+                setIsUploading(true)
+                await VoitureAPI.deletePhoto(selectedCar.id)
+                
+                // Rafraîchir les données de la voiture dans le store
+                const updatedVoitures = await VoitureAPI.fetchAll()
+                const updatedVoiture = updatedVoitures.find(v => v.id === selectedCar.id)
+                if (updatedVoiture) {
+                    dispatch(addCar(updatedVoiture))
+                }
+                
+                // Nettoyer l'interface utilisateur
+                setVoitureImage(null)
+                setUploadError(null)
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = ''
+                    ;(fileInputRef.current as any).fileToUpload = null
+                }
+            } catch (error) {
+                console.error('Erreur lors de la suppression de l\'image:', error)
+                setUploadError('Erreur lors de la suppression de l\'image')
+            } finally {
+                setIsUploading(false)
+            }
+        } else {
+            // Si c'est une nouvelle voiture ou pas d'image, juste nettoyer l'interface
+            setVoitureImage(null)
+            setUploadError(null)
+            if (fileInputRef.current) {
+                fileInputRef.current.value = ''
+                ;(fileInputRef.current as any).fileToUpload = null
+            }
         }
     }
 
@@ -473,7 +502,10 @@ const AdminVoitureModal = ({
                                 {voitureImage ? (
                                     <>
                                         <ImagePreview src={voitureImage} alt="Photo de la voiture" />
-                                        <DeleteImageButton onClick={handleDeleteImage}>
+                                        <DeleteImageButton 
+                                            onClick={handleDeleteImage}
+                                            disabled={isUploading}
+                                        >
                                             <DeleteIcon />
                                         </DeleteImageButton>
                                     </>

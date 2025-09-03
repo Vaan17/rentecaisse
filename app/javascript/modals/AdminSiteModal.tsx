@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Button, IconButton, Modal } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
@@ -368,12 +368,41 @@ const AdminSiteModal = ({
         }
     }
 
-    const handleDeleteImage = () => {
-        setSiteImage(null)
-        setUploadError(null)
-        if (fileInputRef.current) {
-            fileInputRef.current.value = ''
-            ;(fileInputRef.current as any).fileToUpload = null
+    const handleDeleteImage = async () => {
+        // Si c'est un site existant avec une image, appeler l'API pour supprimer
+        if (selectedSite && selectedSite.lien_image_site) {
+            try {
+                setIsUploading(true)
+                await SiteAPI.deletePhoto(selectedSite.id)
+                
+                // Rafraîchir les données du site dans le store
+                const updatedSites = await SiteAPI.fetchAll()
+                const updatedSite = updatedSites.find(s => s.id === selectedSite.id)
+                if (updatedSite) {
+                    dispatch(addSite(updatedSite))
+                }
+                
+                // Nettoyer l'interface utilisateur
+                setSiteImage(null)
+                setUploadError(null)
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = ''
+                    ;(fileInputRef.current as any).fileToUpload = null
+                }
+            } catch (error) {
+                console.error('Erreur lors de la suppression de l\'image:', error)
+                setUploadError('Erreur lors de la suppression de l\'image')
+            } finally {
+                setIsUploading(false)
+            }
+        } else {
+            // Si c'est un nouveau site ou pas d'image, juste nettoyer l'interface
+            setSiteImage(null)
+            setUploadError(null)
+            if (fileInputRef.current) {
+                fileInputRef.current.value = ''
+                ;(fileInputRef.current as any).fileToUpload = null
+            }
         }
     }
 
@@ -469,7 +498,10 @@ const AdminSiteModal = ({
                                 {siteImage ? (
                                     <>
                                         <ImagePreview src={siteImage} alt="Photo du site" />
-                                        <DeleteImageButton onClick={handleDeleteImage}>
+                                        <DeleteImageButton 
+                                            onClick={handleDeleteImage}
+                                            disabled={isUploading}
+                                        >
                                             <DeleteIcon />
                                         </DeleteImageButton>
                                     </>

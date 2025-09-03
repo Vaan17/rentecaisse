@@ -179,4 +179,38 @@ class VoituresController < ApplicationController
       }, status: :unprocessable_entity
     end
   end
+
+  def delete_photo
+    voiture = Voiture.find_by(id: params[:id])
+    
+    unless voiture
+      render json: { 
+        success: false, 
+        message: "Voiture non trouvée" 
+      }, status: :not_found
+      return
+    end
+    
+    unless voiture.lien_image_voiture.present?
+      render json: { 
+        success: false, 
+        message: "Aucune image à supprimer" 
+      }, status: :unprocessable_entity
+      return
+    end
+    
+    result = VoitureService.delete_voiture_photo(voiture)
+    
+    if result[:success]
+      render json: { 
+        success: true, 
+        message: result[:message]
+      }
+    else
+      render json: { 
+        success: false, 
+        message: result[:message]
+      }, status: :unprocessable_entity
+    end
+  end
 end

@@ -40,6 +40,7 @@ Rails.application.routes.draw do
   put "/api/sites" => "sites#update"
   delete "/api/sites/:id" => "sites#delete"
   post "/api/sites/:id/photo" => "sites#update_photo"
+  delete "/api/sites/:id/photo" => "sites#delete_photo"
 
   # Routes pour les voitures
   get "/api/voitures" => "voitures#fetch_all"
@@ -48,6 +49,7 @@ Rails.application.routes.draw do
   delete "/api/voitures/:id" => "voitures#delete"
   get "/api/voitures/site/:user_id" => "voitures#fetch_voitures_site"
   post "/api/voitures/:id/photo" => "voitures#update_photo"
+  delete "/api/voitures/:id/photo" => "voitures#delete_photo"
 
   # Routes pour les clés
   get "/api/cles" => "cles#fetch_all"

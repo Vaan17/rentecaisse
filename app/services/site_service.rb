@@ -195,6 +195,47 @@ class SiteService
     end
   end
 
+  # Suppression de l'image du site
+  def self.delete_site_photo(site)
+    Rails.logger.info "Début de la suppression de photo pour le site #{site.id}"
+
+    begin
+      # Vérifier si le site a bien une image
+      unless site.lien_image_site.present?
+        return { success: false, message: "Aucune image à supprimer" }
+      end
+
+      # Chemin vers le fichier image
+      image_path = Rails.root.join('storage', 'sites', "site_#{site.id}", site.lien_image_site)
+      
+      # Supprimer le fichier physique s'il existe
+      if File.exist?(image_path)
+        File.delete(image_path)
+        Rails.logger.info "Fichier image supprimé: #{image_path}"
+      else
+        Rails.logger.warn "Fichier image non trouvé: #{image_path}"
+      end
+
+      # Mettre à jour la base de données pour supprimer le lien
+      site.update!(lien_image_site: nil)
+      Rails.logger.info "Lien image supprimé de la base de données pour le site #{site.id}"
+
+      # Vérifier si le dossier est vide et le supprimer si c'est le cas
+      storage_path = Rails.root.join('storage', 'sites', "site_#{site.id}")
+      if Dir.exist?(storage_path) && Dir.empty?(storage_path)
+        Dir.delete(storage_path)
+        Rails.logger.info "Dossier vide supprimé: #{storage_path}"
+      end
+
+      { success: true, message: "Image supprimée avec succès" }
+
+    rescue StandardError => e
+      Rails.logger.error "Erreur lors de la suppression de l'image: #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
+      { success: false, message: "Erreur lors de la suppression de l'image" }
+    end
+  end
+
   # Récupération de l'image du site en base64
   def self.get_site_image(site)
     return "/images/placeholders/site-placeholder.svg" if site.lien_image_site.blank?

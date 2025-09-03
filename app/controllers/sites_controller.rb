@@ -127,6 +127,40 @@ class SitesController < ApplicationController
     end
   end
 
+  def delete_photo
+    site = Site.find_by(id: params[:id])
+    
+    unless site
+      render json: { 
+        success: false, 
+        message: "Site non trouvé" 
+      }, status: :not_found
+      return
+    end
+    
+    unless site.lien_image_site.present?
+      render json: { 
+        success: false, 
+        message: "Aucune image à supprimer" 
+      }, status: :unprocessable_entity
+      return
+    end
+    
+    result = SiteService.delete_site_photo(site)
+    
+    if result[:success]
+      render json: { 
+        success: true, 
+        message: result[:message]
+      }
+    else
+      render json: { 
+        success: false, 
+        message: result[:message]
+      }, status: :unprocessable_entity
+    end
+  end
+
   def update_with_photo
     site_data = {}
     if params["data"].present?

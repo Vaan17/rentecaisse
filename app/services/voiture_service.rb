@@ -136,4 +136,45 @@ class VoitureService
       { success: false, message: "Erreur lors de l'upload de l'image" }
     end
   end
+
+  # Suppression de l'image de la voiture
+  def self.delete_voiture_photo(voiture)
+    Rails.logger.info "Début de la suppression de photo pour la voiture #{voiture.id}"
+
+    begin
+      # Vérifier si la voiture a bien une image
+      unless voiture.lien_image_voiture.present?
+        return { success: false, message: "Aucune image à supprimer" }
+      end
+
+      # Chemin vers le fichier image
+      image_path = Rails.root.join('storage', 'vehicules', "vehicules_#{voiture.id}", voiture.lien_image_voiture)
+      
+      # Supprimer le fichier physique s'il existe
+      if File.exist?(image_path)
+        File.delete(image_path)
+        Rails.logger.info "Fichier image supprimé: #{image_path}"
+      else
+        Rails.logger.warn "Fichier image non trouvé: #{image_path}"
+      end
+
+      # Mettre à jour la base de données pour supprimer le lien
+      voiture.update!(lien_image_voiture: nil)
+      Rails.logger.info "Lien image supprimé de la base de données pour la voiture #{voiture.id}"
+
+      # Vérifier si le dossier est vide et le supprimer si c'est le cas
+      storage_path = Rails.root.join('storage', 'vehicules', "vehicules_#{voiture.id}")
+      if Dir.exist?(storage_path) && Dir.empty?(storage_path)
+        Dir.delete(storage_path)
+        Rails.logger.info "Dossier vide supprimé: #{storage_path}"
+      end
+
+      { success: true, message: "Image supprimée avec succès" }
+
+    rescue StandardError => e
+      Rails.logger.error "Erreur lors de la suppression de l'image: #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
+      { success: false, message: "Erreur lors de la suppression de l'image" }
+    end
+  end
 end 

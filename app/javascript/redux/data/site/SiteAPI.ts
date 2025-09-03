@@ -74,10 +74,33 @@ const deleteSite = async (siteId) => {
 	}
 };
 
+const deletePhoto = async (siteId) => {
+	try {
+		const res = await axiosSecured.delete(`/api/sites/${siteId}/photo`);
+
+		if (res.data.success) {
+			toast.success(res.data.message);
+			return res.data;
+		} else {
+			toast.error(res.data.message || "Erreur lors de la suppression de l'image.");
+			throw new Error(res.data.message);
+		}
+	} catch (error) {
+		console.error('Erreur lors de la suppression de l\'image:', error);
+		if (error.response?.data?.message) {
+			toast.error(error.response.data.message);
+		} else {
+			toast.error("Erreur lors de la suppression de l'image.");
+		}
+		throw error;
+	}
+};
+
 export default {
 	fetchAll,
 	createSite,
 	editSite,
 	editSiteWithPhoto,
 	deleteSite,
+	deletePhoto,
 };
