@@ -82,8 +82,8 @@ const SiteDetails = () => {
             if (selectedSite.entreprise_id) {
                 try {
                     setLoading(true)
-                    const res = await axiosSecured.get(`/api/entreprises/${selectedSite.entreprise_id}`)
-                    setEntreprise(res.data)
+                const res = await axiosSecured.get(`/api/entreprises/${selectedSite.entreprise_id}`)
+                setEntreprise(res.data)
                 } catch (error) {
                     console.error('Erreur lors du chargement de l\'entreprise:', error)
                 } finally {
@@ -513,8 +513,8 @@ const SiteDetails = () => {
                                     Actions rapides
                                 </Typography>
                                 <Stack spacing={2}>
-                                    <Button 
-                                        variant="contained" 
+            <Button
+                variant="contained"
                                         fullWidth
                                         startIcon={<DirectionsCar />}
                                         onClick={() => navigate('/voitures')}
@@ -543,7 +543,7 @@ const SiteDetails = () => {
                                             )}
                                         >
                                             Visiter le site web
-                                        </Button>
+            </Button>
                                     )}
                                 </Stack>
                             </CardContent>

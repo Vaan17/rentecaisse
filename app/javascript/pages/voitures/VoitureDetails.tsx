@@ -508,8 +508,8 @@ const VoitureDetails = () => {
                                     Actions rapides
                                 </Typography>
                                 <Stack spacing={2}>
-                                    <Button 
-                                        variant="contained" 
+            <Button
+                variant="contained"
                                         fullWidth
                                         startIcon={<LocationOn />}
                                         onClick={() => navigate(`/sites/${siteInfo.id}`)}
@@ -534,7 +534,7 @@ const VoitureDetails = () => {
                                         onClick={() => navigate('/emprunts')}
                                     >
                                         Réserver ce véhicule
-                                    </Button>
+            </Button>
                                 </Stack>
                             </CardContent>
                         </Card>
