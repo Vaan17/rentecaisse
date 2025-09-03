@@ -130,7 +130,10 @@ const AdminCleModal = ({
                             name="voiture_id"
                             label="Voiture associée"
                             options={Object.keys(cars)}
-                            getOptionLabel={(option) => cars[option].immatriculation}
+                            getOptionLabel={(option) => {
+                                const car = cars[option];
+                                return `${car.marque} ${car.modele} (${car.année_fabrication}) ${car.couleur} - ${car.immatriculation}`;
+                            }}
                         />
                         <FSelect
                             name="site_id"
