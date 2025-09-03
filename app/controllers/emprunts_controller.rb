@@ -59,10 +59,10 @@ class EmpruntsController < ApplicationController
             return render json: { error: "Paramètres manquants" }, status: :bad_request
         end
         
-        # Convertir les dates
+        # Convertir les dates en gardant le fuseau horaire local
         begin
-            date_debut = DateTime.parse(date_debut)
-            date_fin = DateTime.parse(date_fin)
+            date_debut = Time.zone.parse(date_debut)
+            date_fin = Time.zone.parse(date_fin)
         rescue ArgumentError
             return render json: { error: "Format de date invalide" }, status: :bad_request
         end
@@ -74,7 +74,7 @@ class EmpruntsController < ApplicationController
                         .includes(:utilisateur_demande, liste_passager: :utilisateurs) # Inclure les données de l'utilisateur demandeur et passagers
         
         # Date actuelle pour vérifier si un emprunt est en cours
-        now = DateTime.now
+        now = Time.zone.now
         
         # Transformer les emprunts au format attendu par le front
         emprunts_formattees = emprunts.map { |emprunt| format_emprunt_response(emprunt) }
@@ -95,10 +95,10 @@ class EmpruntsController < ApplicationController
             return render json: { error: "Paramètres manquants" }, status: :bad_request
         end
         
-        # Convertir les dates
+        # Convertir les dates en gardant le fuseau horaire local
         begin
-            date_debut = DateTime.parse(date_debut)
-            date_fin = DateTime.parse(date_fin)
+            date_debut = Time.zone.parse(date_debut)
+            date_fin = Time.zone.parse(date_fin)
         rescue ArgumentError
             return render json: { error: "Format de date invalide" }, status: :bad_request
         end
@@ -114,7 +114,13 @@ class EmpruntsController < ApplicationController
                           .includes(:utilisateur_demande, :cle, liste_passager: :utilisateurs)
         
         # Date actuelle pour vérifier si un emprunt est en cours
-        now = DateTime.now
+        now = Time.zone.now
+        
+        # 🔍 LOGS BACKEND - Récupération emprunts
+        Rails.logger.info "🔍 BACKEND GET - Emprunts trouvés: #{emprunts.count}"
+        emprunts.each do |emprunt|
+            Rails.logger.info "  - Emprunt ID #{emprunt.id}: #{emprunt.date_debut} -> #{emprunt.date_fin}"
+        end
         
         # Transformer les emprunts au format attendu par le front
         emprunts_formattees = emprunts.map do |emprunt|
@@ -165,8 +171,8 @@ class EmpruntsController < ApplicationController
             {
                 id: emprunt.id,
                 carId: emprunt.voiture_id,
-                startTime: emprunt.date_debut,
-                endTime: emprunt.date_fin,
+                startTime: emprunt.date_debut.in_time_zone(Time.zone),
+                endTime: emprunt.date_fin.in_time_zone(Time.zone),
                 status: status,
                 utilisateur_id: emprunt.utilisateur_demande_id,
                 utilisateur_nom: utilisateur&.nom,
@@ -186,6 +192,14 @@ class EmpruntsController < ApplicationController
     
     # Créer un nouvel emprunt
     def create
+        # 🔍 LOGS BACKEND - Paramètres reçus
+        Rails.logger.info "🔍 BACKEND CREATE - Paramètres reçus:"
+        Rails.logger.info "  - date_debut (string): #{params[:date_debut]}"
+        Rails.logger.info "  - date_fin (string): #{params[:date_fin]}"
+        Rails.logger.info "  - voiture_id: #{params[:voiture_id]}"
+        Rails.logger.info "  - nom_emprunt: #{params[:nom_emprunt]}"
+        Rails.logger.info "  - Time.zone configuré: #{Time.zone}"
+        
         # Valider les paramètres requis
         if params[:voiture_id].blank? || params[:date_debut].blank? || params[:date_fin].blank? ||
                           params[:nom_emprunt].blank? || params[:description].blank?
@@ -196,6 +210,11 @@ class EmpruntsController < ApplicationController
         voiture_id = params[:voiture_id]
         date_debut = params[:date_debut]
         date_fin = params[:date_fin]
+        
+        # 🔍 LOGS BACKEND - Avant parsing des dates
+        Rails.logger.info "🔍 BACKEND CREATE - Avant parsing:"
+        Rails.logger.info "  - date_debut (avant): #{date_debut} (#{date_debut.class})"
+        Rails.logger.info "  - date_fin (avant): #{date_fin} (#{date_fin.class})"
         
         chevauchements = verifier_chevauchements(voiture_id, date_debut, date_fin)
         
@@ -212,7 +231,20 @@ class EmpruntsController < ApplicationController
                 error: "Impossible de créer un emprunt pour cette voiture. Aucune clé principale ou double n'a été configurée. Veuillez contacter l'administrateur."
             }, status: :unprocessable_entity
         end
+        
+        # Vérifier le statut de la voiture
+        voiture = Voiture.find(voiture_id)
+        unless voiture.statut_voiture == "Fonctionnelle"
+            return render json: { 
+                error: "Cette voiture n'est pas disponible pour la réservation (statut: #{voiture.statut_voiture})"
+            }, status: :unprocessable_entity
+        end
 
+        # 🔍 LOGS BACKEND - Avant création de l'emprunt
+        Rails.logger.info "🔍 BACKEND CREATE - Création emprunt avec:"
+        Rails.logger.info "  - date_debut final: #{date_debut} (#{date_debut.class})"
+        Rails.logger.info "  - date_fin final: #{date_fin} (#{date_fin.class})"
+        
         # Créer un nouvel emprunt avec le statut "brouillon"
         emprunt = Emprunt.new(
             voiture_id: voiture_id,
@@ -223,9 +255,14 @@ class EmpruntsController < ApplicationController
             statut_emprunt: "brouillon",
             utilisateur_demande_id: @current_user.id,
             localisation_id: params[:localisation_id],
-            created_at: DateTime.now,
-            updated_at: DateTime.now
+            created_at: Time.zone.now,
+            updated_at: Time.zone.now
         )
+        
+        # 🔍 LOGS BACKEND - Après création objet emprunt
+        Rails.logger.info "🔍 BACKEND CREATE - Objet emprunt créé:"
+        Rails.logger.info "  - emprunt.date_debut: #{emprunt.date_debut} (#{emprunt.date_debut.class})"
+        Rails.logger.info "  - emprunt.date_fin: #{emprunt.date_fin} (#{emprunt.date_fin.class})"
 
         # Assigner automatiquement une clé
         Rails.logger.info "🔑 CRÉATION EMPRUNT - Recherche clé pour voiture #{voiture_id}"
@@ -256,11 +293,31 @@ class EmpruntsController < ApplicationController
         end
         
         if emprunt.save
+            # 🔍 LOGS BACKEND - Après sauvegarde
+            Rails.logger.info "✅ BACKEND CREATE - Emprunt sauvegardé en BD:"
+            Rails.logger.info "  - ID: #{emprunt.id}"
+            Rails.logger.info "  - date_debut en BD: #{emprunt.date_debut}"
+            Rails.logger.info "  - date_fin en BD: #{emprunt.date_fin}"
+            
             # Recharger avec les relations pour le formatage
             emprunt.reload
             emprunt = Emprunt.includes(:utilisateur_demande, :cle, liste_passager: :utilisateurs).find(emprunt.id)
-            render json: format_emprunt_response(emprunt), status: :created
+            
+            # 🔍 LOGS BACKEND - Avant formatage réponse
+            Rails.logger.info "🔍 BACKEND CREATE - Avant formatage réponse:"
+            Rails.logger.info "  - emprunt.date_debut (reload): #{emprunt.date_debut}"
+            Rails.logger.info "  - emprunt.date_fin (reload): #{emprunt.date_fin}"
+            
+            response = format_emprunt_response(emprunt)
+            
+            # 🔍 LOGS BACKEND - Réponse formatée
+            Rails.logger.info "🔍 BACKEND CREATE - Réponse formatée:"
+            Rails.logger.info "  - startTime: #{response[:startTime]}"
+            Rails.logger.info "  - endTime: #{response[:endTime]}"
+            
+            render json: response, status: :created
         else
+            Rails.logger.error "❌ BACKEND CREATE - Erreurs validation: #{emprunt.errors.full_messages}"
             render json: { error: emprunt.errors.full_messages }, status: :unprocessable_entity
         end
     end
@@ -301,7 +358,7 @@ class EmpruntsController < ApplicationController
         emprunt.nom_emprunt = params[:nom_emprunt] if params[:nom_emprunt].present?
         emprunt.description = params[:description] if params[:description].present?
         emprunt.localisation_id = params[:localisation_id] if params.key?(:localisation_id)
-        emprunt.updated_at = DateTime.now
+        emprunt.updated_at = Time.zone.now
 
         Rails.logger.info "🔑 MODIFICATION EMPRUNT - Clé préservée: #{emprunt.cle_id}"
 
@@ -425,7 +482,7 @@ class EmpruntsController < ApplicationController
 
         # Mettre à jour le statut de l'emprunt
         emprunt.statut_emprunt = "en_attente_validation"
-        emprunt.updated_at = DateTime.now
+        emprunt.updated_at = Time.zone.now
 
         if emprunt.save
             render json: emprunt
@@ -472,7 +529,7 @@ class EmpruntsController < ApplicationController
         # Mapper le statut
         status = case emprunt.statut_emprunt
                  when "validé"
-                     now = DateTime.now
+                     now = Time.zone.now
                      if now >= emprunt.date_debut && now <= emprunt.date_fin
                          "en_cours"
                      else
@@ -515,8 +572,8 @@ class EmpruntsController < ApplicationController
         {
             id: emprunt.id,
             carId: emprunt.voiture_id,
-            startTime: emprunt.date_debut,
-            endTime: emprunt.date_fin,
+            startTime: emprunt.date_debut.in_time_zone(Time.zone),
+            endTime: emprunt.date_fin.in_time_zone(Time.zone),
             status: status,
             utilisateur_id: emprunt.utilisateur_demande_id,
             utilisateur_nom: emprunt.utilisateur_demande&.nom,
@@ -533,9 +590,9 @@ class EmpruntsController < ApplicationController
 
     # Vérifier s'il y a des chevauchements avec d'autres emprunts
     def verifier_chevauchements(voiture_id, date_debut, date_fin, emprunt_id = nil)
-        # Convertir les dates si nécessaire
-        date_debut = DateTime.parse(date_debut) if date_debut.is_a?(String)
-        date_fin = DateTime.parse(date_fin) if date_fin.is_a?(String)
+        # Convertir les dates si nécessaire en gardant le fuseau horaire local
+        date_debut = Time.zone.parse(date_debut) if date_debut.is_a?(String)
+        date_fin = Time.zone.parse(date_fin) if date_fin.is_a?(String)
 
         # Rechercher les emprunts qui se chevauchent
         query = Emprunt.where(voiture_id: voiture_id)

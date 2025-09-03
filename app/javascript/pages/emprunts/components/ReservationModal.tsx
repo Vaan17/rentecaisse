@@ -93,6 +93,13 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
 
       // Réinitialiser les nouveaux champs
       if (existingReservation) {
+        // 🔍 LOGS FRONTEND - Emprunt existant chargé
+        console.log('🔍 FRONTEND - Chargement d\'un emprunt existant:');
+        console.log('  - startTime reçu:', existingReservation.startTime);
+        console.log('  - endTime reçu:', existingReservation.endTime);
+        console.log('  - startTime (Date):', new Date(existingReservation.startTime));
+        console.log('  - endTime (Date):', new Date(existingReservation.endTime));
+        
         // Si on modifie un emprunt existant, pré-remplir les champs
         setNomEmprunt(existingReservation.nom_emprunt || '');
         setDescription(existingReservation.description || '');
@@ -128,6 +135,14 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
 
   // Valider les dates
   const validateDates = (startDate: dayjs.Dayjs | null, endDate: dayjs.Dayjs | null) => {
+    const now = dayjs();
+    
+    // Vérifier que la date de début n'est pas dans le passé (sauf pour les modifications d'emprunts existants)
+    if (startDate && !existingReservation && startDate.isBefore(now)) {
+      setError('Impossible de réserver dans le passé');
+      return false;
+    }
+    
     if (startDate && endDate) {
       if (endDate.isBefore(startDate) || endDate.isSame(startDate)) {
         setError('L\'heure de fin doit être postérieure à l\'heure de début');
@@ -201,8 +216,19 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
     }
 
     try {
-      const dateDebut = start.toISOString();
-      const dateFin = end.toISOString();
+      // Convertir les dates en gardant l'heure locale sans fuseau horaire
+      // Utiliser un format simple pour éviter toute conversion automatique
+      const dateDebut = `${start.year()}-${String(start.month() + 1).padStart(2, '0')}-${String(start.date()).padStart(2, '0')} ${String(start.hour()).padStart(2, '0')}:${String(start.minute()).padStart(2, '0')}:00`;
+      const dateFin = `${end.year()}-${String(end.month() + 1).padStart(2, '0')}-${String(end.date()).padStart(2, '0')} ${String(end.hour()).padStart(2, '0')}:${String(end.minute()).padStart(2, '0')}:00`;
+
+      // 🔍 LOGS FRONTEND - Dates envoyées
+      console.log('🔍 FRONTEND - Dates sélectionnées dans l\'interface:');
+      console.log('  - Date début (dayjs):', start.format('YYYY-MM-DD HH:mm:ss'));
+      console.log('  - Date fin (dayjs):', end.format('YYYY-MM-DD HH:mm:ss'));
+      console.log('🔍 FRONTEND - Dates formatées pour envoi au backend:');
+      console.log('  - dateDebut:', dateDebut);
+      console.log('  - dateFin:', dateFin);
+      console.log('🔍 FRONTEND - Fuseau horaire navigateur:', Intl.DateTimeFormat().resolvedOptions().timeZone);
 
       const reservationData = {
         voiture_id: car.id,
@@ -222,6 +248,9 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
         await createEmprunt(reservationData);
       }
 
+      // 🔍 LOGS FRONTEND - Succès de l'envoi
+      console.log('✅ FRONTEND - Emprunt créé/modifié avec succès');
+      
       // Notifier le composant parent
       onSave({
         carId: car.id,

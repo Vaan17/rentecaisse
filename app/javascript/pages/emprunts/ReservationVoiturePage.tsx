@@ -115,6 +115,11 @@ const ReservationVoiturePage: React.FC = () => {
   const applyFiltersToCarsList = (cars: Car[], filters: FiltersState): Car[] => {
     let filtered = [...cars];
     
+    // Exclure les voitures non fonctionnelles ou en réparation
+    filtered = filtered.filter(car => 
+      !car.statut_voiture || car.statut_voiture === 'Fonctionnelle'
+    );
+    
     if (filters.brandFilter) {
       filtered = filtered.filter(car => car.name.startsWith(filters.brandFilter!));
     }
@@ -229,10 +234,14 @@ const ReservationVoiturePage: React.FC = () => {
       const carIds = carsToFetch.map(car => car.id);
       
       // Utiliser la nouvelle fonction qui récupère tout en une seule requête
+      // Formater les dates sans conversion UTC pour éviter les décalages
+      const startOfDayStr = `${startOfDay.getFullYear()}-${String(startOfDay.getMonth() + 1).padStart(2, '0')}-${String(startOfDay.getDate()).padStart(2, '0')} 00:00:00`;
+      const endOfDayStr = `${endOfDay.getFullYear()}-${String(endOfDay.getMonth() + 1).padStart(2, '0')}-${String(endOfDay.getDate()).padStart(2, '0')} 23:59:59`;
+      
       const allReservations = await getEmpruntsByMultipleVoituresAndDate(
         carIds,
-        startOfDay.toISOString(),
-        endOfDay.toISOString()
+        startOfDayStr,
+        endOfDayStr
       );
       
       setReservations(allReservations);

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_06_03_095149) do
+ActiveRecord::Schema[7.2].define(version: 2025_09_03_233817) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -29,8 +29,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_06_03_095149) do
 
   create_table "emprunts", force: :cascade do |t|
     t.string "nom_emprunt", null: false
-    t.datetime "date_debut", null: false
-    t.datetime "date_fin", null: false
+    t.timestamptz "date_debut", null: false
+    t.timestamptz "date_fin", null: false
     t.bigint "voiture_id", null: false
     t.bigint "cle_id"
     t.string "statut_emprunt", null: false
@@ -38,8 +38,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_06_03_095149) do
     t.string "description", null: false
     t.bigint "liste_passager_id"
     t.bigint "localisation_id"
-    t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
-    t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.timestamptz "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.timestamptz "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.index ["cle_id"], name: "index_emprunts_on_cle_id"
     t.index ["liste_passager_id"], name: "index_emprunts_on_liste_passager_id"
     t.index ["localisation_id"], name: "index_emprunts_on_localisation_id"

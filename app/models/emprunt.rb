@@ -17,6 +17,8 @@ class Emprunt < ApplicationRecord
 
   # Validation personnalisée pour s'assurer que la date de fin est après la date de début
   validate :date_fin_after_date_debut
+  # Validation pour empêcher les réservations dans le passé (seulement à la création)
+  validate :date_debut_not_in_past, on: :create
   # Validation pour vérifier la capacité de la voiture
   validate :capacite_voiture_respectee
   # Validation pour s'assurer que la voiture a des clés configurées
@@ -63,6 +65,16 @@ class Emprunt < ApplicationRecord
 
     if nombre_total_occupants > voiture_obj.nombre_places
       errors.add(:base, "Le nombre total d'occupants (#{nombre_total_occupants}) dépasse la capacité du véhicule (#{voiture_obj.nombre_places} places)")
+    end
+  end
+
+  def date_debut_not_in_past
+    return if date_debut.blank?
+    
+    # Permettre les dates passées seulement si l'emprunt est créé par un admin ou en mode modification
+    # En mode création normale, empêcher les dates passées
+    if date_debut < Time.zone.now
+      errors.add(:date_debut, "ne peut pas être dans le passé")
     end
   end
 
