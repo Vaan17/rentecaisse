@@ -4,7 +4,8 @@ import axiosSecured from "../../../services/apiService";
 
 const fetchAll = async () => {
 	try {
-		const res = await axiosSecured.get("/api/emprunts");
+		// ✅ SÉCURISÉ : Utilise la nouvelle méthode qui ne récupère que les emprunts de l'utilisateur connecté
+		const res = await axiosSecured.get("/api/emprunts/utilisateur");
 		return res.data;
 	} catch (error) {
 		toast.error("Erreur lors de la récupération des emprunts.");

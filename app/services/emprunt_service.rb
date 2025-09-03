@@ -111,6 +111,21 @@ class EmpruntService
     emprunts = emprunts_par_voiture_et_periode(voiture_id, date_debut, date_fin)
     emprunts.empty?
   end
+
+  # Récupère tous les emprunts d'un utilisateur (en tant que conducteur ou passager)
+  def self.emprunts_pour_utilisateur(utilisateur_id)
+    # Emprunts où l'utilisateur est conducteur
+    emprunts_conducteur = Emprunt.where(utilisateur_demande_id: utilisateur_id)
+                                .includes(:voiture, :cle, :localisation, :utilisateur_demande, liste_passager: :utilisateurs)
+    
+    # Emprunts où l'utilisateur est passager
+    emprunts_passager = Emprunt.joins(liste_passager: :utilisateurs)
+                              .where(utilisateurs: { id: utilisateur_id })
+                              .includes(:voiture, :cle, :localisation, :utilisateur_demande, liste_passager: :utilisateurs)
+    
+    # Combiner les deux résultats et supprimer les doublons
+    (emprunts_conducteur + emprunts_passager).uniq
+  end
   
   # Crée un nouvel emprunt
   def self.creer_emprunt(params, utilisateur_id)

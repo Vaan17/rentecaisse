@@ -212,7 +212,6 @@ const AdminSiteModal = ({
     const [siteImage, setSiteImage] = useState<string | null>(null)
     const [uploadError, setUploadError] = useState<string | null>(null)
     const [isUploading, setIsUploading] = useState(false)
-    const [selectedFile, setSelectedFile] = useState<File | null>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     const methods = useForm({
@@ -270,10 +269,10 @@ const AdminSiteModal = ({
                 })
                 setSiteImage(null)
                 setUploadError(null)
-                setSelectedFile(null)
                 // Nettoyer aussi le fichier de référence
                 if (fileInputRef.current) {
                     fileInputRef.current.value = ''
+                    ;(fileInputRef.current as any).fileToUpload = null
                 }
             }
         }
@@ -333,86 +332,106 @@ const AdminSiteModal = ({
         }
         reader.readAsDataURL(file)
 
-        // Stocker le fichier pour l'envoi lors de la soumission
-        setSelectedFile(file)
+        // Si on édite un site existant, on upload directement
+        if (selectedSite) {
+            setIsUploading(true)
+            const formData = new FormData()
+            formData.append('photo', file)
+
+            try {
+                const response = await axiosSecured.post(`/api/sites/${selectedSite.id}/photo`, formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                })
+
+                if (response.data.success) {
+                    toast.success(response.data.message)
+                    // Rafraîchir les données du site dans le store
+                    const updatedSites = await SiteAPI.fetchAll()
+                    const updatedSite = updatedSites.find(s => s.id === selectedSite.id)
+                    if (updatedSite) {
+                        dispatch(addSite(updatedSite))
+                    }
+                } else {
+                    setUploadError(response.data.message || 'Erreur lors de l\'upload')
+                }
+            } catch (error) {
+                console.error('Erreur lors de l\'upload:', error)
+                setUploadError('Erreur lors de l\'upload de l\'image')
+            } finally {
+                setIsUploading(false)
+            }
+        } else {
+            // Si c'est un nouveau site, on garde le fichier pour l'upload après création
+            (fileInputRef.current as any).fileToUpload = file
+        }
     }
 
     const handleDeleteImage = () => {
         setSiteImage(null)
         setUploadError(null)
-        setSelectedFile(null)
         if (fileInputRef.current) {
             fileInputRef.current.value = ''
+            ;(fileInputRef.current as any).fileToUpload = null
         }
     }
 
     const handleClose = () => {
         setSiteImage(null)
         setUploadError(null)
-        setSelectedFile(null)
+        if (fileInputRef.current) {
+            ;(fileInputRef.current as any).fileToUpload = null
+        }
         onClose()
     }
 
     const onSubmit = async (values) => {
-        console.log('🔥 onSubmit appelé !', { values, selectedFile, selectedSite })
+        console.log('🔥 onSubmit appelé !', { values, selectedSite })
         const { key, ...formValues } = values
-        setIsUploading(true)
 
         try {
             if (!selectedSite) {
                 // Création d'un nouveau site
-                if (selectedFile) {
-                    // Avec image : créer d'abord le site, puis uploader l'image
-                    const site = await SiteAPI.createSite(formValues)
+                const site = await SiteAPI.createSite(formValues)
+                dispatch(addSite(site))
+                
+                // Upload de l'image après création si un fichier a été sélectionné
+                const fileToUpload = (fileInputRef.current as any)?.fileToUpload
+                if (fileToUpload && site?.id) {
+                    const formData = new FormData()
+                    formData.append('photo', fileToUpload)
                     
-                    if (site?.id) {
-                        const formData = new FormData()
-                        formData.append('photo', selectedFile)
+                    try {
+                        const response = await axiosSecured.post(`/api/sites/${site.id}/photo`, formData, {
+                            headers: {
+                                'Content-Type': 'multipart/form-data'
+                            }
+                        })
                         
-                        try {
-                            await axiosSecured.post(`/api/sites/${site.id}/photo`, formData, {
-                                headers: {
-                                    'Content-Type': 'multipart/form-data'
-                                }
-                            })
-                            
-                            // Récupérer les données mises à jour avec l'image
+                        if (response.data.success) {
+                            toast.success('Site créé et image uploadée avec succès')
+                            // Rafraîchir les données du site dans le store
                             const updatedSites = await SiteAPI.fetchAll()
                             const updatedSite = updatedSites.find(s => s.id === site.id)
                             if (updatedSite) {
                                 dispatch(addSite(updatedSite))
                             }
-                            
-                            toast.success('Site créé et image uploadée avec succès')
-                        } catch (error) {
-                            console.error('Erreur lors de l\'upload:', error)
-                            dispatch(addSite(site))
-                            toast.error('Site créé mais erreur lors de l\'upload de l\'image')
                         }
+                    } catch (error) {
+                        console.error('Erreur lors de l\'upload:', error)
+                        toast.error('Site créé mais erreur lors de l\'upload de l\'image')
                     }
-                } else {
-                    // Sans image : création simple
-                    const site = await SiteAPI.createSite(formValues)
-                    dispatch(addSite(site))
                 }
             } else {
                 // Modification d'un site existant
-                if (selectedFile) {
-                    // Avec nouvelle image : utiliser la nouvelle API
-                    const updatedSite = await SiteAPI.editSiteWithPhoto(selectedSite.id, formValues, selectedFile)
-                    dispatch(addSite(updatedSite))
-                } else {
-                    // Sans nouvelle image : modification normale
-                    const updatedSite = await SiteAPI.editSite(formValues)
-                    dispatch(addSite(updatedSite))
-                }
+                const updatedSite = await SiteAPI.editSite(formValues)
+                dispatch(addSite(updatedSite))
             }
 
             handleClose()
         } catch (error) {
             console.error('Erreur lors de la soumission:', error)
-        } finally {
-            setIsUploading(false)
         }
     }
 
@@ -495,7 +514,7 @@ const AdminSiteModal = ({
                             onClick={() => {
                                 console.log('🔥 Bouton cliqué, formState:', methods.formState.errors)
                                 console.log('🔥 FormValues:', methods.getValues())
-                                console.log('🔥 SelectedFile:', selectedFile)
+                                console.log('🔥 FileToUpload:', (fileInputRef.current as any)?.fileToUpload)
                                 methods.handleSubmit(
                                     onSubmit,
                                     (errors) => {

@@ -22,6 +22,14 @@ class EmpruntsController < ApplicationController
 
         render json: emprunts_user
     end
+    
+    # Récupère les emprunts de l'utilisateur connecté (en tant que conducteur ou passager)
+    def fetch_emprunts_utilisateur
+        emprunts = EmpruntService.emprunts_pour_utilisateur(@current_user.id)
+        emprunts_formattees = emprunts.map(&:to_format)
+        
+        render json: emprunts_formattees
+    end
 
     # def update
     #     params["data"].permit!

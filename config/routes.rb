@@ -82,6 +82,7 @@ Rails.application.routes.draw do
 
   # Routes pour les emprunts
   get "/api/emprunts" => "emprunts#fetch_all"
+  get "/api/emprunts/utilisateur" => "emprunts#fetch_emprunts_utilisateur"
   get "/api/emprunts/multiple_voitures" => "emprunts#get_emprunts_par_multiple_voitures"
   get "/api/emprunts/voiture/:voiture_id" => "emprunts#get_emprunts_par_voiture"
   get "/api/emprunts/pending_count" => "emprunts#get_pending_count"
