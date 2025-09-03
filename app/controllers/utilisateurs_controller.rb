@@ -26,6 +26,11 @@ class UtilisateursController < ApplicationController
     end
 
     newUser = Utilisateur.create!(attributes)
+    
+    # Générer le token de confirmation
+    service = AuthenticationService.new(newUser.email, attributes["password"])
+    service.generate_auth_token(newUser)
+    
     confirmation_url = "#{ENV['URL_SITE']}/confirm_email?token=#{newUser.confirmation_token}"
     UserMailer.send_mail(
       email: newUser.email,
