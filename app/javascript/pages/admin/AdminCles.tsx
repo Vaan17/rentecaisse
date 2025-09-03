@@ -40,13 +40,18 @@ const AdminCles = () => {
 
     const filterOptions = [
         { label: 'Statut', value: 'statut_cle' },
+        { label: 'Marque', value: 'marque' },
+        { label: 'Modèle', value: 'modele' },
+        { label: 'Immatriculation', value: 'immatriculation' },
         { label: 'Voiture', value: 'voiture_info' },
         { label: 'Site', value: 'site_info' }
     ]
 
     const headCells = [
         { id: 'statut_cle', label: 'Statut' },
-        { id: 'voiture_id', label: 'Voiture' },
+        { id: 'marque', label: 'Marque', colWidth: 120 },
+        { id: 'modele', label: 'Modèle', colWidth: 150 },
+        { id: 'immatriculation', label: 'Immat.', colWidth: 120 },
         { id: 'site_id', label: 'Site' },
         { id: 'edit', label: '', colWidth: 50 },
         { id: 'delete', label: '', colWidth: 50 },
@@ -55,6 +60,9 @@ const AdminCles = () => {
     // Enrichir les clés avec les informations de voiture et site pour le filtre
     const enrichedKeys = Object.values(keys).map(cle => ({
         ...cle,
+        marque: cars[cle.voiture_id]?.marque || '',
+        modele: cars[cle.voiture_id]?.modele || '',
+        immatriculation: cars[cle.voiture_id]?.immatriculation || '',
         voiture_info: cars[cle.voiture_id] ? 
             `${cars[cle.voiture_id].marque} ${cars[cle.voiture_id].modele} (${cars[cle.voiture_id].année_fabrication}) ${cars[cle.voiture_id].couleur} - ${cars[cle.voiture_id].immatriculation}` : 
             '',
@@ -133,6 +141,8 @@ const AdminCles = () => {
                                         >
                                             {cle.statut_cle}
                                         </TableCell>
+                                        <TableCell padding='none'>{cars[cle.voiture_id]?.marque}</TableCell>
+                                        <TableCell padding='none'>{cars[cle.voiture_id]?.modele}</TableCell>
                                         <TableCell padding='none'>{cars[cle.voiture_id]?.immatriculation}</TableCell>
                                         <TableCell padding='none'>{sites[cle.site_id]?.nom_site}</TableCell>
                                         <TableCell padding='none'>
