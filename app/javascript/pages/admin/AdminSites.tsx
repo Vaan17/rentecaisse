@@ -88,7 +88,10 @@ const AdminSites = () => {
                     <CustomFilter options={filterOptions} filterCallback={
                         (filterBy, searchValue) => { setFilterProperties({ filterBy, searchValue }) }
                     } />
-                    <SButton variant="contained" onClick={() => setIsOpen(true)}>
+                    <SButton variant="contained" onClick={() => {
+                        setSelectedSite(undefined)
+                        setIsOpen(true)
+                    }}>
                         Ajouter un site
                     </SButton>
                 </Flex>

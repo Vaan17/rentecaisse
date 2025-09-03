@@ -218,40 +218,66 @@ const AdminSiteModal = ({
     const methods = useForm({
         resolver: yupResolver(schema),
         mode: 'onChange', // Validation en temps réel
+        defaultValues: {
+            nom_site: "",
+            adresse: "",
+            code_postal: "",
+            ville: "",
+            pays: "",
+            telephone: "",
+            email: "",
+            site_web: "",
+            lien_image_site: null
+        }
     })
 
     useEffect(() => {
-        if (selectedSite) {
-            // Nettoyer les données du site pour éviter les erreurs de validation
-            const cleanedSiteData = {
-                ...selectedSite,
-                // Nettoyer lien_image_site : si ce n'est pas une URL valide, le mettre à null
-                lien_image_site: (selectedSite.lien_image_site && 
-                                  (selectedSite.lien_image_site.startsWith('http://') || 
-                                   selectedSite.lien_image_site.startsWith('https://'))) 
-                                 ? selectedSite.lien_image_site 
-                                 : null,
-                // Nettoyer site_web : si ce n'est pas une URL valide, le mettre à null  
-                site_web: (selectedSite.site_web && 
-                          (selectedSite.site_web.startsWith('http://') || 
-                           selectedSite.site_web.startsWith('https://'))) 
-                         ? selectedSite.site_web 
-                         : null
+        if (isOpen) {
+            if (selectedSite) {
+                // Nettoyer les données du site pour éviter les erreurs de validation
+                const cleanedSiteData = {
+                    ...selectedSite,
+                    // Nettoyer lien_image_site : si ce n'est pas une URL valide, le mettre à null
+                    lien_image_site: (selectedSite.lien_image_site && 
+                                      (selectedSite.lien_image_site.startsWith('http://') || 
+                                       selectedSite.lien_image_site.startsWith('https://'))) 
+                                     ? selectedSite.lien_image_site 
+                                     : null,
+                    // Nettoyer site_web : si ce n'est pas une URL valide, le mettre à null  
+                    site_web: (selectedSite.site_web && 
+                              (selectedSite.site_web.startsWith('http://') || 
+                               selectedSite.site_web.startsWith('https://'))) 
+                             ? selectedSite.site_web 
+                             : null
+                }
+                
+                console.log('🔧 Données nettoyées:', cleanedSiteData)
+                methods.reset(cleanedSiteData)
+                // Charger l'image du site si elle existe
+                fetchSiteImage(selectedSite.id)
+            } else {
+                // Réinitialisation complète pour l'ajout
+                methods.reset({
+                    nom_site: "",
+                    adresse: "",
+                    code_postal: "",
+                    ville: "",
+                    pays: "",
+                    telephone: "",
+                    email: "",
+                    site_web: "",
+                    lien_image_site: null
+                })
+                setSiteImage(null)
+                setUploadError(null)
+                setSelectedFile(null)
+                // Nettoyer aussi le fichier de référence
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = ''
+                }
             }
-            
-            console.log('🔧 Données nettoyées:', cleanedSiteData)
-            methods.reset(cleanedSiteData)
-            // Charger l'image du site si elle existe
-            fetchSiteImage(selectedSite.id)
-        } else {
-            methods.reset({
-                nom_site: ""
-            })
-            setSiteImage(null)
-            setUploadError(null)
-            setSelectedFile(null)
         }
-    }, [selectedSite]);
+    }, [isOpen, selectedSite, methods]);
 
     const fetchSiteImage = async (siteId: number) => {
         try {
