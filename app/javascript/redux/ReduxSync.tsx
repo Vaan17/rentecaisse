@@ -31,6 +31,16 @@ const ReduxSync = ({ children }) => {
         hydrateReduxStore()
     }, [])
 
+    // * Polling automatique pour maintenir les données à jour
+    useEffect(() => {
+        const interval = setInterval(() => {
+            // Recharger les emprunts toutes les 30 secondes pour maintenir la synchronisation
+            dispatch(getEmprunts())
+        }, 30000)
+        
+        return () => clearInterval(interval)
+    }, [dispatch])
+
     return (
         <>
             {children}

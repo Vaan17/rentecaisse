@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { getPendingEmpruntsCount } from '../pages/emprunts/services/empruntService';
+import { useMemo } from 'react';
+import useEmprunts from './useEmprunts';
 import useUser from './useUser';
 
 interface UsePendingEmpruntsResult {
@@ -9,61 +9,32 @@ interface UsePendingEmpruntsResult {
   refetch: () => void;
 }
 
-const usePendingEmprunts = (pollingInterval: number = 30000): UsePendingEmpruntsResult => {
-  const [pendingCount, setPendingCount] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+const usePendingEmprunts = (pollingInterval?: number): UsePendingEmpruntsResult => {
+  const emprunts = useEmprunts();
   const user = useUser();
 
   // Vérifier si l'utilisateur est admin
   const isAdmin = user.admin_entreprise || user.admin_rentecaisse;
 
-  const fetchPendingCount = useCallback(async () => {
-    if (!isAdmin) {
-      setPendingCount(0);
-      setLoading(false);
-      return;
-    }
+  // Calculer le nombre d'emprunts en attente directement depuis Redux
+  const pendingCount = useMemo(() => {
+    if (!isAdmin) return 0;
+    
+    return Object.values(emprunts).filter(emprunt => 
+      emprunt.statut_emprunt === "en_attente_validation"
+    ).length;
+  }, [emprunts, isAdmin]);
 
-    try {
-      setError(null);
-      const count = await getPendingEmpruntsCount();
-      setPendingCount(count);
-    } catch (err) {
-      console.error('Erreur lors de la récupération des emprunts en attente:', err);
-      setError('Erreur lors de la récupération des données');
-      setPendingCount(0);
-    } finally {
-      setLoading(false);
-    }
-  }, [isAdmin]);
-
-  // Fonction de refetch manuelle
-  const refetch = useCallback(() => {
-    setLoading(true);
-    fetchPendingCount();
-  }, [fetchPendingCount]);
-
-  // Effect pour le chargement initial
-  useEffect(() => {
-    fetchPendingCount();
-  }, [fetchPendingCount]);
-
-  // Effect pour le polling
-  useEffect(() => {
-    if (!isAdmin) return;
-
-    const interval = setInterval(() => {
-      fetchPendingCount();
-    }, pollingInterval);
-
-    return () => clearInterval(interval);
-  }, [isAdmin, pollingInterval, fetchPendingCount]);
+  // Fonction de refetch manuelle (maintenant inutile car synchronisé avec Redux)
+  const refetch = () => {
+    // Cette fonction est maintenue pour la compatibilité mais n'est plus nécessaire
+    // car les données sont automatiquement mises à jour via Redux
+  };
 
   return {
     pendingCount,
-    loading,
-    error,
+    loading: false, // Plus de loading car les données viennent directement de Redux
+    error: null,    // Plus d'erreur car on utilise les données Redux déjà chargées
     refetch
   };
 };

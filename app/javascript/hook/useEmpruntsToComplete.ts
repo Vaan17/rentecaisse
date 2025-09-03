@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
-import { getEmpruntsToCompleteCount } from '../pages/emprunts/services/empruntService';
+import { useMemo } from 'react';
+import useEmprunts from './useEmprunts';
 import useUser from './useUser';
+import dayjs from 'dayjs';
 
 interface UseEmpruntsToCompleteResult {
   toCompleteCount: number;
@@ -9,61 +10,32 @@ interface UseEmpruntsToCompleteResult {
   refetch: () => void;
 }
 
-const useEmpruntsToComplete = (pollingInterval: number = 30000): UseEmpruntsToCompleteResult => {
-  const [toCompleteCount, setToCompleteCount] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+const useEmpruntsToComplete = (pollingInterval?: number): UseEmpruntsToCompleteResult => {
+  const emprunts = useEmprunts();
   const user = useUser();
 
   // Vérifier si l'utilisateur est admin
   const isAdmin = user.admin_entreprise || user.admin_rentecaisse;
 
-  const fetchToCompleteCount = useCallback(async () => {
-    if (!isAdmin) {
-      setToCompleteCount(0);
-      setLoading(false);
-      return;
-    }
+  // Calculer le nombre d'emprunts à terminer directement depuis Redux
+  const toCompleteCount = useMemo(() => {
+    if (!isAdmin) return 0;
+    
+    return Object.values(emprunts).filter(emprunt => 
+      emprunt.statut_emprunt === "validé" && dayjs(emprunt.date_fin).isBefore(dayjs())
+    ).length;
+  }, [emprunts, isAdmin]);
 
-    try {
-      setError(null);
-      const count = await getEmpruntsToCompleteCount();
-      setToCompleteCount(count);
-    } catch (err) {
-      console.error('Erreur lors de la récupération des emprunts à terminer:', err);
-      setError('Erreur lors de la récupération des données');
-      setToCompleteCount(0);
-    } finally {
-      setLoading(false);
-    }
-  }, [isAdmin]);
-
-  // Fonction de refetch manuelle
-  const refetch = useCallback(() => {
-    setLoading(true);
-    fetchToCompleteCount();
-  }, [fetchToCompleteCount]);
-
-  // Effect pour le chargement initial
-  useEffect(() => {
-    fetchToCompleteCount();
-  }, [fetchToCompleteCount]);
-
-  // Effect pour le polling
-  useEffect(() => {
-    if (!isAdmin) return;
-
-    const interval = setInterval(() => {
-      fetchToCompleteCount();
-    }, pollingInterval);
-
-    return () => clearInterval(interval);
-  }, [isAdmin, pollingInterval, fetchToCompleteCount]);
+  // Fonction de refetch manuelle (maintenant inutile car synchronisé avec Redux)
+  const refetch = () => {
+    // Cette fonction est maintenue pour la compatibilité mais n'est plus nécessaire
+    // car les données sont automatiquement mises à jour via Redux
+  };
 
   return {
     toCompleteCount,
-    loading,
-    error,
+    loading: false, // Plus de loading car les données viennent directement de Redux
+    error: null,    // Plus d'erreur car on utilise les données Redux déjà chargées
     refetch
   };
 };
