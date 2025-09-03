@@ -1,79 +1,510 @@
-import React, { useState, useEffect } from 'react'
-import { Button } from '@mui/material'
+import React from 'react'
+import { 
+    Container,
+    Card,
+    CardMedia,
+    CardContent,
+    Typography,
+    Grid,
+    Box,
+    Button,
+    IconButton,
+    List,
+    ListItem,
+    ListItemIcon,
+    ListItemText,
+    Chip,
+    Stack,
+    Avatar,
+    Breadcrumbs,
+    Link
+} from '@mui/material'
+import {
+    ArrowBack,
+    LocationOn,
+    Phone,
+    Email,
+    Language,
+    DirectionsCar,
+    Info,
+    Speed,
+    LocalGasStation,
+    People,
+    Settings,
+    ColorLens,
+    CalendarToday,
+    Home
+} from '@mui/icons-material'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Flex } from '../../components/style/flex'
-import axiosSecured from '../../services/apiService'
-import { isDesktop, isMobile } from 'react-device-detect'
 import type { ISite } from '../sites/Sites'
 import type { IVoiture } from './Voitures'
+import useSites from '../../hook/useSites'
+import useCars from '../../hook/useCars'
 
 const VoitureDetails = () => {
     const { id } = useParams<{ id: string }>()
     const navigate = useNavigate()
-    const [voitures, setVoitures] = useState<IVoiture[]>([])
-    const [site, setSite] = useState<ISite | undefined>(undefined)
+    const sites = useSites()
+    const cars = useCars()
 
-    useEffect(() => {
-        const fetchVoitures = async () => {
-            const res = await axiosSecured.get("/api/voitures")
-            setVoitures(res.data)
+    const selectedVoiture = cars[parseInt(id || '0')] ?? {} as IVoiture
+    const siteInfo = sites[selectedVoiture.site_id] ?? {} as ISite
+
+    // Fonction pour compter les véhicules du site
+    const getVehicleCount = (siteId: number) => {
+        const carsArray = Object.values(cars)
+        const siteVehicles = carsArray.filter(car => car.site_id === siteId)
+        return siteVehicles.length
+    }
+
+    // Fonction pour obtenir la couleur du statut
+    const getStatusColor = (statut: string) => {
+        switch (statut) {
+            case 'Fonctionnelle': return 'success'
+            case 'En réparation': return 'warning'
+            case 'Non fonctionnelle': return 'error'
+            default: return 'default'
         }
-        fetchVoitures()
-    }, [])
+    }
 
-    const selectedVoiture = voitures.find(site => site.id === parseInt(id || '0')) ?? {} as IVoiture
-    const VoitureImage = selectedVoiture.image && !selectedVoiture.image.includes('placeholder')
-        ? <img src={selectedVoiture.image} alt="voiture" style={{ width: "500px", height: "300px", objectFit: "cover" }} />
-        : <div style={{ width: "500px", height: "300px", backgroundColor: "lightgray", display: "flex", justifyContent: "center", alignItems: "center" }}>Image indisponible</div>
-
-    useEffect(() => {
-        const fetchSite = async () => {
-            if (selectedVoiture.site_id) {
-                const res = await axiosSecured.get(`/api/sites/${selectedVoiture.site_id}`)
-                setSite(res.data)
-            }
+    // Fonction pour obtenir l'icône du carburant
+    const getFuelIcon = (carburant: string) => {
+        switch (carburant?.toLowerCase()) {
+            case 'electrique': return '⚡'
+            case 'diesel': return '⛽'
+            case 'essence': return '⛽'
+            case 'hybride': return '🔋'
+            default: return '⛽'
         }
-        fetchSite()
-    }, [selectedVoiture])
+    }
 
     return (
-        <Flex fullWidth directionColumn alignItemsStart gap="2em">
-            <Button
-                variant="contained"
-                onClick={() => navigate("/voitures")}
+        <Container maxWidth="xl" sx={{ py: 3 }}>
+            {/* Breadcrumbs Navigation */}
+            <Breadcrumbs sx={{ mb: 3 }}>
+                <Link 
+                    color="inherit" 
+                    href="#" 
+                    onClick={() => navigate('/')}
+                    sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+                >
+                    <Home sx={{ mr: 0.5 }} fontSize="inherit" />
+                    Accueil
+                </Link>
+                <Link 
+                    color="inherit" 
+                    href="#"
+                    onClick={() => navigate('/voitures')}
+                    sx={{ cursor: 'pointer' }}
+                >
+                    Véhicules
+                </Link>
+                <Typography color="text.primary">
+                    {selectedVoiture.immatriculation || 'Chargement...'}
+                </Typography>
+            </Breadcrumbs>
+
+            {/* Bouton retour */}
+            <IconButton 
+                onClick={() => navigate('/voitures')}
+                sx={{ mb: 2, bgcolor: 'primary.main', color: 'white', '&:hover': { bgcolor: 'primary.dark' } }}
             >
-                Retour
-            </Button>
-            <Flex alignItemsStart directionColumn={isMobile} gap="2em">
-                {isDesktop && VoitureImage}
-                <Flex directionColumn justifyCenter>
-                    <h1>{selectedVoiture.immatriculation}</h1>
-                    <Flex justifyCenter directionColumn={isMobile} alignItemsStart gap="2em">
-                        <Flex directionColumn alignItemsStart gap=".2em">
-                            <h2>Informations du véhicule</h2>
-                            <div>SITE DE RATTACHEMENT</div>
-                            <div>Marque : {selectedVoiture.marque}</div>
-                            <div>Modèle : {selectedVoiture.modele}</div>
-                            <div>Années : {selectedVoiture.année_fabrication}</div>
-                            <div>Carburant : {selectedVoiture.carburant}</div>
-                            <div>Couleur : {selectedVoiture.couleur}</div>
-                            <div>Puissance : {selectedVoiture.puissance} CV</div>
-                            <div>Nombre de portes : {selectedVoiture.nombre_portes}</div>
-                            <div>Nombre de place assises : {selectedVoiture.nombre_places}</div>
-                            <div>Type de boite : {selectedVoiture.type_boite}</div>
-                        </Flex>
-                        <Flex directionColumn alignItemsStart gap=".2em">
-                            <h2>Informations du site</h2>
-                            <div>{site?.adresse}</div>
-                            <div>{site?.code_postal} {site?.ville}</div>
-                            <div>UNDEFINED véhicules attachés</div>
-                            <div>Téléphone: {site?.telephone}</div>
-                            <div>Email: {site?.email}</div>
-                        </Flex>
-                    </Flex>
-                </Flex>
-            </Flex>
-        </Flex>
+                <ArrowBack />
+            </IconButton>
+
+            {/* Hero Section */}
+            <Card elevation={6} sx={{ borderRadius: 3, overflow: 'hidden', mb: 4 }}>
+                <Box sx={{ position: 'relative', height: 300 }}>
+                    {selectedVoiture.image && !selectedVoiture.image.includes('placeholder') ? (
+                        <CardMedia
+                            component="img"
+                            height="300"
+                            image={selectedVoiture.image}
+                            alt={`${selectedVoiture.marque} ${selectedVoiture.modele}`}
+                            sx={{ objectFit: 'cover', objectPosition: 'center 30%' }}
+                        />
+                    ) : (
+                        <Box 
+                            sx={{ 
+                                height: '100%',
+                                background: 'linear-gradient(135deg, #FFD700 0%, #FFC700 100%)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}
+                        >
+                            <DirectionsCar sx={{ fontSize: 60, color: 'white', opacity: 0.7 }} />
+                        </Box>
+                    )}
+                    
+                    {/* Overlay avec titre */}
+                    <Box
+                        sx={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            background: 'linear-gradient(45deg, rgba(0,0,0,0.6) 0%, transparent 50%)',
+                            display: 'flex',
+                            alignItems: 'end',
+                            p: 4
+                        }}
+                    >
+                        <Box>
+                            <Typography variant="h3" color="white" fontWeight="bold" gutterBottom>
+                                {selectedVoiture.marque} {selectedVoiture.modele}
+                            </Typography>
+                            <Typography variant="h6" color="white" sx={{ opacity: 0.9 }}>
+                                <DirectionsCar sx={{ mr: 1, verticalAlign: 'middle' }} />
+                                {selectedVoiture.immatriculation}
+                            </Typography>
+                        </Box>
+                    </Box>
+
+                    {/* Badge de statut */}
+                    <Chip
+                        label={selectedVoiture.statut_voiture}
+                        color={getStatusColor(selectedVoiture.statut_voiture) as any}
+                        sx={{
+                            position: 'absolute',
+                            top: 16,
+                            right: 16,
+                            bgcolor: getStatusColor(selectedVoiture.statut_voiture) === 'success' ? 'success.main' : 
+                                     getStatusColor(selectedVoiture.statut_voiture) === 'warning' ? 'warning.main' : 'error.main',
+                            color: 'white',
+                            fontWeight: 600,
+                            fontSize: '0.9rem'
+                        }}
+                    />
+                </Box>
+            </Card>
+
+            {/* Contenu principal */}
+            <Grid container spacing={4}>
+                {/* Section principale - Informations du véhicule */}
+                <Grid item xs={12} md={8}>
+                    <Card elevation={3} sx={{ borderRadius: 2, mb: 3 }}>
+                        <CardContent sx={{ p: 3 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                                <Avatar sx={{ bgcolor: '#FFC700', mr: 2 }}>
+                                    <DirectionsCar />
+                                </Avatar>
+                                <Typography variant="h5" fontWeight="bold">
+                                    Informations du véhicule
+                                </Typography>
+                            </Box>
+                            
+                            <List>
+                                <ListItem>
+                                    <ListItemIcon>
+                                        <DirectionsCar color="primary" />
+                                    </ListItemIcon>
+                                    <ListItemText 
+                                        primary="Marque et modèle"
+                                        secondary={`${selectedVoiture.marque} ${selectedVoiture.modele}`}
+                                    />
+                                </ListItem>
+
+                                <ListItem>
+                                    <ListItemIcon>
+                                        <Info color="primary" />
+                                    </ListItemIcon>
+                                    <ListItemText 
+                                        primary="Immatriculation"
+                                        secondary={selectedVoiture.immatriculation}
+                                    />
+                                </ListItem>
+
+                                <ListItem>
+                                    <ListItemIcon>
+                                        <CalendarToday color="primary" />
+                                    </ListItemIcon>
+                                    <ListItemText 
+                                        primary="Année de fabrication"
+                                        secondary={selectedVoiture.année_fabrication}
+                                    />
+                                </ListItem>
+
+                                <ListItem>
+                                    <ListItemIcon>
+                                        <LocalGasStation color="primary" />
+                                    </ListItemIcon>
+                                    <ListItemText 
+                                        primary="Carburant"
+                                        secondary={`${getFuelIcon(selectedVoiture.carburant)} ${selectedVoiture.carburant}`}
+                                    />
+                                </ListItem>
+
+                                <ListItem>
+                                    <ListItemIcon>
+                                        <ColorLens color="primary" />
+                                    </ListItemIcon>
+                                    <ListItemText 
+                                        primary="Couleur"
+                                        secondary={selectedVoiture.couleur}
+                                    />
+                                </ListItem>
+
+                                <ListItem>
+                                    <ListItemIcon>
+                                        <Speed color="primary" />
+                                    </ListItemIcon>
+                                    <ListItemText 
+                                        primary="Puissance"
+                                        secondary={`${selectedVoiture.puissance} CV`}
+                                    />
+                                </ListItem>
+
+                                <ListItem>
+                                    <ListItemIcon>
+                                        <People color="primary" />
+                                    </ListItemIcon>
+                                    <ListItemText 
+                                        primary="Capacité"
+                                        secondary={`${selectedVoiture.nombre_places} places - ${selectedVoiture.nombre_portes} portes`}
+                                    />
+                                </ListItem>
+
+                                <ListItem>
+                                    <ListItemIcon>
+                                        <Settings color="primary" />
+                                    </ListItemIcon>
+                                    <ListItemText 
+                                        primary="Transmission"
+                                        secondary={selectedVoiture.type_boite}
+                                    />
+                                </ListItem>
+                            </List>
+                        </CardContent>
+                    </Card>
+
+                    {/* Informations du site de rattachement */}
+                    <Card elevation={3} sx={{ borderRadius: 2 }}>
+                        <CardContent sx={{ p: 3 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                                <Avatar sx={{ bgcolor: '#FFC700', mr: 2 }}>
+                                    <LocationOn />
+                                </Avatar>
+                                <Typography variant="h5" fontWeight="bold">
+                                    Site de rattachement
+                                </Typography>
+                            </Box>
+                            
+                            {siteInfo.id ? (
+                                <List>
+                                    <ListItem>
+                                        <ListItemIcon>
+                                            <LocationOn color="primary" />
+                                        </ListItemIcon>
+                                        <ListItemText 
+                                            primary="Nom du site"
+                                            secondary={
+                                                <Button
+                                                    variant="text"
+                                                    onClick={() => navigate(`/sites/${siteInfo.id}`)}
+                                                    sx={{
+                                                        p: 0,
+                                                        minWidth: 'auto',
+                                                        textAlign: 'left',
+                                                        justifyContent: 'flex-start',
+                                                        color: '#FFC700',
+                                                        textTransform: 'none',
+                                                        fontWeight: 500,
+                                                        '&:hover': {
+                                                            backgroundColor: 'transparent',
+                                                            textDecoration: 'underline'
+                                                        }
+                                                    }}
+                                                >
+                                                    {siteInfo.nom_site}
+                                                </Button>
+                                            }
+                                        />
+                                    </ListItem>
+
+                                    <ListItem>
+                                        <ListItemIcon>
+                                            <LocationOn color="primary" />
+                                        </ListItemIcon>
+                                        <ListItemText 
+                                            primary="Adresse"
+                                            secondary={`${siteInfo.adresse}, ${siteInfo.code_postal} ${siteInfo.ville}`}
+                                        />
+                                    </ListItem>
+
+                                    <ListItem>
+                                        <ListItemIcon>
+                                            <DirectionsCar color="primary" />
+                                        </ListItemIcon>
+                                        <ListItemText 
+                                            primary="Véhicules du site"
+                                            secondary={`${getVehicleCount(siteInfo.id)} véhicules rattachés`}
+                                        />
+                                    </ListItem>
+
+                                    <ListItem>
+                                        <ListItemIcon>
+                                            <Phone color="primary" />
+                                        </ListItemIcon>
+                                        <ListItemText 
+                                            primary="Téléphone"
+                                            secondary={siteInfo.telephone}
+                                        />
+                                    </ListItem>
+
+                                    <ListItem>
+                                        <ListItemIcon>
+                                            <Email color="primary" />
+                                        </ListItemIcon>
+                                        <ListItemText 
+                                            primary="Email"
+                                            secondary={
+                                                <Link 
+                                                    href={`mailto:${siteInfo.email}`}
+                                                    sx={{ color: '#FFC700', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                                                >
+                                                    {siteInfo.email}
+                                                </Link>
+                                            }
+                                        />
+                                    </ListItem>
+
+                                    {siteInfo.site_web && (
+                                        <ListItem>
+                                            <ListItemIcon>
+                                                <Language color="primary" />
+                                            </ListItemIcon>
+                                            <ListItemText 
+                                                primary="Site web"
+                                                secondary={
+                                                    <Link 
+                                                        href={siteInfo.site_web.startsWith('http') ? siteInfo.site_web : `https://${siteInfo.site_web}`}
+                                                        target="_blank"
+                                                        sx={{ color: '#FFC700', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                                                    >
+                                                        {siteInfo.site_web}
+                                                    </Link>
+                                                }
+                                            />
+                                        </ListItem>
+                                    )}
+                                </List>
+                            ) : (
+                                <Typography color="text.secondary">
+                                    Aucune information de site disponible
+                                </Typography>
+                            )}
+                        </CardContent>
+                    </Card>
+                </Grid>
+
+                {/* Sidebar - Actions et statistiques */}
+                <Grid item xs={12} md={4}>
+                    <Stack spacing={3}>
+                        {/* Actions rapides */}
+                        <Card elevation={3} sx={{ borderRadius: 2 }}>
+                            <CardContent sx={{ p: 3 }}>
+                                <Typography variant="h6" fontWeight="bold" gutterBottom>
+                                    Actions rapides
+                                </Typography>
+                                <Stack spacing={2}>
+                                    <Button 
+                                        variant="contained" 
+                                        fullWidth
+                                        startIcon={<LocationOn />}
+                                        onClick={() => navigate(`/sites/${siteInfo.id}`)}
+                                        sx={{ bgcolor: '#FFC700', '&:hover': { bgcolor: '#FFD700' } }}
+                                        disabled={!siteInfo.id}
+                                    >
+                                        Voir le site
+                                    </Button>
+                                    <Button 
+                                        variant="outlined" 
+                                        fullWidth
+                                        startIcon={<Email />}
+                                        onClick={() => window.open(`mailto:${siteInfo.email}`, '_self')}
+                                        disabled={!siteInfo.email}
+                                    >
+                                        Contacter le site
+                                    </Button>
+                                    <Button 
+                                        variant="outlined" 
+                                        fullWidth
+                                        startIcon={<DirectionsCar />}
+                                        onClick={() => navigate('/emprunts')}
+                                    >
+                                        Réserver ce véhicule
+                                    </Button>
+                                </Stack>
+                            </CardContent>
+                        </Card>
+
+                        {/* Statistiques et informations */}
+                        <Card elevation={3} sx={{ borderRadius: 2 }}>
+                            <CardContent sx={{ p: 3 }}>
+                                <Typography variant="h6" fontWeight="bold" gutterBottom>
+                                    Informations techniques
+                                </Typography>
+                                <List dense>
+                                    <ListItem>
+                                        <ListItemIcon>
+                                            <Speed color="primary" />
+                                        </ListItemIcon>
+                                        <ListItemText 
+                                            primary={`${selectedVoiture.puissance} CV`}
+                                            secondary="Puissance"
+                                        />
+                                    </ListItem>
+                                    <ListItem>
+                                        <ListItemIcon>
+                                            <People color="primary" />
+                                        </ListItemIcon>
+                                        <ListItemText 
+                                            primary={`${selectedVoiture.nombre_places} places`}
+                                            secondary="Capacité passagers"
+                                        />
+                                    </ListItem>
+                                    <ListItem>
+                                        <ListItemIcon>
+                                            <LocalGasStation color="primary" />
+                                        </ListItemIcon>
+                                        <ListItemText 
+                                            primary={selectedVoiture.carburant}
+                                            secondary="Type de carburant"
+                                        />
+                                    </ListItem>
+                                </List>
+                            </CardContent>
+                        </Card>
+
+                        {/* Statut du véhicule */}
+                        <Card elevation={3} sx={{ borderRadius: 2 }}>
+                            <CardContent sx={{ p: 3 }}>
+                                <Typography variant="h6" fontWeight="bold" gutterBottom>
+                                    Statut
+                                </Typography>
+                                <Chip
+                                    label={selectedVoiture.statut_voiture}
+                                    color={getStatusColor(selectedVoiture.statut_voiture) as any}
+                                    sx={{
+                                        fontSize: '1rem',
+                                        fontWeight: 600,
+                                        py: 2,
+                                        px: 3
+                                    }}
+                                />
+                                <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                                    {selectedVoiture.statut_voiture === 'Fonctionnelle' && 'Ce véhicule est disponible pour les réservations'}
+                                    {selectedVoiture.statut_voiture === 'En réparation' && 'Ce véhicule est temporairement indisponible'}
+                                    {selectedVoiture.statut_voiture === 'Non fonctionnelle' && 'Ce véhicule n\'est pas utilisable actuellement'}
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                    </Stack>
+                </Grid>
+            </Grid>
+        </Container>
     )
 }
 
