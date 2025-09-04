@@ -13,7 +13,7 @@ import type { IUser } from '../hook/useUser';
 import FSelect from '../utils/form/FSelect';
 import useSites from '../hook/useSites';
 import UserAPI from '../redux/data/user/UserAPI';
-import { addUser } from '../redux/data/user/userReducer';
+import { addUserToList } from '../redux/data/user/userReducer';
 
 const ModalContent = styled(Flex)`
     position: absolute;
@@ -111,7 +111,7 @@ const AdminUtilisateurModal = ({
         if (!selectedUser) {
             // INVITATION D'UN UTILISATEUR
             const user = await UserAPI.inviteUser(values)
-            dispatch(addUser(user))
+            dispatch(addUserToList(user))
         } else {
             if (isEditingInscriptions) {
                 // EDITION D'UNE INSCRIPTION AVANT ACCEPTATION
@@ -125,7 +125,7 @@ const AdminUtilisateurModal = ({
                     user = await UserAPI.editUser(enhancedValues)
                 }
                 user = await UserAPI.acceptUser(selectedUser.id)
-                dispatch(addUser(user))
+                dispatch(addUserToList(user))
             } else {
                 // ÉDITION D'UN UTILISATEUR
                 const enhancedValues = {
@@ -134,7 +134,7 @@ const AdminUtilisateurModal = ({
                 }
 
                 const user = await UserAPI.editUser(enhancedValues)
-                dispatch(addUser(user))
+                dispatch(addUserToList(user))
             }
         }
 

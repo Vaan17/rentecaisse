@@ -11,7 +11,7 @@ import { useDispatch } from 'react-redux'
 import type { IUser } from '../../hook/useUser'
 import useUsers from '../../hook/useUsers'
 import UserAPI from '../../redux/data/user/UserAPI';
-import { addUser, removeUser } from '../../redux/data/user/userReducer';
+import { addUserToList, removeUser } from '../../redux/data/user/userReducer';
 import useSites from '../../hook/useSites';
 import AdminUtilisateurModal from '../../modals/AdminUtilisateurModal';
 
@@ -55,7 +55,7 @@ const TableInscriptions = () => {
 
     const handleAccept = async (userId) => {
         const user = await UserAPI.acceptUser(userId)
-        dispatch(addUser(user))
+        dispatch(addUserToList(user))
 
         setIsOpen(false)
         setSelectedUser(undefined)

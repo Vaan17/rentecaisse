@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import UserAPI from "./UserAPI";
-import { addUser } from "./userReducer";
+import { addUserToList } from "./userReducer";
 import { toast } from "react-toastify";
 
 export const getUsers = createAsyncThunk(
@@ -10,7 +10,7 @@ export const getUsers = createAsyncThunk(
 			const users = await UserAPI.fetchAll();
 
 			users.forEach((user) => {
-				dispatch(addUser(user));
+				dispatch(addUserToList(user));
 			});
 		} catch (error) {
 			toast.error("Erreur lors de la synchronisation des utilisateurs.");
