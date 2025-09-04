@@ -159,7 +159,7 @@ const RegisterSuccessPage = () => {
           <Message>
             Cet email contient un lien de confirmation. Veuillez cliquer sur ce lien pour activer votre compte et commencer à utiliser notre application.
           </Message>
-          <Button onClick={() => navigate("/")}>Revenir à l'accueil</Button>
+          <Button onClick={() => navigate("/login")}>Retour à la connexion</Button>
         </FlexContainer>
       </SCard>
     </BackgroundLayout>
