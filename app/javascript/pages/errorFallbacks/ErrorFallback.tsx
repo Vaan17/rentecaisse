@@ -3,6 +3,7 @@ import { Flex } from '../../components/style/flex'
 import BackgroundLayout from '../../components/layout/BackgroundLayout'
 import styled from 'styled-components'
 import { Alert, Button, Card, CardContent } from '@mui/material'
+import useUser from '../../hook/useUser'
 
 const SCard = styled(Card)`
     width: 50%;
@@ -17,6 +18,8 @@ const SCardContent = styled(CardContent)`
 `
 
 const ErrorFallback = ({ error }) => {
+    const user = useUser();
+
     return (
         <BackgroundLayout backgroundImage="/images/backgrounds/car-crash.png">
             <SCard>
@@ -24,12 +27,14 @@ const ErrorFallback = ({ error }) => {
                     <Flex fullWidth directionColumn justifyCenter>
                         <h1>Oops...</h1>
                         <h2>Une erreur critique est survenue.</h2>
-                        <Alert severity="error">
-                            <Flex directionColumn alignItemsInitial gap=".5em">
-                                <div><strong>Erreur :</strong> {error.message}</div>
-                                <div><strong>Stack :</strong> {error.stack}</div>
-                            </Flex>
-                        </Alert>
+                        {user.admin_rentecaisse && (
+                            <Alert severity="error">
+                                <Flex directionColumn alignItemsInitial gap=".5em">
+                                    <div><strong>Erreur :</strong> {error.message}</div>
+                                    <div><strong>Stack :</strong> {error.stack}</div>
+                                </Flex>
+                            </Alert>
+                        )}
                         <br />
                         <Button variant="contained" onClick={() => {
                             window.location.href = '/'
