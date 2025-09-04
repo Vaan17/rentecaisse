@@ -34,7 +34,7 @@ const statuses = [
     description: 'Emprunt validé et actuellement en cours.'
   },
   {
-    id: 'terminé',
+    id: 'Terminé',
     label: 'Terminé',
     color: 'rgba(33, 150, 243, 0.7)',
     description: 'Emprunt terminé et véhicule retourné.'
@@ -51,29 +51,29 @@ const Legend: React.FC = () => {
       <Typography variant="subtitle1" sx={{ mb: 1.5, fontWeight: 'bold' }}>
         Légende
       </Typography>
-      
-      <Box sx={{ 
-        display: 'flex', 
+
+      <Box sx={{
+        display: 'flex',
         flexDirection: 'column',
         width: '100%',
         gap: 1
       }}>
         {/* Première ligne */}
-        <Box sx={{ 
-          display: 'flex', 
-          width: '100%', 
+        <Box sx={{
+          display: 'flex',
+          width: '100%',
           justifyContent: 'space-between'
         }}>
           {firstRow.map((status) => (
             <LegendItem key={status.id} status={status} />
           ))}
         </Box>
-        
+
         <Divider sx={{ my: 0.5 }} />
-        
+
         {/* Deuxième ligne */}
-        <Box sx={{ 
-          display: 'flex', 
+        <Box sx={{
+          display: 'flex',
           width: '100%',
           justifyContent: 'space-between'
         }}>
@@ -89,21 +89,21 @@ const Legend: React.FC = () => {
 // Composant pour un élément individuel de la légende
 const LegendItem: React.FC<{ status: typeof statuses[0] }> = ({ status }) => {
   return (
-    <Box sx={{ 
+    <Box sx={{
       display: 'flex',
       alignItems: 'flex-start',
       width: '32%' // Permet trois éléments par ligne avec un peu d'espace entre eux
     }}>
-      <Box 
-        sx={{ 
-          width: 20, 
-          height: 20, 
+      <Box
+        sx={{
+          width: 20,
+          height: 20,
           border: '1px solid rgba(0, 0, 0, 0.1)',
           backgroundColor: status.color,
           mt: 0.5, // Aligner avec le texte
           mr: 1.5,
           flexShrink: 0
-        }} 
+        }}
       />
       <Box>
         <Typography variant="body2" sx={{ fontWeight: 'medium' }}>

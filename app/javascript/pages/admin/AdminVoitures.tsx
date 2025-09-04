@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { Flex } from '../../components/style/flex'
 import CustomFilter from '../../components/CustomFilter'
-import { Alert, Button, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Tooltip } from '@mui/material'
+import { Alert, Box, Button, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Tooltip } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import type { IVoiture } from '../voitures/Voitures'
 import EditIcon from '@mui/icons-material/Edit';
@@ -26,7 +26,7 @@ const AdminVoitures = () => {
     const cars = useCars()
 
     const [selectedCar, setSelectedCar] = useState<IVoiture | undefined>(undefined)
-    const [filterProperties, setFilterProperties] = useState({ filterBy: undefined, searchValue: "" })
+    const [filterProperties, setFilterProperties] = useState<{ filterBy: FilterBy | undefined, searchValue: string }>({ filterBy: undefined, searchValue: "" })
     const [isOpen, setIsOpen] = useState(false)
     const [isOpenConfirmModal, setIsOpenConfirmModal] = useState(false)
     const [page, setPage] = useState(0)
@@ -57,6 +57,8 @@ const AdminVoitures = () => {
         },
     ]
 
+    type FilterBy = 'immatriculation' | 'modele' | 'marque' | 'nombre_places' | 'type_boite'
+
     const headCells = [
         { id: 'immatriculation', label: 'Immatriculation' },
         { id: 'modele', label: 'Modèle' },
@@ -69,7 +71,8 @@ const AdminVoitures = () => {
 
     const filteredCars = Object.values(cars).filter(car => {
         if (!filterProperties.filterBy || !filterProperties.searchValue) return true
-        return car[filterProperties.filterBy]?.toString()?.toLowerCase().includes(filterProperties.searchValue.toLowerCase())
+        const carValue = car[filterProperties.filterBy as keyof IVoiture]
+        return carValue?.toString()?.toLowerCase().includes(filterProperties.searchValue.toLowerCase())
     })
 
     const handleDelete = async () => {
@@ -102,102 +105,185 @@ const AdminVoitures = () => {
                         Ajouter une voiture
                     </SButton>
                 </Flex>
-                <TableContainer>
-                    <Table
-                        sx={{ minWidth: 750 }}
-                        aria-labelledby="tableTitle"
-                    >
-                        <TableHead>
-                            <TableRow>
-                                {headCells.map((headCell) => (
-                                    <TableCell
-                                        key={headCell.id}
-                                        width={headCell.colWidth ? `${headCell.colWidth}px` : 'auto'}
-                                        padding='none'
-                                    >
-                                        {headCell.label}
-                                    </TableCell>
-                                ))}
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {visibleRows.map((car, index) => {
-                                const labelId = `enhanced-table-checkbox-${index}`;
+                {isMobile && (
+                    <>
+                        <Flex directionColumn gap="1em">
+                            {filteredCars.map((car, index) => (
+                                <Box
+                                    key={car.immatriculation}
+                                    sx={{
+                                        width: '100%',
+                                        backgroundColor: '#f4f4f4',
+                                        borderRadius: '8px',
+                                        padding: '1em',
+                                        border: '1px solid #e0e0e0'
+                                    }}
+                                >
+                                    <Flex directionColumn gap="0.5em">
+                                        <Flex spaceBetween alignItemsCenter>
+                                            <Box sx={{ fontSize: '1.1em', fontWeight: 'bold' }}>
+                                                {car.immatriculation}
+                                            </Box>
+                                            <Flex gap="0.5em">
+                                                <Tooltip title="Modifier" arrow>
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={() => {
+                                                            setSelectedCar(car)
+                                                            setIsOpen(true)
+                                                        }}
+                                                    >
+                                                        <EditIcon />
+                                                    </IconButton>
+                                                </Tooltip>
+                                                <Tooltip title="Supprimer" arrow>
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={() => {
+                                                            setSelectedCar(car)
+                                                            setIsOpenConfirmModal(true)
+                                                        }}
+                                                    >
+                                                        <DeleteIcon />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            </Flex>
+                                        </Flex>
 
-                                return (
-                                    <TableRow
-                                        key={car.immatriculation}
-                                        hover
-                                        onClick={(event) => null}
-                                        tabIndex={-1}
-                                        sx={{ cursor: 'pointer' }}
-                                    >
-                                        <TableCell
-                                            id={labelId}
-                                            scope="row"
-                                            padding="none"
-                                        >
-                                            {car.immatriculation}
-                                        </TableCell>
-                                        <TableCell padding='none'>{car.modele}</TableCell>
-                                        <TableCell padding='none'>{car.marque}</TableCell>
-                                        <TableCell padding='none'>{car.nombre_places}</TableCell>
-                                        <TableCell padding='none'>{car.type_boite}</TableCell>
-                                        <TableCell padding='none'>
-                                            <Tooltip title="Modifier" arrow>
-                                                <IconButton onClick={() => {
-                                                    setSelectedCar(car)
-                                                    setIsOpen(true)
-                                                }}>
-                                                    <EditIcon />
-                                                </IconButton>
-                                            </Tooltip>
-                                        </TableCell>
-                                        <TableCell padding='none' >
-                                            <Tooltip title="Supprimer" arrow>
-                                                <IconButton onClick={() => {
-                                                    setSelectedCar(car)
-                                                    setIsOpenConfirmModal(true)
-                                                }}>
-                                                    <DeleteIcon />
-                                                </IconButton>
-                                            </Tooltip>
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })}
+                                        <Box sx={{ fontSize: '1em' }}>
+                                            <strong>{car.marque} {car.modele}</strong>
+                                        </Box>
+
+                                        <Box sx={{ fontSize: '0.9em' }}>
+                                            <Flex gap="1em">
+                                                <Box>
+                                                    <strong>Places:</strong> {car.nombre_places}
+                                                </Box>
+                                                <Box>
+                                                    <strong>Boîte:</strong> {car.type_boite}
+                                                </Box>
+                                            </Flex>
+                                        </Box>
+                                    </Flex>
+                                </Box>
+                            ))}
+
                             {filteredCars.length === 0 && (
-                                <TableRow>
-                                    <TableCell colSpan={headCells.length + 1} align="center">
-                                        <Alert severity={
-                                            filterProperties.filterBy && filterProperties.searchValue
-                                                ? "warning"
-                                                : "info"
-                                        }>
-                                            {filterProperties.filterBy && filterProperties.searchValue
-                                                ? "Aucun résultat ne correspond à votre recherche"
-                                                : "Aucune voiture enregistré"}
-                                        </Alert>
-                                    </TableCell>
-                                </TableRow>
+                                <Box sx={{ textAlign: 'center', padding: '2em' }}>
+                                    <Alert severity={
+                                        filterProperties.filterBy && filterProperties.searchValue
+                                            ? "warning"
+                                            : "info"
+                                    }>
+                                        {filterProperties.filterBy && filterProperties.searchValue
+                                            ? "Aucun résultat ne correspond à votre recherche"
+                                            : "Aucune voiture enregistré"}
+                                    </Alert>
+                                </Box>
                             )}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-                <TablePagination
-                    rowsPerPageOptions={[5, 10, 25, 50]}
-                    component="div"
-                    count={filteredCars.length}
-                    rowsPerPage={rowsPerPage}
-                    onRowsPerPageChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                        setRowsPerPage(parseInt(event.target.value, 10))
-                        setPage(0)
-                    }}
-                    page={page}
-                    onPageChange={(event: unknown, newPage: number) => {
-                        setPage(newPage)
-                    }}
-                />
+                        </Flex>
+                    </>
+                )}
+                {!isMobile && (
+                    <>
+                        <TableContainer>
+                            <Table
+                                sx={{ minWidth: 750 }}
+                                aria-labelledby="tableTitle"
+                            >
+                                <TableHead>
+                                    <TableRow>
+                                        {headCells.map((headCell) => (
+                                            <TableCell
+                                                key={headCell.id}
+                                                width={headCell.colWidth ? `${headCell.colWidth}px` : 'auto'}
+                                                padding='none'
+                                            >
+                                                {headCell.label}
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {visibleRows.map((car, index) => {
+                                        const labelId = `enhanced-table-checkbox-${index}`;
+
+                                        return (
+                                            <TableRow
+                                                key={car.immatriculation}
+                                                hover
+                                                onClick={(event) => null}
+                                                tabIndex={-1}
+                                                sx={{ cursor: 'pointer' }}
+                                            >
+                                                <TableCell
+                                                    id={labelId}
+                                                    scope="row"
+                                                    padding="none"
+                                                >
+                                                    {car.immatriculation}
+                                                </TableCell>
+                                                <TableCell padding='none'>{car.modele}</TableCell>
+                                                <TableCell padding='none'>{car.marque}</TableCell>
+                                                <TableCell padding='none'>{car.nombre_places}</TableCell>
+                                                <TableCell padding='none'>{car.type_boite}</TableCell>
+                                                <TableCell padding='none'>
+                                                    <Tooltip title="Modifier" arrow>
+                                                        <IconButton onClick={() => {
+                                                            setSelectedCar(car)
+                                                            setIsOpen(true)
+                                                        }}>
+                                                            <EditIcon />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                </TableCell>
+                                                <TableCell padding='none' >
+                                                    <Tooltip title="Supprimer" arrow>
+                                                        <IconButton onClick={() => {
+                                                            setSelectedCar(car)
+                                                            setIsOpenConfirmModal(true)
+                                                        }}>
+                                                            <DeleteIcon />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                    {filteredCars.length === 0 && (
+                                        <TableRow>
+                                            <TableCell colSpan={headCells.length + 1} align="center">
+                                                <Alert severity={
+                                                    filterProperties.filterBy && filterProperties.searchValue
+                                                        ? "warning"
+                                                        : "info"
+                                                }>
+                                                    {filterProperties.filterBy && filterProperties.searchValue
+                                                        ? "Aucun résultat ne correspond à votre recherche"
+                                                        : "Aucune voiture enregistré"}
+                                                </Alert>
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                        <TablePagination
+                            rowsPerPageOptions={[5, 10, 25, 50]}
+                            component="div"
+                            count={filteredCars.length}
+                            rowsPerPage={rowsPerPage}
+                            onRowsPerPageChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                                setRowsPerPage(parseInt(event.target.value, 10))
+                                setPage(0)
+                            }}
+                            page={page}
+                            onPageChange={(event: unknown, newPage: number) => {
+                                setPage(newPage)
+                            }}
+                        />
+                    </>
+                )}
                 <AdminVoitureModal
                     isOpen={isOpen}
                     selectedCar={selectedCar}
