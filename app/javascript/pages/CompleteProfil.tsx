@@ -5,6 +5,9 @@ import styled from 'styled-components';
 import BackgroundLayout from '../components/layout/BackgroundLayout';
 import WhiteContainer from '../components/layout/WhiteContainer';
 import axiosSecured from '../services/apiService';
+import { Card } from '@mui/material';
+import { Flex } from '../components/style/flex';
+import { isMobile } from 'react-device-detect';
 
 const Header = styled.div`
   display: flex;
@@ -38,7 +41,7 @@ const BrandName = styled.div`
 `;
 
 const Title = styled.h1`
-  font-size: 1.75rem;
+  font-size: ${isMobile ? "1rem" : "1.75rem"};
   color: #333;
   font-weight: 600;
   font-family: 'Inter', sans-serif;
@@ -52,27 +55,6 @@ const Subtitle = styled.p`
   margin-bottom: 2rem;
   text-align: center;
   max-width: 600px;
-`;
-
-const WhiteContainerStyled = styled(WhiteContainer)`
-  max-width: 1200px;
-  width: 75%;
-  margin: 2rem auto;
-  padding: 4rem 6rem;
-  border-radius: 24px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-
-  @media (max-width: 1200px) {
-    width: 85%;
-    max-width: 1200px;
-    padding: 3rem 4rem;
-  }
-
-  @media (max-width: 768px) {
-    width: 95%;
-    max-width: 100%;
-    padding: 2rem;
-  }
 `;
 
 const Form = styled.form`
@@ -213,6 +195,19 @@ const ErrorMessage = styled.span`
   margin-top: 0.25rem;
   font-family: 'Inter', sans-serif;
 `;
+
+const SCard = styled(Card)`
+  width: 75%;
+  min-width: 300px;
+  height: 90%;
+  padding: 1em;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+`
+
+const FlexContainer = styled(Flex)`
+  height: 100%;
+  overflow-y: auto;
+`
 
 interface ProfileFormData {
   prenom: string;
@@ -422,229 +417,233 @@ const CompleteProfil: React.FC = () => {
 
   return (
     <BackgroundLayout backgroundImage="/images/backgrounds/parking-background.png">
-      <WhiteContainerStyled>
-        <Header>
-          <BrandHeader>
-            <Logo src="/images/logos/logo.png" alt="RenteCaisse Logo" />
-            <BrandName>RenteCaisse</BrandName>
-          </BrandHeader>
-          <Title>Nous voulons en savoir un peu plus sur vous !</Title>
-          <Subtitle>
-            Il s&apos;agit de votre première connexion à notre application. Pour pouvoir utiliser notre
-            application, veuillez renseigner certaines de vos informations personnelles.
-          </Subtitle>
-        </Header>
+      <SCard>
+        <FlexContainer fullWidth directionColumn gap="1em">
+          <Flex fullWidth justifyCenter directionColumn gap="1em">
+            <BrandHeader>
+              <Logo src="/images/logos/logo.png" alt="RenteCaisse Logo" />
+              <BrandName>RenteCaisse</BrandName>
+            </BrandHeader>
+            <Title>Nous voulons en savoir un peu plus sur vous !</Title>
+            <Subtitle>
+              Il s&apos;agit de votre première connexion à notre application. Pour pouvoir utiliser notre
+              application, veuillez renseigner certaines de vos informations personnelles.
+            </Subtitle>
+          </Flex>
 
-        <Form onSubmit={handleSubmit}>
-          <Grid>
-            <FormGroup>
-              <Label htmlFor="prenom">Prénom*</Label>
-              <Input
-                type="text"
-                id="prenom"
-                name="prenom"
-                value={formData.prenom}
-                onChange={handleInputChange}
-                required
-                className={validation.prenom.error ? 'error' : validation.prenom.isValid ? 'valid' : ''}
-              />
-              {validation.prenom.error && <ErrorMessage>{validation.prenom.error}</ErrorMessage>}
-            </FormGroup>
-
-            <FormGroup>
-              <Label htmlFor="nom">Nom*</Label>
-              <Input
-                type="text"
-                id="nom"
-                name="nom"
-                value={formData.nom}
-                onChange={handleInputChange}
-                required
-                className={validation.nom.error ? 'error' : validation.nom.isValid ? 'valid' : ''}
-              />
-              {validation.nom.error && <ErrorMessage>{validation.nom.error}</ErrorMessage>}
-            </FormGroup>
-          </Grid>
-
-          <FormGroup>
-            <Label htmlFor="adresse">Adresse*</Label>
-            <Input
-              type="text"
-              id="adresse"
-              name="adresse"
-              value={formData.adresse}
-              onChange={handleInputChange}
-              required
-              className={validation.adresse.error ? 'error' : validation.adresse.isValid ? 'valid' : ''}
-            />
-            {validation.adresse.error && <ErrorMessage>{validation.adresse.error}</ErrorMessage>}
-          </FormGroup>
-
-          <Grid3>
-            <FormGroup>
-              <Label htmlFor="ville">Ville*</Label>
-              <Input
-                type="text"
-                id="ville"
-                name="ville"
-                value={formData.ville}
-                onChange={handleInputChange}
-                required
-                className={validation.ville.error ? 'error' : validation.ville.isValid ? 'valid' : ''}
-              />
-              {validation.ville.error && <ErrorMessage>{validation.ville.error}</ErrorMessage>}
-            </FormGroup>
-
-            <FormGroup>
-              <Label htmlFor="code_postal">Code Postal*</Label>
-              <Input
-                type="text"
-                id="code_postal"
-                name="code_postal"
-                value={formData.code_postal}
-                onChange={handleInputChange}
-                required
-                className={validation.code_postal.error ? 'error' : validation.code_postal.isValid ? 'valid' : ''}
-              />
-              {validation.code_postal.error && <ErrorMessage>{validation.code_postal.error}</ErrorMessage>}
-            </FormGroup>
-
-            <FormGroup>
-              <Label htmlFor="pays">Pays*</Label>
-              <Input
-                type="text"
-                id="pays"
-                name="pays"
-                value={formData.pays}
-                onChange={handleInputChange}
-                required
-                className={validation.pays.error ? 'error' : validation.pays.isValid ? 'valid' : ''}
-              />
-              {validation.pays.error && <ErrorMessage>{validation.pays.error}</ErrorMessage>}
-            </FormGroup>
-          </Grid3>
-
-          <Grid>
-            <FormGroup>
-              <Label htmlFor="telephone">Numéro de téléphone mobile*</Label>
-              <Input
-                type="tel"
-                id="telephone"
-                name="telephone"
-                value={formData.telephone}
-                onChange={handleInputChange}
-                required
-                className={validation.telephone.error ? 'error' : validation.telephone.isValid ? 'valid' : ''}
-              />
-              {validation.telephone.error && <ErrorMessage>{validation.telephone.error}</ErrorMessage>}
-            </FormGroup>
-
-            <FormGroup>
-              <Label htmlFor="date_naissance">Date de naissance*</Label>
-              <Input
-                type="date"
-                id="date_naissance"
-                name="date_naissance"
-                value={formData.date_naissance}
-                onChange={handleInputChange}
-                required
-                className={validation.date_naissance.error ? 'error' : validation.date_naissance.isValid ? 'valid' : ''}
-              />
-              {validation.date_naissance.error && <ErrorMessage>{validation.date_naissance.error}</ErrorMessage>}
-            </FormGroup>
-          </Grid>
-
-          <FormGroup>
-            <Label>Genre*</Label>
-            <RadioContainer>
-              <label>
-                <input
-                  type="radio"
-                  name="genre"
-                  value="masculin"
-                  checked={formData.genre === 'masculin'}
-                  onChange={(e) => setFormData({ ...formData, genre: e.target.value as 'masculin' })}
+          <Form onSubmit={handleSubmit}>
+            <Flex fullWidth directionColumn={isMobile} gap={isMobile ? "1em" : "3em"}>
+              <Flex fullWidth gap="1em">
+                <Label htmlFor="prenom">Prénom*</Label>
+                <Input
+                  type="text"
+                  id="prenom"
+                  name="prenom"
+                  value={formData.prenom}
+                  onChange={handleInputChange}
+                  required
+                  className={validation.prenom.error ? 'error' : validation.prenom.isValid ? 'valid' : ''}
                 />
-                Masculin
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="genre"
-                  value="feminin"
-                  checked={formData.genre === 'feminin'}
-                  onChange={(e) => setFormData({ ...formData, genre: e.target.value as 'feminin' })}
-                />
-                Féminin
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="genre"
-                  value="autre"
-                  checked={formData.genre === 'autre'}
-                  onChange={(e) => setFormData({ ...formData, genre: e.target.value as 'autre' })}
-                />
-                Autre
-              </label>
-            </RadioContainer>
-          </FormGroup>
+                {validation.prenom.error && <ErrorMessage>{validation.prenom.error}</ErrorMessage>}
+              </Flex>
 
-          <LicenseSection>
-            <CheckboxContainer>
-              <input
-                type="checkbox"
-                id="hasLicense"
-                checked={hasLicense}
-                onChange={handleLicenseChange}
+              <Flex fullWidth gap="1em">
+                <Label htmlFor="nom">Nom*</Label>
+                <Input
+                  type="text"
+                  id="nom"
+                  name="nom"
+                  value={formData.nom}
+                  onChange={handleInputChange}
+                  required
+                  className={validation.nom.error ? 'error' : validation.nom.isValid ? 'valid' : ''}
+                />
+                {validation.nom.error && <ErrorMessage>{validation.nom.error}</ErrorMessage>}
+              </Flex>
+            </Flex>
+
+            <Flex fullWidth gap="1em">
+              <Label htmlFor="adresse">Adresse*</Label>
+              <Input
+                type="text"
+                id="adresse"
+                name="adresse"
+                value={formData.adresse}
+                onChange={handleInputChange}
+                required
+                className={validation.adresse.error ? 'error' : validation.adresse.isValid ? 'valid' : ''}
               />
-              <Label htmlFor="hasLicense">
-                Je suis titulaire d&apos;un permis de conduire de catégorie B en cours de validité
-              </Label>
-            </CheckboxContainer>
+              {validation.adresse.error && <ErrorMessage>{validation.adresse.error}</ErrorMessage>}
+            </Flex>
 
-            <LicenseText>
-              En cochant cette case, je certifie sur l&apos;honneur être titulaire d&apos;un permis de conduire de
-              catégorie B en cours de validité me permettant de conduire le véhicule emprunté. Je suis conscient(e)
-              que toute fausse déclaration pourra entraîner ma responsabilité civile et pénale.
-            </LicenseText>
+            <Flex fullWidth directionColumn={isMobile} gap={isMobile ? "1em" : "3em"}>
+              <Flex fullWidth gap="1em">
+                <Label htmlFor="ville">Ville*</Label>
+                <Input
+                  type="text"
+                  id="ville"
+                  name="ville"
+                  value={formData.ville}
+                  onChange={handleInputChange}
+                  required
+                  className={validation.ville.error ? 'error' : validation.ville.isValid ? 'valid' : ''}
+                />
+                {validation.ville.error && <ErrorMessage>{validation.ville.error}</ErrorMessage>}
+              </Flex>
 
-            {hasLicense && (
-              <>
-                <RadioContainer>
+              <Flex fullWidth gap="1em">
+                <Label htmlFor="code_postal">Code Postal*</Label>
+                <Input
+                  type="text"
+                  id="code_postal"
+                  name="code_postal"
+                  value={formData.code_postal}
+                  onChange={handleInputChange}
+                  required
+                  className={validation.code_postal.error ? 'error' : validation.code_postal.isValid ? 'valid' : ''}
+                />
+                {validation.code_postal.error && <ErrorMessage>{validation.code_postal.error}</ErrorMessage>}
+              </Flex>
+
+              <Flex fullWidth gap="1em">
+                <Label htmlFor="pays">Pays*</Label>
+                <Input
+                  type="text"
+                  id="pays"
+                  name="pays"
+                  value={formData.pays}
+                  onChange={handleInputChange}
+                  required
+                  className={validation.pays.error ? 'error' : validation.pays.isValid ? 'valid' : ''}
+                />
+                {validation.pays.error && <ErrorMessage>{validation.pays.error}</ErrorMessage>}
+              </Flex>
+            </Flex>
+
+            <Flex fullWidth directionColumn={isMobile} gap={isMobile ? "1em" : "3em"}>
+              <Flex fullWidth gap="1em">
+                <Label htmlFor="telephone">Numéro de téléphone mobile*</Label>
+                <Input
+                  type="tel"
+                  id="telephone"
+                  name="telephone"
+                  value={formData.telephone}
+                  onChange={handleInputChange}
+                  required
+                  className={validation.telephone.error ? 'error' : validation.telephone.isValid ? 'valid' : ''}
+                />
+                {validation.telephone.error && <ErrorMessage>{validation.telephone.error}</ErrorMessage>}
+              </Flex>
+
+              <Flex fullWidth gap="1em">
+                <Label htmlFor="date_naissance">Date de naissance*</Label>
+                <Input
+                  type="date"
+                  id="date_naissance"
+                  name="date_naissance"
+                  value={formData.date_naissance}
+                  onChange={handleInputChange}
+                  required
+                  className={validation.date_naissance.error ? 'error' : validation.date_naissance.isValid ? 'valid' : ''}
+                />
+                {validation.date_naissance.error && <ErrorMessage>{validation.date_naissance.error}</ErrorMessage>}
+              </Flex>
+            </Flex>
+
+            <FormGroup>
+              <Label>Genre*</Label>
+              <RadioContainer>
+                <Flex fullWidth directionColumn={isMobile} alignItemsInitial={isMobile} gap={isMobile ? "1em" : "4em"}>
                   <label>
                     <input
                       type="radio"
-                      name="categorie_permis"
-                      value="B Manuel"
-                      checked={formData.categorie_permis === 'B Manuel'}
-                      onChange={handlePermisChange}
-                      required
+                      name="genre"
+                      value="masculin"
+                      checked={formData.genre === 'masculin'}
+                      onChange={(e) => setFormData({ ...formData, genre: e.target.value as 'masculin' })}
                     />
-                    Permis B Manuel
+                    Masculin
                   </label>
                   <label>
                     <input
                       type="radio"
-                      name="categorie_permis"
-                      value="B Automatique"
-                      checked={formData.categorie_permis === 'B Automatique'}
-                      onChange={handlePermisChange}
-                      required
+                      name="genre"
+                      value="feminin"
+                      checked={formData.genre === 'feminin'}
+                      onChange={(e) => setFormData({ ...formData, genre: e.target.value as 'feminin' })}
                     />
-                    Permis B Automatique
+                    Féminin
                   </label>
-                </RadioContainer>
-                {validation.permis.error && <ErrorMessage>{validation.permis.error}</ErrorMessage>}
-              </>
-            )}
-          </LicenseSection>
+                  <label>
+                    <input
+                      type="radio"
+                      name="genre"
+                      value="autre"
+                      checked={formData.genre === 'autre'}
+                      onChange={(e) => setFormData({ ...formData, genre: e.target.value as 'autre' })}
+                    />
+                    Autre
+                  </label>
+                </Flex>
+              </RadioContainer>
+            </FormGroup>
 
-          <Button type="submit" disabled={loading || !isFormValid()}>
-            {loading ? 'Chargement...' : 'Continuer'}
-          </Button>
-        </Form>
-      </WhiteContainerStyled>
+            <LicenseSection>
+              <CheckboxContainer>
+                <input
+                  type="checkbox"
+                  id="hasLicense"
+                  checked={hasLicense}
+                  onChange={handleLicenseChange}
+                />
+                <Label htmlFor="hasLicense">
+                  Je suis titulaire d&apos;un permis de conduire de catégorie B en cours de validité
+                </Label>
+              </CheckboxContainer>
+
+              <LicenseText>
+                En cochant cette case, je certifie sur l&apos;honneur être titulaire d&apos;un permis de conduire de
+                catégorie B en cours de validité me permettant de conduire le véhicule emprunté. Je suis conscient(e)
+                que toute fausse déclaration pourra entraîner ma responsabilité civile et pénale.
+              </LicenseText>
+
+              {hasLicense && (
+                <>
+                  <RadioContainer>
+                    <label>
+                      <input
+                        type="radio"
+                        name="categorie_permis"
+                        value="B Manuel"
+                        checked={formData.categorie_permis === 'B Manuel'}
+                        onChange={handlePermisChange}
+                        required
+                      />
+                      Permis B Manuel
+                    </label>
+                    <label>
+                      <input
+                        type="radio"
+                        name="categorie_permis"
+                        value="B Automatique"
+                        checked={formData.categorie_permis === 'B Automatique'}
+                        onChange={handlePermisChange}
+                        required
+                      />
+                      Permis B Automatique
+                    </label>
+                  </RadioContainer>
+                  {validation.permis.error && <ErrorMessage>{validation.permis.error}</ErrorMessage>}
+                </>
+              )}
+            </LicenseSection>
+
+            <Button type="submit" disabled={loading || !isFormValid()}>
+              {loading ? 'Chargement...' : 'Continuer'}
+            </Button>
+          </Form>
+        </FlexContainer>
+      </SCard>
     </BackgroundLayout>
   );
 };

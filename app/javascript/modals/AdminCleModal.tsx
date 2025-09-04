@@ -13,14 +13,15 @@ import useCars from '../hook/useCars';
 import useSites from '../hook/useSites';
 import { addKey } from '../redux/data/cle/cleReducer';
 import CleAPI from '../redux/data/cle/CleAPI';
+import { isMobile } from 'react-device-detect';
 
 const ModalContent = styled(Flex)`
     position: absolute;
     top: 50%;
     left: 50%;
     width: auto;
-    max-width: 70%;
-    min-width: 500px;
+    max-width: ${isMobile ? 'none' : '70%'};
+    min-width: ${isMobile ? '80%' : '500px'};
     height: auto;
     min-height: 400px;
     max-height: 80%;

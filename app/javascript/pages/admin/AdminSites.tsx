@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { Flex } from '../../components/style/flex'
 import CustomFilter from '../../components/CustomFilter'
-import { Alert, Button, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Tooltip } from '@mui/material'
+import { Alert, Box, Button, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Tooltip } from '@mui/material'
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete'
 import styled from 'styled-components'
@@ -13,6 +13,7 @@ import type { ISite } from '../sites/Sites';
 import AdminSiteModal from '../../modals/AdminSiteModal';
 import { removeSite } from '../../redux/data/site/siteReducer';
 import useUser from '../../hook/useUser';
+import { isMobile } from 'react-device-detect';
 
 const SButton = styled(Button)`
     min-width: fit-content !important;
@@ -24,7 +25,7 @@ const AdminSites = () => {
     const sites = useSites()
 
     const [selectedSite, setSelectedSite] = useState<ISite | undefined>(undefined)
-    const [filterProperties, setFilterProperties] = useState({ filterBy: undefined, searchValue: "" })
+    const [filterProperties, setFilterProperties] = useState<{ filterBy: FilterBy | undefined, searchValue: string }>({ filterBy: undefined, searchValue: "" })
     const [isOpen, setIsOpen] = useState(false)
     const [isOpenConfirmModal, setIsOpenConfirmModal] = useState(false)
     const [page, setPage] = useState(0)
@@ -51,6 +52,8 @@ const AdminSites = () => {
         },
     ]
 
+    type FilterBy = 'nom_site' | 'adresse' | 'code_postal' | 'ville'
+
     const headCells = [
         { id: 'nom_site', label: 'Nom' },
         { id: 'adresse', label: 'Adresse' },
@@ -62,7 +65,8 @@ const AdminSites = () => {
 
     const filteredSites = Object.values(sites).filter(site => {
         if (!filterProperties.filterBy || !filterProperties.searchValue) return true
-        return site[filterProperties.filterBy]?.toString()?.toLowerCase().includes(filterProperties.searchValue.toLowerCase())
+        const siteValue = site[filterProperties.filterBy as keyof ISite]
+        return siteValue?.toString()?.toLowerCase().includes(filterProperties.searchValue.toLowerCase())
     })
 
     const handleDelete = async () => {
@@ -84,7 +88,7 @@ const AdminSites = () => {
     return (
         <>
             <Flex fullWidth directionColumn gap="1em">
-                <Flex fullWidth spaceBetween>
+                <Flex fullWidth directionColumn={isMobile} spaceBetween gap={isMobile ? "1em" : "0"}>
                     <CustomFilter options={filterOptions} filterCallback={
                         (filterBy, searchValue) => { setFilterProperties({ filterBy, searchValue }) }
                     } />
@@ -95,101 +99,182 @@ const AdminSites = () => {
                         Ajouter un site
                     </SButton>
                 </Flex>
-                <TableContainer>
-                    <Table
-                        sx={{ minWidth: 750 }}
-                        aria-labelledby="tableTitle"
-                    >
-                        <TableHead>
-                            <TableRow>
-                                {headCells.map((headCell) => (
-                                    <TableCell
-                                        key={headCell.id}
-                                        width={headCell.colWidth ? `${headCell.colWidth}px` : 'auto'}
-                                        padding='none'
-                                    >
-                                        {headCell.label}
-                                    </TableCell>
-                                ))}
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {visibleRows.map((site, index) => {
-                                const labelId = `enhanced-table-checkbox-${index}`;
+                {isMobile && (
+                    <>
+                        <Flex directionColumn gap="1em">
+                            {filteredSites.map((site, index) => (
+                                <Box
+                                    key={site.id}
+                                    sx={{
+                                        width: '100%',
+                                        backgroundColor: '#f4f4f4',
+                                        borderRadius: '8px',
+                                        padding: '1em',
+                                        border: '1px solid #e0e0e0'
+                                    }}
+                                >
+                                    <Flex directionColumn gap="0.5em">
+                                        <Flex spaceBetween alignItemsCenter>
+                                            <Box sx={{ fontSize: '1.1em', fontWeight: 'bold' }}>
+                                                {site.nom_site}
+                                            </Box>
+                                            <Flex gap="0.5em">
+                                                <Tooltip title="Modifier" arrow>
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={() => {
+                                                            setSelectedSite(site)
+                                                            setIsOpen(true)
+                                                        }}
+                                                    >
+                                                        <EditIcon />
+                                                    </IconButton>
+                                                </Tooltip>
+                                                <Tooltip title="Supprimer" arrow>
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={() => {
+                                                            setSelectedSite(site)
+                                                            setIsOpenConfirmModal(true)
+                                                        }}
+                                                    >
+                                                        <DeleteIcon />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            </Flex>
+                                        </Flex>
 
-                                return (
-                                    <TableRow
-                                        key={site.id}
-                                        hover
-                                        onClick={(event) => null}
-                                        tabIndex={-1}
-                                        sx={{ cursor: 'pointer' }}
-                                    >
-                                        <TableCell
-                                            id={labelId}
-                                            scope="row"
-                                            padding="none"
-                                        >
-                                            {site.nom_site}
-                                        </TableCell>
-                                        <TableCell padding='none'>{site.adresse}</TableCell>
-                                        <TableCell padding='none'>{site.code_postal}</TableCell>
-                                        <TableCell padding='none'>{site.ville}</TableCell>
-                                        <TableCell padding='none'>
-                                            <Tooltip title="Modifier" arrow>
-                                                <IconButton onClick={() => {
-                                                    setSelectedSite(site)
-                                                    setIsOpen(true)
-                                                }}>
-                                                    <EditIcon />
-                                                </IconButton>
-                                            </Tooltip>
-                                        </TableCell>
-                                        <TableCell padding='none' >
-                                            <Tooltip title="Supprimer" arrow>
-                                                <IconButton onClick={() => {
-                                                    setSelectedSite(site)
-                                                    setIsOpenConfirmModal(true)
-                                                }}>
-                                                    <DeleteIcon />
-                                                </IconButton>
-                                            </Tooltip>
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })}
+                                        {site.adresse && (
+                                            <Box sx={{ fontSize: '0.9em' }}>
+                                                <strong>Adresse:</strong> {site.adresse}
+                                            </Box>
+                                        )}
+
+                                        {(site.code_postal || site.ville) && (
+                                            <Box sx={{ fontSize: '0.9em' }}>
+                                                <strong>Localisation:</strong> {site.code_postal} {site.ville}
+                                            </Box>
+                                        )}
+                                    </Flex>
+                                </Box>
+                            ))}
+
                             {filteredSites.length === 0 && (
-                                <TableRow>
-                                    <TableCell colSpan={headCells.length + 1} align="center">
-                                        <Alert severity={
-                                            filterProperties.filterBy && filterProperties.searchValue
-                                                ? "warning"
-                                                : "info"
-                                        }>
-                                            {filterProperties.filterBy && filterProperties.searchValue
-                                                ? "Aucun résultat ne correspond à votre recherche"
-                                                : "Aucun site enregistré"}
-                                        </Alert>
-                                    </TableCell>
-                                </TableRow>
+                                <Box sx={{ textAlign: 'center', padding: '2em' }}>
+                                    <Alert severity={
+                                        filterProperties.filterBy && filterProperties.searchValue
+                                            ? "warning"
+                                            : "info"
+                                    }>
+                                        {filterProperties.filterBy && filterProperties.searchValue
+                                            ? "Aucun résultat ne correspond à votre recherche"
+                                            : "Aucun site enregistré"}
+                                    </Alert>
+                                </Box>
                             )}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-                <TablePagination
-                    rowsPerPageOptions={[5, 10, 25, 50]}
-                    component="div"
-                    count={filteredSites.length}
-                    rowsPerPage={rowsPerPage}
-                    onRowsPerPageChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                        setRowsPerPage(parseInt(event.target.value, 10))
-                        setPage(0)
-                    }}
-                    page={page}
-                    onPageChange={(event: unknown, newPage: number) => {
-                        setPage(newPage)
-                    }}
-                />
+                        </Flex>
+                    </>
+                )}
+                {!isMobile && (
+                    <>
+
+                        <TableContainer>
+                            <Table
+                                sx={{ minWidth: 750 }}
+                                aria-labelledby="tableTitle"
+                            >
+                                <TableHead>
+                                    <TableRow>
+                                        {headCells.map((headCell) => (
+                                            <TableCell
+                                                key={headCell.id}
+                                                width={headCell.colWidth ? `${headCell.colWidth}px` : 'auto'}
+                                                padding='none'
+                                            >
+                                                {headCell.label}
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {visibleRows.map((site, index) => {
+                                        const labelId = `enhanced-table-checkbox-${index}`;
+
+                                        return (
+                                            <TableRow
+                                                key={site.id}
+                                                hover
+                                                onClick={(event) => null}
+                                                tabIndex={-1}
+                                                sx={{ cursor: 'pointer' }}
+                                            >
+                                                <TableCell
+                                                    id={labelId}
+                                                    scope="row"
+                                                    padding="none"
+                                                >
+                                                    {site.nom_site}
+                                                </TableCell>
+                                                <TableCell padding='none'>{site.adresse}</TableCell>
+                                                <TableCell padding='none'>{site.code_postal}</TableCell>
+                                                <TableCell padding='none'>{site.ville}</TableCell>
+                                                <TableCell padding='none'>
+                                                    <Tooltip title="Modifier" arrow>
+                                                        <IconButton onClick={() => {
+                                                            setSelectedSite(site)
+                                                            setIsOpen(true)
+                                                        }}>
+                                                            <EditIcon />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                </TableCell>
+                                                <TableCell padding='none' >
+                                                    <Tooltip title="Supprimer" arrow>
+                                                        <IconButton onClick={() => {
+                                                            setSelectedSite(site)
+                                                            setIsOpenConfirmModal(true)
+                                                        }}>
+                                                            <DeleteIcon />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                    {filteredSites.length === 0 && (
+                                        <TableRow>
+                                            <TableCell colSpan={headCells.length + 1} align="center">
+                                                <Alert severity={
+                                                    filterProperties.filterBy && filterProperties.searchValue
+                                                        ? "warning"
+                                                        : "info"
+                                                }>
+                                                    {filterProperties.filterBy && filterProperties.searchValue
+                                                        ? "Aucun résultat ne correspond à votre recherche"
+                                                        : "Aucun site enregistré"}
+                                                </Alert>
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                        <TablePagination
+                            rowsPerPageOptions={[5, 10, 25, 50]}
+                            component="div"
+                            count={filteredSites.length}
+                            rowsPerPage={rowsPerPage}
+                            onRowsPerPageChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                                setRowsPerPage(parseInt(event.target.value, 10))
+                                setPage(0)
+                            }}
+                            page={page}
+                            onPageChange={(event: unknown, newPage: number) => {
+                                setPage(newPage)
+                            }}
+                        />
+                    </>
+                )}
                 <AdminSiteModal
                     isOpen={isOpen}
                     selectedSite={selectedSite}

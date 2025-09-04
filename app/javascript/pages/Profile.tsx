@@ -3,15 +3,18 @@ import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axiosSecured from '../services/apiService';
+import { Flex } from '../components/style/flex';
+import { isMobile } from 'react-device-detect';
 
 const ProfileContainer = styled.div`
   max-width: 1200px;
-  margin: 40px auto;
+  margin: ${isMobile ? '0 auto' : '40px auto'};
   padding: 0 20px;
 `;
 
 const ProfileHeader = styled.div`
   display: flex;
+  flex-direction: ${isMobile ? 'column' : 'row'};
   align-items: center;
   gap: 30px;
   margin-bottom: 40px;
@@ -302,12 +305,6 @@ const EditIcon = styled.button`
   }
 `;
 
-const SaveCancelButtons = styled.div`
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-`;
-
 const ActionButton = styled.button<{ variant: 'save' | 'cancel' }>`
   padding: 4px 8px;
   border: none;
@@ -563,14 +560,14 @@ const EditableInfoItem: React.FC<EditableInfoItemProps> = ({
             />
           )}
           {error && <ErrorMessage>{error}</ErrorMessage>}
-          <SaveCancelButtons>
+          <Flex fullWidth directionColumn={isMobile} gap="0.5em">
             <ActionButton variant="save" onClick={handleSave} disabled={!!error}>
               Enregistrer
             </ActionButton>
             <ActionButton variant="cancel" onClick={handleCancel}>
               Annuler
             </ActionButton>
-          </SaveCancelButtons>
+          </Flex>
         </div>
       ) : (
         <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -737,7 +734,7 @@ const Profile: React.FC = () => {
     console.log('🔍 [DEBUG] userData.site_info:', userData?.site_info);
     console.log('🔍 [DEBUG] site_info.image existe:', !!userData?.site_info?.image);
     console.log('🔍 [DEBUG] site_info.image valeur:', userData?.site_info?.image);
-    
+
     // Forcer l'initialisation si pas de données
     if (!userData?.site_info) {
       console.log('❌ [DEBUG] Pas de site_info - forcer placeholder');
@@ -745,7 +742,7 @@ const Profile: React.FC = () => {
       setSiteImageLoading(false);
       return;
     }
-    
+
     if (!userData?.site_info?.image) {
       console.log('❌ [DEBUG] Pas d\'image site trouvée - forcer placeholder');
       setSiteImage(null);
@@ -763,7 +760,7 @@ const Profile: React.FC = () => {
       console.log('🔍 [DEBUG] imageData type:', typeof imageData);
       console.log('🔍 [DEBUG] imageData longueur:', imageData?.length);
       console.log('🔍 [DEBUG] imageData début:', imageData?.substring(0, 100));
-      
+
       // Vérifier le format de l'image
       if (imageData.startsWith('data:image/')) {
         console.log('✅ [DEBUG] Image base64 détectée - affichage');
@@ -794,7 +791,7 @@ const Profile: React.FC = () => {
     console.log('🔍 [DEBUG] userData.entreprise_info:', userData?.entreprise_info);
     console.log('🔍 [DEBUG] entreprise_info.image existe:', !!userData?.entreprise_info?.image);
     console.log('🔍 [DEBUG] entreprise_info.image valeur:', userData?.entreprise_info?.image);
-    
+
     // Forcer l'initialisation si pas de données
     if (!userData?.entreprise_info) {
       console.log('❌ [DEBUG] Pas d\'entreprise_info - forcer placeholder');
@@ -802,7 +799,7 @@ const Profile: React.FC = () => {
       setEntrepriseImageLoading(false);
       return;
     }
-    
+
     if (!userData?.entreprise_info?.image) {
       console.log('❌ [DEBUG] Pas d\'image entreprise trouvée - forcer placeholder');
       setEntrepriseImage(null);
@@ -820,7 +817,7 @@ const Profile: React.FC = () => {
       console.log('🔍 [DEBUG] imageData type:', typeof imageData);
       console.log('🔍 [DEBUG] imageData longueur:', imageData?.length);
       console.log('🔍 [DEBUG] imageData début:', imageData?.substring(0, 100));
-      
+
       // Vérifier le format de l'image
       if (imageData.startsWith('data:image/')) {
         console.log('✅ [DEBUG] Image base64 détectée - affichage');
@@ -1071,7 +1068,7 @@ const Profile: React.FC = () => {
                   </EditableFieldError>
                 )}
               </EditableField>
-              <SaveCancelButtons>
+              <Flex fullWidth directionColumn={isMobile} gap="0.5em">
                 <ActionButton
                   variant="save"
                   onClick={async () => {
@@ -1116,7 +1113,7 @@ const Profile: React.FC = () => {
                 >
                   Annuler
                 </ActionButton>
-              </SaveCancelButtons>
+              </Flex>
             </EditableProfileInfo>
           ) : (
             <ProfileName>
@@ -1312,7 +1309,7 @@ const Profile: React.FC = () => {
             console.log('🖼️ [DEBUG] Rendu image - siteImageLoading:', siteImageLoading);
             console.log('🖼️ [DEBUG] Rendu image - siteImageError:', siteImageError);
             console.log('🖼️ [DEBUG] Rendu image - siteImage:', siteImage);
-            
+
             if (siteImageLoading) {
               console.log('🔄 [DEBUG] Affichage: Loading Spinner');
               return (
@@ -1321,7 +1318,7 @@ const Profile: React.FC = () => {
                 </ImagePlaceholder>
               );
             }
-            
+
             if (siteImageError) {
               console.log('❌ [DEBUG] Affichage: Message d\'erreur');
               return (
@@ -1330,12 +1327,12 @@ const Profile: React.FC = () => {
                 </ImagePlaceholder>
               );
             }
-            
+
             if (siteImage && !siteImage.includes('placeholder')) {
               console.log('✅ [DEBUG] Affichage: Image réelle du site');
               return <SiteImage src={siteImage} alt="Image du site" />;
             }
-            
+
             console.log('🏢 [DEBUG] Affichage: Placeholder simple');
             return (
               <ImagePlaceholder>

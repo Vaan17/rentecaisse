@@ -6,6 +6,7 @@ import useUser from "../hook/useUser";
 import dayjs from "dayjs";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
 import styled from "styled-components";
+import { isMobile } from "react-device-detect";
 
 const StyledCard = styled(Card)`
     width: 100%;
@@ -61,11 +62,11 @@ const Home = () => {
 
 	return (
 		<Flex fullWidth directionColumn alignItemsStart gap="2em">
-			<Typography variant="h4" component="h1" gutterBottom>
+			<Typography variant={isMobile ? "body1" : "h4"} component="h1" gutterBottom>
 				Bienvenue sur Rentecaisse
 			</Typography>
 
-			<Flex fullWidth spaceBetween alignItemsStart gap="1em">
+			<Flex fullWidth directionColumn={isMobile} spaceBetween alignItemsStart gap="1em">
 				<StyledCard>
 					<StyledCardContent>
 						<Flex fullWidth directionColumn alignItemsStart gap="1em">
@@ -127,7 +128,7 @@ const Home = () => {
 												cx="50%"
 												cy="50%"
 												labelLine={false}
-												label={({ name, percent }) => `${name} (${percent ? (percent * 100).toFixed(0) : 0}%)`}
+												label={({ name, percent }) => `${isMobile ? "" : name} (${percent ? (percent * 100).toFixed(0) : 0}%)`}
 												outerRadius={80}
 												fill="#8884d8"
 												dataKey="value"

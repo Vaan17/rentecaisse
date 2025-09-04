@@ -5,6 +5,7 @@ import styled from "styled-components"
 import { Button, IconButton, Input, Modal } from "@mui/material"
 import { Flex } from "../../components/style/flex"
 import CloseIcon from '@mui/icons-material/Close'
+import { isMobile } from "react-device-detect"
 
 const SErrorIcon = styled(ErrorIcon)`
 	color: hsl(var(--heroui-error));
@@ -17,8 +18,8 @@ const ModalContent = styled(Flex)`
     top: 50%;
     left: 50%;
     width: auto;
-    max-width: 70%;
-    min-width: 500px;
+    max-width: ${isMobile ? 'none' : '70%'};
+    min-width: ${isMobile ? '80%' : '500px'};
     height: auto;
     max-height: 80%;
     background-color: #f4f4f4;

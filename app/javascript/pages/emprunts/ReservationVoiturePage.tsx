@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  Box, 
-  Typography, 
-  useMediaQuery, 
-  Container, 
-  ThemeProvider, 
+import {
+  Box,
+  Typography,
+  useMediaQuery,
+  Container,
+  ThemeProvider,
   createTheme,
   CircularProgress
 } from '@mui/material';
@@ -22,6 +22,7 @@ import { getVoituresBySite } from './services/voitureService';
 import { getEmpruntsByMultipleVoituresAndDate } from './services/empruntService';
 import { getAllLocalisations } from './services/cleLocalisationService';
 import { getUtilisateursBySite } from './services/passagerService';
+import { isMobile } from 'react-device-detect';
 
 // Créer un thème par défaut pour useMediaQuery
 const theme = createTheme();
@@ -42,7 +43,7 @@ const ReservationVoiturePage: React.FC = () => {
     startTime: Date;
     endTime: Date | null;
   } | null>(null);
-  
+
   // État des filtres
   const [filtersState, setFiltersState] = useState<FiltersState>({
     brandFilter: null,
@@ -55,10 +56,10 @@ const ReservationVoiturePage: React.FC = () => {
 
   // État d'ouverture du panneau de filtres
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
-  
+
   // État de tri des colonnes du scheduler
   const [sortState, setSortState] = useState<SortState>({ column: null, direction: null });
-  
+
   // Nouveaux états pour les données du back-end
   const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -67,7 +68,7 @@ const ReservationVoiturePage: React.FC = () => {
   const [passengers, setPassengers] = useState<any[]>([]);
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
   const [isReadOnly, setIsReadOnly] = useState<boolean>(false);
-  
+
   // ID utilisateur (à récupérer depuis le stockage local ou le contexte d'authentification)
   const [userId, setUserId] = useState<number>(() => {
     // Récupérer l'ID utilisateur depuis le localStorage
@@ -99,10 +100,10 @@ const ReservationVoiturePage: React.FC = () => {
 
     // Écouter les changements de localStorage
     window.addEventListener('storage', handleStorageChange);
-    
+
     // Vérifier au chargement si l'utilisateur est présent dans le localStorage
     handleStorageChange();
-    
+
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
@@ -114,38 +115,38 @@ const ReservationVoiturePage: React.FC = () => {
   // Fonction pour appliquer les filtres
   const applyFiltersToCarsList = (cars: Car[], filters: FiltersState): Car[] => {
     let filtered = [...cars];
-    
+
     // Exclure les voitures non fonctionnelles ou en réparation
-    filtered = filtered.filter(car => 
+    filtered = filtered.filter(car =>
       !car.statut_voiture || car.statut_voiture === 'Fonctionnelle'
     );
-    
+
     if (filters.brandFilter) {
       filtered = filtered.filter(car => car.name.startsWith(filters.brandFilter!));
     }
-    
+
     if (filters.modelFilter) {
       filtered = filtered.filter(car => car.name.includes(filters.modelFilter!));
     }
-    
+
     if (filters.licensePlateFilter) {
-      filtered = filtered.filter(car => 
+      filtered = filtered.filter(car =>
         car.licensePlate?.toLowerCase().includes(filters.licensePlateFilter.toLowerCase())
       );
     }
-    
-    filtered = filtered.filter(car => 
+
+    filtered = filtered.filter(car =>
       car.seats >= filters.seatsFilter[0] && car.seats <= filters.seatsFilter[1]
     );
-    
-    filtered = filtered.filter(car => 
+
+    filtered = filtered.filter(car =>
       car.doors >= filters.doorsFilter[0] && car.doors <= filters.doorsFilter[1]
     );
-    
+
     if (filters.transmissionFilter) {
       filtered = filtered.filter(car => car.transmission === filters.transmissionFilter);
     }
-    
+
     return filtered;
   };
 
@@ -212,38 +213,38 @@ const ReservationVoiturePage: React.FC = () => {
   const fetchReservations = async () => {
     try {
       setLoading(true);
-      
+
       // Formater la date pour l'API
       const startOfDay = new Date(selectedDate);
       startOfDay.setHours(0, 0, 0, 0);
-      
+
       const endOfDay = new Date(selectedDate);
       endOfDay.setHours(23, 59, 59, 999);
-      
+
       // Déterminer les voitures à afficher
       const carsToFetch = selectedCar ? [selectedCar] : cars;
-      
+
       // S'assurer qu'il y a des voitures à afficher
       if (carsToFetch.length === 0) {
         setReservations([]);
         setLoading(false);
         return;
       }
-      
+
       // Récupérer les IDs des voitures
       const carIds = carsToFetch.map(car => car.id);
-      
+
       // Utiliser la nouvelle fonction qui récupère tout en une seule requête
       // Formater les dates sans conversion UTC pour éviter les décalages
       const startOfDayStr = `${startOfDay.getFullYear()}-${String(startOfDay.getMonth() + 1).padStart(2, '0')}-${String(startOfDay.getDate()).padStart(2, '0')} 00:00:00`;
       const endOfDayStr = `${endOfDay.getFullYear()}-${String(endOfDay.getMonth() + 1).padStart(2, '0')}-${String(endOfDay.getDate()).padStart(2, '0')} 23:59:59`;
-      
+
       const allReservations = await getEmpruntsByMultipleVoituresAndDate(
         carIds,
         startOfDayStr,
         endOfDayStr
       );
-      
+
       setReservations(allReservations);
     } catch (error) {
       console.error('Erreur lors du chargement des réservations:', error);
@@ -266,51 +267,51 @@ const ReservationVoiturePage: React.FC = () => {
     // Ne pas modifier selectedCar
     const car = cars.find(c => c.id === carId) || null;
     setModalCar(car);
-    
+
     // Définir l'heure de fin par défaut à 1 heure après l'heure de début
     const endTime = new Date(time);
     endTime.setHours(endTime.getHours() + 1);
-    
+
     setSelectedSlot({
       carId,
       startTime: time,
       endTime
     });
-    
+
     // Réinitialiser la réservation sélectionnée
     setSelectedReservation(null);
     setIsReadOnly(false);
-    
+
     setModalOpen(true);
   };
-  
+
   // Gérer le clic sur une réservation existante
   const handleReservationClick = async (reservation: Reservation) => {
     // Ne pas modifier selectedCar
     const car = cars.find(c => c.id === reservation.carId) || null;
     setModalCar(car);
-    
+
     setSelectedSlot({
       carId: reservation.carId,
       startTime: new Date(reservation.startTime),
       endTime: new Date(reservation.endTime)
     });
-    
+
     setSelectedReservation(reservation);
-    
+
     // Vérifier si l'utilisateur est le créateur de la réservation
     const isCreator = reservation.utilisateur_id === userId;
-    
+
     // Vérifier le statut de l'emprunt
     const isDraft = reservation.status === ReservationStatus.DRAFT;
-    
+
     // L'utilisateur peut modifier l'emprunt seulement s'il en est le créateur ET si l'emprunt est en brouillon
     // Pour le statut "En attente de validation", l'utilisateur ne peut pas modifier mais peut voir les détails
     const canEdit = isCreator && isDraft;
     setIsReadOnly(!canEdit);
-    
 
-    
+
+
     setModalOpen(true);
   };
 
@@ -351,10 +352,10 @@ const ReservationVoiturePage: React.FC = () => {
       <LocalizationProvider>
         <Container maxWidth="xl" sx={{ height: '100%' }}>
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" component="h1" gutterBottom>
+            <Typography variant={isMobile ? 'h6' : 'h4'} component="h1" gutterBottom>
               Réservation de véhicules
             </Typography>
-            <Typography variant="body1" color="text.secondary">
+            <Typography variant={isMobile ? 'body2' : 'body1'} color="text.secondary">
               Planifiez et gérez vos réservations de véhicules en sélectionnant une date et un créneau horaire.
             </Typography>
           </Box>
@@ -382,8 +383,8 @@ const ReservationVoiturePage: React.FC = () => {
               }}
             >
               {/* Liste des voitures avec filtres */}
-              <Box 
-                sx={{ 
+              <Box
+                sx={{
                   width: isSmallScreen ? '100%' : '380px', // Largeur optimisée pour les filtres
                   height: '100%', // Utiliser toute la hauteur disponible
                   display: 'flex',
@@ -394,33 +395,33 @@ const ReservationVoiturePage: React.FC = () => {
                 }}
               >
                 {/* Composant de filtrage */}
-                <FilterPanel 
-                  cars={cars} 
+                <FilterPanel
+                  cars={cars}
                   filtersState={filtersState}
                   onFiltersChange={handleFiltersChange}
                   isOpen={isFilterPanelOpen}
                   onToggle={handleFilterPanelToggle}
                 />
-                
+
                 {/* Liste des voitures avec hauteur contrainte */}
-                <Box sx={{ 
+                <Box sx={{
                   flex: 1,
                   minHeight: isSmallScreen ? '300px' : '400px',
                   maxHeight: isSmallScreen ? '50vh' : '65vh', // Contrainte de hauteur selon l'écran
                   overflow: 'hidden' // Important pour le fonctionnement du scroll interne
                 }}>
-                  <CarList 
-                    cars={filteredCars} 
-                    selectedCar={selectedCar} 
-                    onSelectCar={handleCarSelect} 
+                  <CarList
+                    cars={filteredCars}
+                    selectedCar={selectedCar}
+                    onSelectCar={handleCarSelect}
                   />
                 </Box>
               </Box>
 
               {/* Planificateur */}
-              <Box sx={{ 
-                flex: 1, 
-                minHeight: isSmallScreen ? '500px' : 'auto' 
+              <Box sx={{
+                flex: 1,
+                minHeight: isSmallScreen ? '500px' : 'auto'
               }}>
                 <Scheduler
                   cars={displayedCars}

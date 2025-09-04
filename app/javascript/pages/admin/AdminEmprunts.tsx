@@ -35,7 +35,7 @@ const AdminEmprunts = () => {
         const handleFocus = () => {
             dispatch(getEmprunts())
         }
-        
+
         window.addEventListener('focus', handleFocus)
         return () => window.removeEventListener('focus', handleFocus)
     }, [dispatch, isAdmin])
@@ -48,6 +48,14 @@ const AdminEmprunts = () => {
                 <Tabs
                     value={tabValue}
                     onChange={(_event, newValue) => setTabValue(newValue)}
+                    variant="scrollable"
+                    scrollButtons="auto"
+                    allowScrollButtonsMobile
+                    sx={{
+                        '& .MuiTabs-scrollButtons': {
+                            '&.Mui-disabled': { opacity: 0.3 },
+                        },
+                    }}
                 >
                     <Tab
                         value={1}

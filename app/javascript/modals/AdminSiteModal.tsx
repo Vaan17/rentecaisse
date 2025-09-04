@@ -18,14 +18,15 @@ import { addSite } from '../redux/data/site/siteReducer';
 import SiteAPI from '../redux/data/site/SiteAPI';
 import axiosSecured from '../services/apiService';
 import { toast } from 'react-toastify';
+import { isMobile } from 'react-device-detect';
 
 const ModalContent = styled(Flex)`
     position: absolute;
     top: 50%;
     left: 50%;
     width: auto;
-    max-width: 70%;
-    min-width: 500px;
+    max-width: ${isMobile ? 'none' : '70%'};
+    min-width: ${isMobile ? '80%' : '500px'};
     height: auto;
     min-height: 400px;
     max-height: 80%;
@@ -237,19 +238,19 @@ const AdminSiteModal = ({
                 const cleanedSiteData = {
                     ...selectedSite,
                     // Nettoyer lien_image_site : si ce n'est pas une URL valide, le mettre à null
-                    lien_image_site: (selectedSite.lien_image_site && 
-                                      (selectedSite.lien_image_site.startsWith('http://') || 
-                                       selectedSite.lien_image_site.startsWith('https://'))) 
-                                     ? selectedSite.lien_image_site 
-                                     : null,
+                    lien_image_site: (selectedSite.lien_image_site &&
+                        (selectedSite.lien_image_site.startsWith('http://') ||
+                            selectedSite.lien_image_site.startsWith('https://')))
+                        ? selectedSite.lien_image_site
+                        : null,
                     // Nettoyer site_web : si ce n'est pas une URL valide, le mettre à null  
-                    site_web: (selectedSite.site_web && 
-                              (selectedSite.site_web.startsWith('http://') || 
-                               selectedSite.site_web.startsWith('https://'))) 
-                             ? selectedSite.site_web 
-                             : null
+                    site_web: (selectedSite.site_web &&
+                        (selectedSite.site_web.startsWith('http://') ||
+                            selectedSite.site_web.startsWith('https://')))
+                        ? selectedSite.site_web
+                        : null
                 }
-                
+
                 console.log('🔧 Données nettoyées:', cleanedSiteData)
                 methods.reset(cleanedSiteData)
                 // Charger l'image du site si elle existe
@@ -272,7 +273,7 @@ const AdminSiteModal = ({
                 // Nettoyer aussi le fichier de référence
                 if (fileInputRef.current) {
                     fileInputRef.current.value = ''
-                    ;(fileInputRef.current as any).fileToUpload = null
+                        ; (fileInputRef.current as any).fileToUpload = null
                 }
             }
         }
@@ -374,20 +375,20 @@ const AdminSiteModal = ({
             try {
                 setIsUploading(true)
                 await SiteAPI.deletePhoto(selectedSite.id)
-                
+
                 // Rafraîchir les données du site dans le store
                 const updatedSites = await SiteAPI.fetchAll()
                 const updatedSite = updatedSites.find(s => s.id === selectedSite.id)
                 if (updatedSite) {
                     dispatch(addSite(updatedSite))
                 }
-                
+
                 // Nettoyer l'interface utilisateur
                 setSiteImage(null)
                 setUploadError(null)
                 if (fileInputRef.current) {
                     fileInputRef.current.value = ''
-                    ;(fileInputRef.current as any).fileToUpload = null
+                        ; (fileInputRef.current as any).fileToUpload = null
                 }
             } catch (error) {
                 console.error('Erreur lors de la suppression de l\'image:', error)
@@ -401,7 +402,7 @@ const AdminSiteModal = ({
             setUploadError(null)
             if (fileInputRef.current) {
                 fileInputRef.current.value = ''
-                ;(fileInputRef.current as any).fileToUpload = null
+                    ; (fileInputRef.current as any).fileToUpload = null
             }
         }
     }
@@ -410,7 +411,7 @@ const AdminSiteModal = ({
         setSiteImage(null)
         setUploadError(null)
         if (fileInputRef.current) {
-            ;(fileInputRef.current as any).fileToUpload = null
+            ; (fileInputRef.current as any).fileToUpload = null
         }
         onClose()
     }
@@ -424,20 +425,20 @@ const AdminSiteModal = ({
                 // Création d'un nouveau site
                 const site = await SiteAPI.createSite(formValues)
                 dispatch(addSite(site))
-                
+
                 // Upload de l'image après création si un fichier a été sélectionné
                 const fileToUpload = (fileInputRef.current as any)?.fileToUpload
                 if (fileToUpload && site?.id) {
                     const formData = new FormData()
                     formData.append('photo', fileToUpload)
-                    
+
                     try {
                         const response = await axiosSecured.post(`/api/sites/${site.id}/photo`, formData, {
                             headers: {
                                 'Content-Type': 'multipart/form-data'
                             }
                         })
-                        
+
                         if (response.data.success) {
                             toast.success('Site créé et image uploadée avec succès')
                             // Rafraîchir les données du site dans le store
@@ -487,18 +488,18 @@ const AdminSiteModal = ({
                         <FText name="telephone" label="Téléphone" />
                         <FText name="email" label="Email" />
                         <FText name="site_web" label="URL site web" />
-                        
+
                         <ImageUploadSection>
                             <ImageLabel>
                                 <PhotoCameraIcon />
                                 Photo du site
                             </ImageLabel>
-                            
+
                             <ImagePreviewContainer>
                                 {siteImage ? (
                                     <>
                                         <ImagePreview src={siteImage} alt="Photo du site" />
-                                        <DeleteImageButton 
+                                        <DeleteImageButton
                                             onClick={handleDeleteImage}
                                             disabled={isUploading}
                                         >
@@ -519,7 +520,7 @@ const AdminSiteModal = ({
                                     </ImagePlaceholder>
                                 )}
                             </ImagePreviewContainer>
-                            
+
                             <UploadButton
                                 variant="contained"
                                 onClick={() => fileInputRef.current?.click()}
@@ -528,21 +529,21 @@ const AdminSiteModal = ({
                             >
                                 {isUploading ? 'Upload en cours...' : siteImage ? 'Changer l\'image' : 'Choisir une image'}
                             </UploadButton>
-                            
+
                             <HiddenFileInput
                                 ref={fileInputRef}
                                 type="file"
                                 accept="image/*"
                                 onChange={handleImageUpload}
                             />
-                            
+
                             {uploadError && <ErrorMessage>{uploadError}</ErrorMessage>}
                         </ImageUploadSection>
                     </ModalBody>
                     <ModalFooter fullWidth directionReverse gap>
-                        <Button 
-                            variant="contained" 
-                            color="primary" 
+                        <Button
+                            variant="contained"
+                            color="primary"
                             onClick={() => {
                                 console.log('🔥 Bouton cliqué, formState:', methods.formState.errors)
                                 console.log('🔥 FormValues:', methods.getValues())

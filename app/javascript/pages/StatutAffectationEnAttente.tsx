@@ -7,6 +7,7 @@ import WhiteContainer from '../components/layout/WhiteContainer';
 import { Card } from '@mui/material';
 import { Flex } from '../components/style/flex';
 import axiosSecured from '../services/apiService';
+import { isMobile } from 'react-device-detect';
 
 const Logo = styled.img`
   width: 64px;
@@ -178,7 +179,7 @@ const StatutAffectationEnAttente = () => {
             <InfoText>Elle est en attente de validation par un administrateur.</InfoText>
             <StatusText>Statut : En attente de validation</StatusText>
 
-            <Flex fullWidth justifyCenter gap>
+            <Flex fullWidth directionColumn={isMobile} justifyCenter gap>
               <Button onClick={handleRefresh} disabled={loading}>
                 {loading ? 'Vérification...' : 'Actualiser le statut'}
               </Button>

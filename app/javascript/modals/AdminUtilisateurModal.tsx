@@ -1,3 +1,4 @@
+import React from 'react'
 import { useEffect } from 'react'
 import { Alert, Button, IconButton, Modal } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close';
@@ -13,6 +14,8 @@ import type { IUser } from '../hook/useUser';
 import FSelect from '../utils/form/FSelect';
 import useSites from '../hook/useSites';
 import UserAPI from '../redux/data/user/UserAPI';
+import { addUser } from '../redux/data/user/userReducer';
+import { isMobile } from 'react-device-detect';
 import { addUserToList } from '../redux/data/user/userReducer';
 
 const ModalContent = styled(Flex)`
@@ -20,8 +23,8 @@ const ModalContent = styled(Flex)`
     top: 50%;
     left: 50%;
     width: auto;
-    max-width: 70%;
-    min-width: 500px;
+    max-width: ${isMobile ? 'none' : '70%'};
+    min-width: ${isMobile ? '80%' : '500px'};
     height: auto;
     min-height: 400px;
     max-height: 80%;
@@ -156,7 +159,7 @@ const AdminUtilisateurModal = ({
                         </IconButton>
                     </ModalHeader>
                     <ModalBody>
-                        {!isEditingInscriptions && <Alert severity="info"><b>Information :</b> un email sera envoyé à l'adresse du membre afin de confirmer son compte</Alert>}
+                        {!selectedUser && <Alert severity="info"><b>Information :</b> un email sera envoyé à l'adresse du membre afin de confirmer son compte</Alert>}
                         <FText name="email" label="Email" disabled={isEditingInscriptions} />
                         <FText name="password" label="Mot de passe" disabled={isEditingInscriptions} />
                         <FSelect name="site_id" label="Site de rattachement" options={Object.keys(sites)} getOptionLabel={(option) => sites[option]?.nom_site} />

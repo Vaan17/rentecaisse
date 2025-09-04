@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { Flex } from '../../components/style/flex'
 import CustomFilter from '../../components/CustomFilter'
-import { Alert, Chip, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Tooltip } from '@mui/material'
+import { Alert, Box, Chip, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Tooltip } from '@mui/material'
 import { useDispatch } from 'react-redux'
 import useEmprunts, { IEmprunt } from '../../hook/useEmprunts';
 import dayjs from 'dayjs';
@@ -14,6 +14,7 @@ import _ from 'lodash';
 import ConfirmationModal from '../../utils/components/ConfirmationModal'
 import EmpruntAPI from '../../redux/data/emprunt/EmpruntAPI'
 import { addEmprunt } from '../../redux/data/emprunt/empruntReducer'
+import { isMobile } from 'react-device-detect'
 
 const SChip = styled(Chip) <{ $color: string }>`
     background-color: ${({ $color }) => $color} !important;
@@ -83,7 +84,7 @@ const TableEmpruntsFins = () => {
     ]
 
     const ehancedEmprunts = useMemo(() => {
-        const clonedEmprunts = _.cloneDeep(Object.values(emprunts))
+        const clonedEmprunts = _.cloneDeep(Object.values(emprunts) as IEmprunt[])
 
         return clonedEmprunts.map((emprunt) => {
             if (emprunt.statut_emprunt === "validé" && dayjs(emprunt.date_fin).isBefore(dayjs())) {
@@ -94,12 +95,19 @@ const TableEmpruntsFins = () => {
         })
     }, [emprunts])
 
-    const filteredEmprunts = Object.values(ehancedEmprunts)
+    const filteredEmprunts = ehancedEmprunts
         // on garde que les emprunt en cours, et donc la date de fin est dépassée !
         .filter(emprunt => emprunt.statut_emprunt === "en_cours" && dayjs(emprunt.date_fin).isBefore(dayjs()))
         .filter(emprunt => {
             if (!filterProperties.filterBy || !filterProperties.searchValue) return true
-            return emprunt[filterProperties.filterBy]?.toString()?.toLowerCase().includes(filterProperties.searchValue.toLowerCase())
+
+            if (filterProperties.filterBy === 'site') {
+                // Handle site filtering if needed
+                return true
+            }
+
+            const empruntValue = emprunt[filterProperties.filterBy as keyof IEmprunt]
+            return empruntValue?.toString()?.toLowerCase().includes(filterProperties.searchValue.toLowerCase())
         })
 
     const visibleRows = useMemo(() => {
@@ -120,93 +128,183 @@ const TableEmpruntsFins = () => {
                 <CustomFilter options={filterOptions} filterCallback={
                     (filterBy, searchValue) => { setFilterProperties({ filterBy, searchValue }) }
                 } />
-                <TableContainer>
-                    <Table
-                        sx={{ minWidth: 750 }}
-                        aria-labelledby="tableTitle"
-                    >
-                        <TableHead>
-                            <TableRow>
-                                {headCells.map((headCell) => (
-                                    <TableCell
-                                        key={headCell.id}
-                                        width={headCell.colWidth ? `${headCell.colWidth}px` : 'auto'}
-                                        padding='none'
-                                    >
-                                        {headCell.label}
-                                    </TableCell>
-                                ))}
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {visibleRows.map((emprunt, index) => {
-                                const labelId = `enhanced-table-checkbox-${index}`;
-
-                                return (
-                                    <TableRow
-                                        key={emprunt.id}
-                                        hover
-                                        onClick={(event) => null}
-                                        tabIndex={-1}
-                                        sx={{ cursor: 'pointer' }}
-                                    >
-                                        <TableCell padding='none'>
+                {isMobile && (
+                    <>
+                        <Flex directionColumn gap="1em">
+                            {filteredEmprunts.map((emprunt, index) => (
+                                <Box
+                                    key={emprunt.id}
+                                    sx={{
+                                        width: '100%',
+                                        backgroundColor: '#f4f4f4',
+                                        borderRadius: '8px',
+                                        padding: '1em',
+                                        border: '1px solid #e0e0e0'
+                                    }}
+                                >
+                                    <Flex directionColumn gap="0.5em">
+                                        <Flex spaceBetween alignItemsCenter>
                                             <SChip
                                                 label={getEmpruntInfo(emprunt.statut_emprunt).label}
                                                 $color={getEmpruntInfo(emprunt.statut_emprunt).color}
+                                                size="small"
                                             />
-                                        </TableCell>
-                                        <TableCell padding='none'>{emprunt.nom_emprunt}</TableCell>
-                                        <TableCell padding='none'>{dayjs(emprunt.date_debut).locale('fr').format('DD MMMM YYYY à HH:mm')}</TableCell>
-                                        <TableCell padding='none'>{dayjs(emprunt.date_fin).locale('fr').format('DD MMMM YYYY à HH:mm')}</TableCell>
-                                        <TableCell padding='none'>{users[emprunt.utilisateur_demande_id]?.nom + " " + users[emprunt.utilisateur_demande_id]?.prenom}</TableCell>
-                                        <TableCell padding='none'>{cars[emprunt.voiture_id]?.name}</TableCell>
-                                        <TableCell padding='none'>{emprunt.localisation_id}</TableCell>
-                                        <TableCell padding='none'>
-                                            <Tooltip title="Terminer" arrow>
-                                                <IconButton onClick={() => {
-                                                    setSelectedEmprunt(emprunt)
-                                                    setIsOpenConfirmModal(true)
-                                                }}>
-                                                    <CheckCircleIcon />
-                                                </IconButton>
-                                            </Tooltip>
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })}
+                                            <Flex gap="0.5em">
+                                                <Tooltip title="Terminer" arrow>
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={() => {
+                                                            setSelectedEmprunt(emprunt)
+                                                            setIsOpenConfirmModal(true)
+                                                        }}
+                                                    >
+                                                        <CheckCircleIcon />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            </Flex>
+                                        </Flex>
+
+                                        <Box sx={{ fontSize: '1.1em', fontWeight: 'bold' }}>
+                                            {emprunt.nom_emprunt}
+                                        </Box>
+
+                                        <Box sx={{ color: 'text.secondary', fontSize: '0.9em' }}>
+                                            <strong>Début:</strong> {dayjs(emprunt.date_debut).locale('fr').format('DD MMMM YYYY à HH:mm')}
+                                        </Box>
+
+                                        <Box sx={{ color: 'text.secondary', fontSize: '0.9em' }}>
+                                            <strong>Fin:</strong> {dayjs(emprunt.date_fin).locale('fr').format('DD MMMM YYYY à HH:mm')}
+                                        </Box>
+
+                                        {users[emprunt.utilisateur_demande_id] && (
+                                            <Box sx={{ fontSize: '0.9em' }}>
+                                                <strong>Propriétaire:</strong> {users[emprunt.utilisateur_demande_id]?.nom} {users[emprunt.utilisateur_demande_id]?.prenom}
+                                            </Box>
+                                        )}
+
+                                        {cars[emprunt.voiture_id] && (
+                                            <Box sx={{ fontSize: '0.9em' }}>
+                                                <strong>Véhicule:</strong> {cars[emprunt.voiture_id]?.name}
+                                            </Box>
+                                        )}
+
+                                        {emprunt.localisation_id && (
+                                            <Box sx={{ fontSize: '0.9em' }}>
+                                                <strong>Destination:</strong> {emprunt.localisation_id}
+                                            </Box>
+                                        )}
+                                    </Flex>
+                                </Box>
+                            ))}
+
                             {filteredEmprunts.length === 0 && (
-                                <TableRow>
-                                    <TableCell colSpan={headCells.length + 1} align="center">
-                                        <Alert severity={
-                                            filterProperties.filterBy && filterProperties.searchValue
-                                                ? "warning"
-                                                : "info"
-                                        }>
-                                            {filterProperties.filterBy && filterProperties.searchValue
-                                                ? "Aucun résultat ne correspond à votre recherche"
-                                                : "Aucun emprunt en cours n'est à terminer"}
-                                        </Alert>
-                                    </TableCell>
-                                </TableRow>
+                                <Box sx={{ textAlign: 'center', padding: '2em' }}>
+                                    <Alert severity={
+                                        filterProperties.filterBy && filterProperties.searchValue
+                                            ? "warning"
+                                            : "info"
+                                    }>
+                                        {filterProperties.filterBy && filterProperties.searchValue
+                                            ? "Aucun résultat ne correspond à votre recherche"
+                                            : "Aucun emprunt en cours n'est à terminer"}
+                                    </Alert>
+                                </Box>
                             )}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-                <TablePagination
-                    rowsPerPageOptions={[5, 10, 25, 50]}
-                    component="div"
-                    count={filteredEmprunts.length}
-                    rowsPerPage={rowsPerPage}
-                    onRowsPerPageChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                        setRowsPerPage(parseInt(event.target.value, 10))
-                        setPage(0)
-                    }}
-                    page={page}
-                    onPageChange={(event: unknown, newPage: number) => {
-                        setPage(newPage)
-                    }}
-                />
+                        </Flex>
+                    </>
+                )}
+                {!isMobile && (
+                    <>
+
+                        <TableContainer>
+                            <Table
+                                sx={{ minWidth: 750 }}
+                                aria-labelledby="tableTitle"
+                            >
+                                <TableHead>
+                                    <TableRow>
+                                        {headCells.map((headCell) => (
+                                            <TableCell
+                                                key={headCell.id}
+                                                width={headCell.colWidth ? `${headCell.colWidth}px` : 'auto'}
+                                                padding='none'
+                                            >
+                                                {headCell.label}
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {visibleRows.map((emprunt, index) => {
+                                        const labelId = `enhanced-table-checkbox-${index}`;
+
+                                        return (
+                                            <TableRow
+                                                key={emprunt.id}
+                                                hover
+                                                onClick={(event) => null}
+                                                tabIndex={-1}
+                                                sx={{ cursor: 'pointer' }}
+                                            >
+                                                <TableCell padding='none'>
+                                                    <SChip
+                                                        label={getEmpruntInfo(emprunt.statut_emprunt).label}
+                                                        $color={getEmpruntInfo(emprunt.statut_emprunt).color}
+                                                    />
+                                                </TableCell>
+                                                <TableCell padding='none'>{emprunt.nom_emprunt}</TableCell>
+                                                <TableCell padding='none'>{dayjs(emprunt.date_debut).locale('fr').format('DD MMMM YYYY à HH:mm')}</TableCell>
+                                                <TableCell padding='none'>{dayjs(emprunt.date_fin).locale('fr').format('DD MMMM YYYY à HH:mm')}</TableCell>
+                                                <TableCell padding='none'>{users[emprunt.utilisateur_demande_id]?.nom + " " + users[emprunt.utilisateur_demande_id]?.prenom}</TableCell>
+                                                <TableCell padding='none'>{cars[emprunt.voiture_id]?.name}</TableCell>
+                                                <TableCell padding='none'>{emprunt.localisation_id}</TableCell>
+                                                <TableCell padding='none'>
+                                                    <Tooltip title="Terminer" arrow>
+                                                        <IconButton onClick={() => {
+                                                            setSelectedEmprunt(emprunt)
+                                                            setIsOpenConfirmModal(true)
+                                                        }}>
+                                                            <CheckCircleIcon />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                    {filteredEmprunts.length === 0 && (
+                                        <TableRow>
+                                            <TableCell colSpan={headCells.length + 1} align="center">
+                                                <Alert severity={
+                                                    filterProperties.filterBy && filterProperties.searchValue
+                                                        ? "warning"
+                                                        : "info"
+                                                }>
+                                                    {filterProperties.filterBy && filterProperties.searchValue
+                                                        ? "Aucun résultat ne correspond à votre recherche"
+                                                        : "Aucun emprunt en cours n'est à terminer"}
+                                                </Alert>
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                        <TablePagination
+                            rowsPerPageOptions={[5, 10, 25, 50]}
+                            component="div"
+                            count={filteredEmprunts.length}
+                            rowsPerPage={rowsPerPage}
+                            onRowsPerPageChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                                setRowsPerPage(parseInt(event.target.value, 10))
+                                setPage(0)
+                            }}
+                            page={page}
+                            onPageChange={(event: unknown, newPage: number) => {
+                                setPage(newPage)
+                            }}
+                        />
+                    </>
+                )}
                 <ConfirmationModal
                     isOpen={isOpenConfirmModal}
                     message="Confirmer la fin de l'emprunt, le retour du véhicule et la remise de la clé ?"

@@ -1,5 +1,5 @@
 import React from 'react'
-import { 
+import {
     Container,
     Card,
     CardMedia,
@@ -40,6 +40,7 @@ import type { ISite } from '../sites/Sites'
 import type { IVoiture } from './Voitures'
 import useSites from '../../hook/useSites'
 import useCars from '../../hook/useCars'
+import { isMobile } from 'react-device-detect'
 
 const VoitureDetails = () => {
     const { id } = useParams<{ id: string }>()
@@ -82,17 +83,17 @@ const VoitureDetails = () => {
         <Container maxWidth="xl" sx={{ py: 3 }}>
             {/* Breadcrumbs Navigation */}
             <Breadcrumbs sx={{ mb: 3 }}>
-                <Link 
-                    color="inherit" 
-                    href="#" 
+                <Link
+                    color="inherit"
+                    href="#"
                     onClick={() => navigate('/')}
                     sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
                 >
                     <Home sx={{ mr: 0.5 }} fontSize="inherit" />
                     Accueil
                 </Link>
-                <Link 
-                    color="inherit" 
+                <Link
+                    color="inherit"
                     href="#"
                     onClick={() => navigate('/voitures')}
                     sx={{ cursor: 'pointer' }}
@@ -105,7 +106,7 @@ const VoitureDetails = () => {
             </Breadcrumbs>
 
             {/* Bouton retour */}
-            <IconButton 
+            <IconButton
                 onClick={() => navigate('/voitures')}
                 sx={{ mb: 2, bgcolor: 'primary.main', color: 'white', '&:hover': { bgcolor: 'primary.dark' } }}
             >
@@ -113,17 +114,17 @@ const VoitureDetails = () => {
             </IconButton>
 
             {/* Hero Section - Layout Asymétrique Moderne */}
-            <Card elevation={6} sx={{ 
-                borderRadius: 3, 
-                overflow: 'hidden', 
+            <Card elevation={6} sx={{
+                borderRadius: 3,
+                overflow: 'hidden',
                 mb: 4,
                 display: 'flex',
                 flexDirection: { xs: 'column', md: 'row' },
                 minHeight: { xs: 'auto', md: 450 }
             }}>
                 {/* Section Contenu */}
-                <CardContent sx={{ 
-                    flex: { xs: 1, md: 1.5 }, 
+                <CardContent sx={{
+                    flex: { xs: 1, md: 1.5 },
                     p: { xs: 3, md: 4 },
                     display: 'flex',
                     flexDirection: 'column',
@@ -139,8 +140,8 @@ const VoitureDetails = () => {
                             position: 'absolute',
                             top: 16,
                             right: 16,
-                            bgcolor: getStatusColor(selectedVoiture.statut_voiture) === 'success' ? 'success.main' : 
-                                     getStatusColor(selectedVoiture.statut_voiture) === 'warning' ? 'warning.main' : 'error.main',
+                            bgcolor: getStatusColor(selectedVoiture.statut_voiture) === 'success' ? 'success.main' :
+                                getStatusColor(selectedVoiture.statut_voiture) === 'warning' ? 'warning.main' : 'error.main',
                             color: 'white',
                             fontWeight: 600,
                             fontSize: '0.9rem'
@@ -148,40 +149,40 @@ const VoitureDetails = () => {
                     />
 
                     <Box sx={{ mt: 2 }}>
-                        <Typography variant="h3" fontWeight="bold" gutterBottom color="text.primary">
+                        <Typography variant={isMobile ? "h6" : "h3"} fontWeight="bold" gutterBottom color="text.primary">
                             {selectedVoiture.marque} {selectedVoiture.modele}
                         </Typography>
-                        
-                        <Typography variant="h6" color="text.secondary" sx={{ mb: 3, display: 'flex', alignItems: 'center' }}>
+
+                        <Typography variant={isMobile ? "body1" : "h6"} color="text.secondary" sx={{ mb: 3, display: 'flex', alignItems: 'center' }}>
                             <DirectionsCar sx={{ mr: 1, color: '#FFC700' }} />
                             {selectedVoiture.immatriculation}
                         </Typography>
 
                         {/* Informations rapides */}
-                        <Stack direction="row" spacing={2} sx={{ mb: 3, flexWrap: 'wrap', gap: 1 }}>
-                            <Chip 
-                                icon={<LocalGasStation />} 
+                        <Stack direction={isMobile ? "column" : "row"} spacing={isMobile ? .5 : 2} sx={{ mb: 3, flexWrap: 'wrap', gap: 1 }}>
+                            <Chip
+                                icon={<LocalGasStation />}
                                 label={`${getFuelIcon(selectedVoiture.carburant)} ${selectedVoiture.carburant}`}
                                 variant="outlined"
                                 size="small"
                                 sx={{ fontSize: '0.8rem' }}
                             />
-                            <Chip 
-                                icon={<People />} 
+                            <Chip
+                                icon={<People />}
                                 label={`${selectedVoiture.nombre_places} places`}
                                 variant="outlined"
                                 size="small"
                                 sx={{ fontSize: '0.8rem' }}
                             />
-                            <Chip 
-                                icon={<Speed />} 
+                            <Chip
+                                icon={<Speed />}
                                 label={`${selectedVoiture.puissance} CV`}
                                 variant="outlined"
                                 size="small"
                                 sx={{ fontSize: '0.8rem' }}
                             />
-                            <Chip 
-                                icon={<Settings />} 
+                            <Chip
+                                icon={<Settings />}
                                 label={selectedVoiture.type_boite}
                                 variant="outlined"
                                 size="small"
@@ -190,8 +191,8 @@ const VoitureDetails = () => {
                         </Stack>
 
                         <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.6 }}>
-                            {selectedVoiture.année_fabrication} • {selectedVoiture.couleur} • 
-                            {selectedVoiture.nombre_portes} portes • 
+                            {selectedVoiture.année_fabrication} • {selectedVoiture.couleur} •
+                            {selectedVoiture.nombre_portes} portes •
                             {selectedVoiture.statut_voiture === 'Fonctionnelle' && ' Disponible pour réservation'}
                             {selectedVoiture.statut_voiture === 'En réparation' && ' Temporairement indisponible'}
                             {selectedVoiture.statut_voiture === 'Non fonctionnelle' && ' Hors service'}
@@ -226,7 +227,7 @@ const VoitureDetails = () => {
                 </CardContent>
 
                 {/* Section Image */}
-                <Box sx={{ 
+                <Box sx={{
                     flex: 1,
                     position: 'relative',
                     minHeight: { xs: 250, md: 'auto' },
@@ -238,16 +239,16 @@ const VoitureDetails = () => {
                             component="img"
                             image={selectedVoiture.image}
                             alt={`${selectedVoiture.marque} ${selectedVoiture.modele}`}
-                            sx={{ 
-                                width: '100%', 
-                                height: '100%', 
+                            sx={{
+                                width: '100%',
+                                height: '100%',
                                 objectFit: 'contain',
                                 backgroundColor: 'transparent'
                             }}
                         />
                     ) : (
-                        <Box 
-                            sx={{ 
+                        <Box
+                            sx={{
                                 width: '100%',
                                 height: '100%',
                                 background: 'linear-gradient(135deg, #FFD700 0%, #FFC700 100%)',
@@ -263,7 +264,7 @@ const VoitureDetails = () => {
                             </Typography>
                         </Box>
                     )}
-                    
+
                     {/* Overlay subtil pour améliorer la lisibilité */}
                     <Box
                         sx={{
@@ -293,13 +294,13 @@ const VoitureDetails = () => {
                                     Informations du véhicule
                                 </Typography>
                             </Box>
-                            
+
                             <List>
                                 <ListItem>
                                     <ListItemIcon>
                                         <DirectionsCar color="primary" />
                                     </ListItemIcon>
-                                    <ListItemText 
+                                    <ListItemText
                                         primary="Marque et modèle"
                                         secondary={`${selectedVoiture.marque} ${selectedVoiture.modele}`}
                                     />
@@ -309,7 +310,7 @@ const VoitureDetails = () => {
                                     <ListItemIcon>
                                         <Info color="primary" />
                                     </ListItemIcon>
-                                    <ListItemText 
+                                    <ListItemText
                                         primary="Immatriculation"
                                         secondary={selectedVoiture.immatriculation}
                                     />
@@ -319,7 +320,7 @@ const VoitureDetails = () => {
                                     <ListItemIcon>
                                         <CalendarToday color="primary" />
                                     </ListItemIcon>
-                                    <ListItemText 
+                                    <ListItemText
                                         primary="Année de fabrication"
                                         secondary={selectedVoiture.année_fabrication}
                                     />
@@ -329,7 +330,7 @@ const VoitureDetails = () => {
                                     <ListItemIcon>
                                         <LocalGasStation color="primary" />
                                     </ListItemIcon>
-                                    <ListItemText 
+                                    <ListItemText
                                         primary="Carburant"
                                         secondary={`${getFuelIcon(selectedVoiture.carburant)} ${selectedVoiture.carburant}`}
                                     />
@@ -339,7 +340,7 @@ const VoitureDetails = () => {
                                     <ListItemIcon>
                                         <ColorLens color="primary" />
                                     </ListItemIcon>
-                                    <ListItemText 
+                                    <ListItemText
                                         primary="Couleur"
                                         secondary={selectedVoiture.couleur}
                                     />
@@ -349,7 +350,7 @@ const VoitureDetails = () => {
                                     <ListItemIcon>
                                         <Speed color="primary" />
                                     </ListItemIcon>
-                                    <ListItemText 
+                                    <ListItemText
                                         primary="Puissance"
                                         secondary={`${selectedVoiture.puissance} CV`}
                                     />
@@ -359,7 +360,7 @@ const VoitureDetails = () => {
                                     <ListItemIcon>
                                         <People color="primary" />
                                     </ListItemIcon>
-                                    <ListItemText 
+                                    <ListItemText
                                         primary="Capacité"
                                         secondary={`${selectedVoiture.nombre_places} places - ${selectedVoiture.nombre_portes} portes`}
                                     />
@@ -369,7 +370,7 @@ const VoitureDetails = () => {
                                     <ListItemIcon>
                                         <Settings color="primary" />
                                     </ListItemIcon>
-                                    <ListItemText 
+                                    <ListItemText
                                         primary="Transmission"
                                         secondary={selectedVoiture.type_boite}
                                     />
@@ -389,14 +390,14 @@ const VoitureDetails = () => {
                                     Site de rattachement
                                 </Typography>
                             </Box>
-                            
+
                             {siteInfo.id ? (
                                 <List>
                                     <ListItem>
                                         <ListItemIcon>
                                             <LocationOn color="primary" />
                                         </ListItemIcon>
-                                        <ListItemText 
+                                        <ListItemText
                                             primary="Nom du site"
                                             secondary={
                                                 <Button
@@ -426,7 +427,7 @@ const VoitureDetails = () => {
                                         <ListItemIcon>
                                             <LocationOn color="primary" />
                                         </ListItemIcon>
-                                        <ListItemText 
+                                        <ListItemText
                                             primary="Adresse"
                                             secondary={`${siteInfo.adresse}, ${siteInfo.code_postal} ${siteInfo.ville}`}
                                         />
@@ -436,7 +437,7 @@ const VoitureDetails = () => {
                                         <ListItemIcon>
                                             <DirectionsCar color="primary" />
                                         </ListItemIcon>
-                                        <ListItemText 
+                                        <ListItemText
                                             primary="Véhicules du site"
                                             secondary={`${getVehicleCount(siteInfo.id)} véhicules rattachés`}
                                         />
@@ -446,7 +447,7 @@ const VoitureDetails = () => {
                                         <ListItemIcon>
                                             <Phone color="primary" />
                                         </ListItemIcon>
-                                        <ListItemText 
+                                        <ListItemText
                                             primary="Téléphone"
                                             secondary={siteInfo.telephone}
                                         />
@@ -456,10 +457,10 @@ const VoitureDetails = () => {
                                         <ListItemIcon>
                                             <Email color="primary" />
                                         </ListItemIcon>
-                                        <ListItemText 
+                                        <ListItemText
                                             primary="Email"
                                             secondary={
-                                                <Link 
+                                                <Link
                                                     href={`mailto:${siteInfo.email}`}
                                                     sx={{ color: '#FFC700', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
                                                 >
@@ -474,10 +475,10 @@ const VoitureDetails = () => {
                                             <ListItemIcon>
                                                 <Language color="primary" />
                                             </ListItemIcon>
-                                            <ListItemText 
+                                            <ListItemText
                                                 primary="Site web"
                                                 secondary={
-                                                    <Link 
+                                                    <Link
                                                         href={siteInfo.site_web.startsWith('http') ? siteInfo.site_web : `https://${siteInfo.site_web}`}
                                                         target="_blank"
                                                         sx={{ color: '#FFC700', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
@@ -508,8 +509,8 @@ const VoitureDetails = () => {
                                     Actions rapides
                                 </Typography>
                                 <Stack spacing={2}>
-            <Button
-                variant="contained"
+                                    <Button
+                                        variant="contained"
                                         fullWidth
                                         startIcon={<LocationOn />}
                                         onClick={() => navigate(`/sites/${siteInfo.id}`)}
@@ -518,8 +519,8 @@ const VoitureDetails = () => {
                                     >
                                         Voir le site
                                     </Button>
-                                    <Button 
-                                        variant="outlined" 
+                                    <Button
+                                        variant="outlined"
                                         fullWidth
                                         startIcon={<Email />}
                                         onClick={() => window.open(`mailto:${siteInfo.email}`, '_self')}
@@ -527,14 +528,14 @@ const VoitureDetails = () => {
                                     >
                                         Contacter le site
                                     </Button>
-                                    <Button 
-                                        variant="outlined" 
+                                    <Button
+                                        variant="outlined"
                                         fullWidth
                                         startIcon={<DirectionsCar />}
                                         onClick={() => navigate('/emprunts')}
                                     >
                                         Réserver ce véhicule
-            </Button>
+                                    </Button>
                                 </Stack>
                             </CardContent>
                         </Card>
@@ -550,7 +551,7 @@ const VoitureDetails = () => {
                                         <ListItemIcon>
                                             <Speed color="primary" />
                                         </ListItemIcon>
-                                        <ListItemText 
+                                        <ListItemText
                                             primary={`${selectedVoiture.puissance} CV`}
                                             secondary="Puissance"
                                         />
@@ -559,7 +560,7 @@ const VoitureDetails = () => {
                                         <ListItemIcon>
                                             <People color="primary" />
                                         </ListItemIcon>
-                                        <ListItemText 
+                                        <ListItemText
                                             primary={`${selectedVoiture.nombre_places} places`}
                                             secondary="Capacité passagers"
                                         />
@@ -568,7 +569,7 @@ const VoitureDetails = () => {
                                         <ListItemIcon>
                                             <LocalGasStation color="primary" />
                                         </ListItemIcon>
-                                        <ListItemText 
+                                        <ListItemText
                                             primary={selectedVoiture.carburant}
                                             secondary="Type de carburant"
                                         />
