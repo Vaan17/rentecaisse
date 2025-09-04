@@ -1,8 +1,8 @@
 import React from 'react';
-import { 
-  Box, 
-  IconButton, 
-  Typography, 
+import {
+  Box,
+  IconButton,
+  Typography,
   Paper,
   Button,
   useTheme
@@ -14,13 +14,19 @@ import TodayIcon from '@mui/icons-material/Today';
 import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
 import { DateNavigatorProps } from '../types';
+import { isMobile } from 'react-device-detect';
+import styled from 'styled-components';
+
+const SDatePicker = styled(DatePicker)`
+  width: ${isMobile ? "200px" : "auto"} !important;
+`;
 
 const DateNavigator: React.FC<DateNavigatorProps> = ({ selectedDate, onDateChange }) => {
   const theme = useTheme();
-  
+
   // Format de la date en français
-  const formattedDate = dayjs(selectedDate).locale('fr').format('dddd DD MMMM YYYY');
-  
+  const formattedDate = dayjs(selectedDate).locale('fr').format(isMobile ? 'DD/MM/YYYY' : 'dddd DD MMMM YYYY');
+
   // Fonction pour aller au jour précédent
   const goToPreviousDay = () => {
     const prevDay = new Date(selectedDate);
@@ -52,12 +58,12 @@ const DateNavigator: React.FC<DateNavigatorProps> = ({ selectedDate, onDateChang
   };
 
   return (
-    <Paper 
-      elevation={3} 
-      sx={{ 
-        p: 2, 
-        display: 'flex', 
-        alignItems: 'center', 
+    <Paper
+      elevation={3}
+      sx={{
+        p: 2,
+        display: 'flex',
+        alignItems: 'center',
         justifyContent: 'space-between',
         borderRadius: 2,
         mb: 2,
@@ -69,46 +75,46 @@ const DateNavigator: React.FC<DateNavigatorProps> = ({ selectedDate, onDateChang
         <IconButton onClick={goToPreviousDay} color="primary">
           <ChevronLeftIcon />
         </IconButton>
-        
-        <Typography 
-          variant="h6" 
-          sx={{ 
-            mx: 2, 
+
+        <Typography
+          variant="h6"
+          sx={{
+            mx: 2,
             textTransform: 'capitalize',
-            minWidth: 220,
+            minWidth: isMobile ? "" : 220,
             textAlign: 'center'
           }}
         >
           {formattedDate}
         </Typography>
-        
+
         <IconButton onClick={goToNextDay} color="primary">
           <ChevronRightIcon />
         </IconButton>
       </Box>
-      
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Button 
-          startIcon={<TodayIcon />} 
-          variant="outlined" 
-          color="primary" 
+
+      <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: 'center', gap: 1 }}>
+        <Button
+          startIcon={<TodayIcon />}
+          variant="outlined"
+          color="primary"
           onClick={goToToday}
           size="small"
-          sx={{ 
+          sx={{
             minWidth: 'auto',
             px: 1
           }}
         >
           Aujourd'hui
         </Button>
-        
-        <DatePicker
+
+        <SDatePicker
           label="Choisir une date"
           value={dayjs(selectedDate)}
           onChange={handleDatePickerChange}
           slotProps={{
             field: { clearable: true },
-            textField: { 
+            textField: {
               size: 'small',
               fullWidth: true
             },
@@ -116,7 +122,6 @@ const DateNavigator: React.FC<DateNavigatorProps> = ({ selectedDate, onDateChang
               style: { zIndex: theme.zIndex.modal + 1 }
             }
           }}
-          sx={{ minWidth: 180 }}
           format="DD/MM/YYYY"
         />
       </Box>

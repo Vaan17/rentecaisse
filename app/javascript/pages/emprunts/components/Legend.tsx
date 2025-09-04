@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Typography, Paper, Divider } from '@mui/material';
+import { isMobile } from 'react-device-detect';
 
 // Définition des statuts et couleurs
 const statuses = [
@@ -58,29 +59,46 @@ const Legend: React.FC = () => {
         width: '100%',
         gap: 1
       }}>
-        {/* Première ligne */}
-        <Box sx={{
-          display: 'flex',
-          width: '100%',
-          justifyContent: 'space-between'
-        }}>
-          {firstRow.map((status) => (
-            <LegendItem key={status.id} status={status} />
-          ))}
-        </Box>
+        {isMobile && (
+          <>
+            {[...firstRow, ...secondRow].map((status) => (
+              <Box sx={{
+                display: 'flex',
+                width: '100%',
+                justifyContent: 'space-between'
+              }}>
+                <LegendItem key={status.id} status={status} />
+              </Box>
+            ))}
+          </>
+        )}
+        {!isMobile && (
+          <>
+            {/* Première ligne */}
+            <Box sx={{
+              display: 'flex',
+              width: '100%',
+              justifyContent: 'space-between'
+            }}>
+              {firstRow.map((status) => (
+                <LegendItem key={status.id} status={status} />
+              ))}
+            </Box>
 
-        <Divider sx={{ my: 0.5 }} />
+            <Divider sx={{ my: 0.5 }} />
 
-        {/* Deuxième ligne */}
-        <Box sx={{
-          display: 'flex',
-          width: '100%',
-          justifyContent: 'space-between'
-        }}>
-          {secondRow.map((status) => (
-            <LegendItem key={status.id} status={status} />
-          ))}
-        </Box>
+            {/* Deuxième ligne */}
+            <Box sx={{
+              display: 'flex',
+              width: '100%',
+              justifyContent: 'space-between'
+            }}>
+              {secondRow.map((status) => (
+                <LegendItem key={status.id} status={status} />
+              ))}
+            </Box>
+          </>
+        )}
       </Box>
     </Paper>
   );
@@ -92,7 +110,7 @@ const LegendItem: React.FC<{ status: typeof statuses[0] }> = ({ status }) => {
     <Box sx={{
       display: 'flex',
       alignItems: 'flex-start',
-      width: '32%' // Permet trois éléments par ligne avec un peu d'espace entre eux
+      width: isMobile ? '100%' : '32%' // Permet trois éléments par ligne avec un peu d'espace entre eux
     }}>
       <Box
         sx={{
