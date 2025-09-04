@@ -6,8 +6,8 @@ const voitureReducer = createSlice({
 	name: "user",
 	initialState,
 	reducers: {
-		// use `addUser` for create or update (for update, that will overwrite the old version)
-		addUser(state, { payload: user }) {
+		// use `addUserToList` for create or update (for update, that will overwrite the old version)
+		addUserToList(state, { payload: user }) {
 			state[user.id] = user;
 		},
 		removeUser(state, { payload: user }) {
@@ -17,4 +17,4 @@ const voitureReducer = createSlice({
 });
 
 export default voitureReducer.reducer;
-export const { addUser, removeUser } = voitureReducer.actions;
+export const { addUserToList, removeUser } = voitureReducer.actions;
