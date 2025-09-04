@@ -18,14 +18,15 @@ import { addCar } from '../redux/data/voiture/voitureReducer';
 import type { IVoiture } from '../pages/voitures/Voitures';
 import axiosSecured from '../services/apiService';
 import { toast } from 'react-toastify';
+import { isMobile } from 'react-device-detect';
 
 const ModalContent = styled(Flex)`
     position: absolute;
     top: 50%;
     left: 50%;
     width: auto;
-    max-width: 70%;
-    min-width: 500px;
+    max-width: ${isMobile ? 'none' : '70%'};
+    min-width: ${isMobile ? '80%' : '500px'};
     height: auto;
     min-height: 400px;
     max-height: 80%;
@@ -262,7 +263,7 @@ const AdminVoitureModal = ({
                 // Nettoyer aussi le fichier de référence
                 if (fileInputRef.current) {
                     fileInputRef.current.value = ''
-                    ;(fileInputRef.current as any).fileToUpload = null
+                        ; (fileInputRef.current as any).fileToUpload = null
                 }
             }
         }
@@ -379,20 +380,20 @@ const AdminVoitureModal = ({
             try {
                 setIsUploading(true)
                 await VoitureAPI.deletePhoto(selectedCar.id)
-                
+
                 // Rafraîchir les données de la voiture dans le store
                 const updatedVoitures = await VoitureAPI.fetchAll()
                 const updatedVoiture = updatedVoitures.find(v => v.id === selectedCar.id)
                 if (updatedVoiture) {
                     dispatch(addCar(updatedVoiture))
                 }
-                
+
                 // Nettoyer l'interface utilisateur
                 setVoitureImage(null)
                 setUploadError(null)
                 if (fileInputRef.current) {
                     fileInputRef.current.value = ''
-                    ;(fileInputRef.current as any).fileToUpload = null
+                        ; (fileInputRef.current as any).fileToUpload = null
                 }
             } catch (error) {
                 console.error('Erreur lors de la suppression de l\'image:', error)
@@ -406,7 +407,7 @@ const AdminVoitureModal = ({
             setUploadError(null)
             if (fileInputRef.current) {
                 fileInputRef.current.value = ''
-                ;(fileInputRef.current as any).fileToUpload = null
+                    ; (fileInputRef.current as any).fileToUpload = null
             }
         }
     }
@@ -423,20 +424,20 @@ const AdminVoitureModal = ({
         if (!selectedCar) {
             const voiture = await VoitureAPI.createVoiture(formValues)
             dispatch(addCar(voiture))
-            
+
             // Upload de l'image après création si un fichier a été sélectionné
             const fileToUpload = (fileInputRef.current as any)?.fileToUpload
             if (fileToUpload && voiture?.id) {
                 const formData = new FormData()
                 formData.append('photo', fileToUpload)
-                
+
                 try {
                     const response = await axiosSecured.post(`/api/voitures/${voiture.id}/photo`, formData, {
                         headers: {
                             'Content-Type': 'multipart/form-data'
                         }
                     })
-                    
+
                     if (response.data.success) {
                         toast.success('Voiture créée et image uploadée avec succès')
                         // Rafraîchir les données de la voiture dans le store
@@ -491,18 +492,18 @@ const AdminVoitureModal = ({
                             options={Object.keys(siteOptions)}
                             getOptionLabel={(option) => siteOptions[option].nom_site}
                         />
-                        
+
                         <ImageUploadSection>
                             <ImageLabel>
                                 <PhotoCameraIcon />
                                 Photo de la voiture
                             </ImageLabel>
-                            
+
                             <ImagePreviewContainer>
                                 {voitureImage ? (
                                     <>
                                         <ImagePreview src={voitureImage} alt="Photo de la voiture" />
-                                        <DeleteImageButton 
+                                        <DeleteImageButton
                                             onClick={handleDeleteImage}
                                             disabled={isUploading}
                                         >
@@ -523,7 +524,7 @@ const AdminVoitureModal = ({
                                     </ImagePlaceholder>
                                 )}
                             </ImagePreviewContainer>
-                            
+
                             <UploadButton
                                 variant="contained"
                                 onClick={() => fileInputRef.current?.click()}
@@ -532,14 +533,14 @@ const AdminVoitureModal = ({
                             >
                                 {isUploading ? 'Upload en cours...' : voitureImage ? 'Changer l\'image' : 'Choisir une image'}
                             </UploadButton>
-                            
+
                             <HiddenFileInput
                                 ref={fileInputRef}
                                 type="file"
                                 accept="image/*"
                                 onChange={handleImageUpload}
                             />
-                            
+
                             {uploadError && <ErrorMessage>{uploadError}</ErrorMessage>}
                         </ImageUploadSection>
                     </ModalBody>

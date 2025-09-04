@@ -7,6 +7,7 @@ import useUser from "../../hook/useUser"
 import { Flex } from "../../components/style/flex"
 import dayjs from "dayjs"
 import _ from "lodash"
+import { isMobile } from "react-device-detect"
 
 const StyledCard = styled(Card)`
     width: 100%;
@@ -45,12 +46,12 @@ const Emprunts = () => {
 
     return (
         <Flex fullWidth directionColumn alignItemsStart gap="2em">
-            <Typography variant="h4" component="h1" gutterBottom>
+            <Typography variant={isMobile ? "h6" : "h4"} component="h1" gutterBottom>
                 Historique de mes emprunts
             </Typography>
-            <Flex fullWidth alignItemsStart gap="1em">
+            <Flex fullWidth directionColumn={isMobile} alignItemsStart gap="1em">
                 <Flex fullWidth directionColumn alignItemsStart gap=".5em">
-                    <Typography variant="h5" component="h1" gutterBottom>
+                    <Typography variant={isMobile ? "body1" : "h5"} component="h1" gutterBottom>
                         {dayjs(myNextEmprunt?.date_debut).isBefore(dayjs()) ? "Emprunt en cours" : "Prochain emprunt"}
                     </Typography>
                     {myNextEmprunt && (
@@ -136,7 +137,7 @@ const Emprunts = () => {
                     )}
                 </Flex>
                 <Flex fullWidth directionColumn alignItemsStart gap=".5em">
-                    <Typography variant="h5" component="h1" gutterBottom>
+                    <Typography variant={isMobile ? "body1" : "h5"} component="h1" gutterBottom>
                         Mes emprunts à venir
                     </Typography>
                     <Flex fullWidth directionColumn alignItemsStart gap="1em">
@@ -173,7 +174,7 @@ const Emprunts = () => {
                     </Flex>
                 </Flex>
                 <Flex fullWidth directionColumn alignItemsStart gap=".5em">
-                    <Typography variant="h5" component="h1" gutterBottom>
+                    <Typography variant={isMobile ? "body1" : "h5"} component="h1" gutterBottom>
                         Mes emprunts passés
                     </Typography>
                     <Flex fullWidth directionColumn alignItemsStart gap="1em">

@@ -17,6 +17,7 @@ import AdminCleModal from '../../modals/AdminCleModal';
 import CleAPI from '../../redux/data/cle/CleAPI';
 import { removeKey } from '../../redux/data/cle/cleReducer';
 import useUser from '../../hook/useUser';
+import { isMobile } from 'react-device-detect';
 
 const SButton = styled(Button)`
     min-width: fit-content !important;
@@ -63,8 +64,8 @@ const AdminCles = () => {
         marque: cars[cle.voiture_id]?.marque || '',
         modele: cars[cle.voiture_id]?.modele || '',
         immatriculation: cars[cle.voiture_id]?.immatriculation || '',
-        voiture_info: cars[cle.voiture_id] ? 
-            `${cars[cle.voiture_id].marque} ${cars[cle.voiture_id].modele} (${cars[cle.voiture_id].année_fabrication}) ${cars[cle.voiture_id].couleur} - ${cars[cle.voiture_id].immatriculation}` : 
+        voiture_info: cars[cle.voiture_id] ?
+            `${cars[cle.voiture_id].marque} ${cars[cle.voiture_id].modele} (${cars[cle.voiture_id].année_fabrication}) ${cars[cle.voiture_id].couleur} - ${cars[cle.voiture_id].immatriculation}` :
             '',
         site_info: sites[cle.site_id]?.nom_site || ''
     }))
@@ -93,7 +94,7 @@ const AdminCles = () => {
     return (
         <>
             <Flex fullWidth directionColumn gap="1em">
-                <Flex fullWidth spaceBetween>
+                <Flex fullWidth directionColumn={isMobile} spaceBetween gap={isMobile ? "1em" : "0"}>
                     <CustomFilter options={filterOptions} filterCallback={
                         (filterBy, searchValue) => { setFilterProperties({ filterBy, searchValue }) }
                     } />

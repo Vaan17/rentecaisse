@@ -13,6 +13,7 @@ import type { ISite } from '../sites/Sites';
 import AdminSiteModal from '../../modals/AdminSiteModal';
 import { removeSite } from '../../redux/data/site/siteReducer';
 import useUser from '../../hook/useUser';
+import { isMobile } from 'react-device-detect';
 
 const SButton = styled(Button)`
     min-width: fit-content !important;
@@ -84,7 +85,7 @@ const AdminSites = () => {
     return (
         <>
             <Flex fullWidth directionColumn gap="1em">
-                <Flex fullWidth spaceBetween>
+                <Flex fullWidth directionColumn={isMobile} spaceBetween gap={isMobile ? "1em" : "0"}>
                     <CustomFilter options={filterOptions} filterCallback={
                         (filterBy, searchValue) => { setFilterProperties({ filterBy, searchValue }) }
                     } />

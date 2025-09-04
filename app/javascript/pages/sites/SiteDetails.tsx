@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { 
+import {
     Container,
     Card,
     CardMedia,
@@ -39,6 +39,7 @@ import type { ISite } from './Sites'
 import useSites from '../../hook/useSites'
 import useCars from '../../hook/useCars'
 import axiosSecured from '../../services/apiService'
+import { isMobile } from 'react-device-detect'
 
 interface IEntreprise {
     id: number
@@ -82,8 +83,8 @@ const SiteDetails = () => {
             if (selectedSite.entreprise_id) {
                 try {
                     setLoading(true)
-                const res = await axiosSecured.get(`/api/entreprises/${selectedSite.entreprise_id}`)
-                setEntreprise(res.data)
+                    const res = await axiosSecured.get(`/api/entreprises/${selectedSite.entreprise_id}`)
+                    setEntreprise(res.data)
                 } catch (error) {
                     console.error('Erreur lors du chargement de l\'entreprise:', error)
                 } finally {
@@ -100,17 +101,17 @@ const SiteDetails = () => {
         <Container maxWidth="xl" sx={{ py: 3 }}>
             {/* Breadcrumbs Navigation */}
             <Breadcrumbs sx={{ mb: 3 }}>
-                <Link 
-                    color="inherit" 
-                    href="#" 
+                <Link
+                    color="inherit"
+                    href="#"
                     onClick={() => navigate('/')}
                     sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
                 >
                     <Home sx={{ mr: 0.5 }} fontSize="inherit" />
                     Accueil
                 </Link>
-                <Link 
-                    color="inherit" 
+                <Link
+                    color="inherit"
                     href="#"
                     onClick={() => navigate('/sites')}
                     sx={{ cursor: 'pointer' }}
@@ -123,7 +124,7 @@ const SiteDetails = () => {
             </Breadcrumbs>
 
             {/* Bouton retour */}
-            <IconButton 
+            <IconButton
                 onClick={() => navigate('/sites')}
                 sx={{ mb: 2, bgcolor: 'primary.main', color: 'white', '&:hover': { bgcolor: 'primary.dark' } }}
             >
@@ -131,17 +132,17 @@ const SiteDetails = () => {
             </IconButton>
 
             {/* Hero Section - Layout Asymétrique Moderne */}
-            <Card elevation={6} sx={{ 
-                borderRadius: 3, 
-                overflow: 'hidden', 
+            <Card elevation={6} sx={{
+                borderRadius: 3,
+                overflow: 'hidden',
                 mb: 4,
                 display: 'flex',
                 flexDirection: { xs: 'column', md: 'row' },
                 minHeight: { xs: 'auto', md: 450 }
             }}>
                 {/* Section Contenu */}
-                <CardContent sx={{ 
-                    flex: { xs: 1, md: 1.5 }, 
+                <CardContent sx={{
+                    flex: { xs: 1, md: 1.5 },
                     p: { xs: 3, md: 4 },
                     display: 'flex',
                     flexDirection: 'column',
@@ -165,26 +166,26 @@ const SiteDetails = () => {
                     />
 
                     <Box sx={{ mt: 2 }}>
-                        <Typography variant="h3" fontWeight="bold" gutterBottom color="text.primary">
+                        <Typography variant={isMobile ? "h6" : "h3"} fontWeight="bold" gutterBottom color="text.primary">
                             {selectedSite.nom_site}
                         </Typography>
-                        
-                        <Typography variant="h6" color="text.secondary" sx={{ mb: 3, display: 'flex', alignItems: 'center' }}>
+
+                        <Typography variant={isMobile ? "body1" : "h6"} color="text.secondary" sx={{ mb: 3, display: 'flex', alignItems: 'center' }}>
                             <LocationOn sx={{ mr: 1, color: '#FFC700' }} />
                             {selectedSite.adresse}, {selectedSite.code_postal} {selectedSite.ville}
                         </Typography>
 
                         {/* Informations rapides */}
-                        <Stack direction="row" spacing={2} sx={{ mb: 3, flexWrap: 'wrap', gap: 1 }}>
-                            <Chip 
-                                icon={<Phone />} 
-                                label={selectedSite.telephone} 
+                        <Stack direction={isMobile ? "column" : "row"} spacing={isMobile ? .5 : 2} sx={{ mb: 3, flexWrap: 'wrap', gap: 1 }}>
+                            <Chip
+                                icon={<Phone />}
+                                label={selectedSite.telephone}
                                 variant="outlined"
                                 size="small"
                                 sx={{ fontSize: '0.8rem' }}
                             />
-                            <Chip 
-                                icon={<Email />} 
+                            <Chip
+                                icon={<Email />}
                                 label="Contact"
                                 variant="outlined"
                                 size="small"
@@ -193,16 +194,16 @@ const SiteDetails = () => {
                                 sx={{ fontSize: '0.8rem' }}
                             />
                             {selectedSite.site_web && (
-                                <Chip 
-                                    icon={<Language />} 
+                                <Chip
+                                    icon={<Language />}
                                     label="Site Web"
                                     variant="outlined"
                                     size="small"
                                     clickable
                                     onClick={() => window.open(
-                                        selectedSite.site_web.startsWith('http') 
-                                            ? selectedSite.site_web 
-                                            : `https://${selectedSite.site_web}`, 
+                                        selectedSite.site_web.startsWith('http')
+                                            ? selectedSite.site_web
+                                            : `https://${selectedSite.site_web}`,
                                         '_blank'
                                     )}
                                     sx={{ fontSize: '0.8rem' }}
@@ -211,14 +212,14 @@ const SiteDetails = () => {
                         </Stack>
 
                         <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.6 }}>
-                            Découvrez ce site avec ses {getVehicleCount(selectedSite.id)} véhicules disponibles. 
+                            Découvrez ce site avec ses {getVehicleCount(selectedSite.id)} véhicules disponibles.
                             Contactez-nous pour plus d'informations ou pour organiser une visite.
                         </Typography>
                     </Box>
                 </CardContent>
 
                 {/* Section Image */}
-                <Box sx={{ 
+                <Box sx={{
                     flex: 1,
                     position: 'relative',
                     minHeight: { xs: 250, md: 'auto' },
@@ -230,16 +231,16 @@ const SiteDetails = () => {
                             component="img"
                             image={selectedSite.image}
                             alt={selectedSite.nom_site}
-                            sx={{ 
-                                width: '100%', 
-                                height: '100%', 
+                            sx={{
+                                width: '100%',
+                                height: '100%',
                                 objectFit: 'contain',
                                 backgroundColor: 'transparent'
                             }}
                         />
                     ) : (
-                        <Box 
-                            sx={{ 
+                        <Box
+                            sx={{
                                 width: '100%',
                                 height: '100%',
                                 background: 'linear-gradient(135deg, #FFD700 0%, #FFC700 100%)',
@@ -255,7 +256,7 @@ const SiteDetails = () => {
                             </Typography>
                         </Box>
                     )}
-                    
+
                     {/* Overlay subtil pour améliorer la lisibilité */}
                     <Box
                         sx={{
@@ -285,23 +286,23 @@ const SiteDetails = () => {
                                     Informations du site
                                 </Typography>
                             </Box>
-                            
+
                             <List>
                                 <ListItem>
                                     <ListItemIcon>
                                         <LocationOn color="primary" />
                                     </ListItemIcon>
-                                    <ListItemText 
+                                    <ListItemText
                                         primary="Adresse complète"
                                         secondary={`${selectedSite.adresse}, ${selectedSite.code_postal} ${selectedSite.ville}, ${selectedSite.pays}`}
                                     />
                                 </ListItem>
-                                
+
                                 <ListItem>
                                     <ListItemIcon>
                                         <DirectionsCar color="primary" />
                                     </ListItemIcon>
-                                    <ListItemText 
+                                    <ListItemText
                                         primary="Véhicules rattachés"
                                         secondary={`${getVehicleCount(selectedSite.id)} véhicules disponibles`}
                                     />
@@ -311,7 +312,7 @@ const SiteDetails = () => {
                                     <ListItemIcon>
                                         <Phone color="primary" />
                                     </ListItemIcon>
-                                    <ListItemText 
+                                    <ListItemText
                                         primary="Téléphone"
                                         secondary={selectedSite.telephone}
                                     />
@@ -321,10 +322,10 @@ const SiteDetails = () => {
                                     <ListItemIcon>
                                         <Email color="primary" />
                                     </ListItemIcon>
-                                    <ListItemText 
+                                    <ListItemText
                                         primary="Email"
                                         secondary={
-                                            <Link 
+                                            <Link
                                                 href={`mailto:${selectedSite.email}`}
                                                 sx={{ color: '#FFC700', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
                                             >
@@ -339,10 +340,10 @@ const SiteDetails = () => {
                                         <ListItemIcon>
                                             <Language color="primary" />
                                         </ListItemIcon>
-                                        <ListItemText 
+                                        <ListItemText
                                             primary="Site web"
                                             secondary={
-                                                <Link 
+                                                <Link
                                                     href={selectedSite.site_web.startsWith('http') ? selectedSite.site_web : `https://${selectedSite.site_web}`}
                                                     target="_blank"
                                                     sx={{ color: '#FFC700', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
@@ -368,7 +369,7 @@ const SiteDetails = () => {
                                     Informations de l'entreprise
                                 </Typography>
                             </Box>
-                            
+
                             {loading ? (
                                 <Stack spacing={1}>
                                     {Array.from(new Array(6)).map((_, index) => (
@@ -381,7 +382,7 @@ const SiteDetails = () => {
                                         <ListItemIcon>
                                             <AccountBalance color="primary" />
                                         </ListItemIcon>
-                                        <ListItemText 
+                                        <ListItemText
                                             primary="Raison sociale"
                                             secondary={entreprise.raison_sociale}
                                         />
@@ -391,7 +392,7 @@ const SiteDetails = () => {
                                         <ListItemIcon>
                                             <Business color="primary" />
                                         </ListItemIcon>
-                                        <ListItemText 
+                                        <ListItemText
                                             primary="Forme juridique"
                                             secondary={entreprise.forme_juridique}
                                         />
@@ -401,7 +402,7 @@ const SiteDetails = () => {
                                         <ListItemIcon>
                                             <Info color="primary" />
                                         </ListItemIcon>
-                                        <ListItemText 
+                                        <ListItemText
                                             primary="Numéro SIRET"
                                             secondary={entreprise.numero_siret}
                                         />
@@ -411,7 +412,7 @@ const SiteDetails = () => {
                                         <ListItemIcon>
                                             <LocationOn color="primary" />
                                         </ListItemIcon>
-                                        <ListItemText 
+                                        <ListItemText
                                             primary="Siège social"
                                             secondary={`${entreprise.adresse}, ${entreprise.code_postal} ${entreprise.ville}, ${entreprise.pays}`}
                                         />
@@ -421,7 +422,7 @@ const SiteDetails = () => {
                                         <ListItemIcon>
                                             <Phone color="primary" />
                                         </ListItemIcon>
-                                        <ListItemText 
+                                        <ListItemText
                                             primary="Téléphone"
                                             secondary={entreprise.telephone}
                                         />
@@ -431,10 +432,10 @@ const SiteDetails = () => {
                                         <ListItemIcon>
                                             <Email color="primary" />
                                         </ListItemIcon>
-                                        <ListItemText 
+                                        <ListItemText
                                             primary="Email"
                                             secondary={
-                                                <Link 
+                                                <Link
                                                     href={`mailto:${entreprise.email}`}
                                                     sx={{ color: '#FFC700', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
                                                 >
@@ -449,10 +450,10 @@ const SiteDetails = () => {
                                             <ListItemIcon>
                                                 <Language color="primary" />
                                             </ListItemIcon>
-                                            <ListItemText 
+                                            <ListItemText
                                                 primary="Site web"
                                                 secondary={
-                                                    <Link 
+                                                    <Link
                                                         href={entreprise.site_web.startsWith('http') ? entreprise.site_web : `https://${entreprise.site_web}`}
                                                         target="_blank"
                                                         sx={{ color: '#FFC700', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
@@ -468,7 +469,7 @@ const SiteDetails = () => {
                                         <ListItemIcon>
                                             <Business color="primary" />
                                         </ListItemIcon>
-                                        <ListItemText 
+                                        <ListItemText
                                             primary="Secteur d'activité"
                                             secondary={entreprise.secteur_activite}
                                         />
@@ -478,7 +479,7 @@ const SiteDetails = () => {
                                         <ListItemIcon>
                                             <Group color="primary" />
                                         </ListItemIcon>
-                                        <ListItemText 
+                                        <ListItemText
                                             primary="Effectif"
                                             secondary={`${entreprise.effectif} employés`}
                                         />
@@ -488,7 +489,7 @@ const SiteDetails = () => {
                                         <ListItemIcon>
                                             <AttachMoney color="primary" />
                                         </ListItemIcon>
-                                        <ListItemText 
+                                        <ListItemText
                                             primary="Capital social"
                                             secondary={`${entreprise.capital_social?.toLocaleString()} €`}
                                         />
@@ -513,8 +514,8 @@ const SiteDetails = () => {
                                     Actions rapides
                                 </Typography>
                                 <Stack spacing={2}>
-            <Button
-                variant="contained"
+                                    <Button
+                                        variant="contained"
                                         fullWidth
                                         startIcon={<DirectionsCar />}
                                         onClick={() => navigate('/voitures')}
@@ -522,8 +523,8 @@ const SiteDetails = () => {
                                     >
                                         Voir les véhicules
                                     </Button>
-                                    <Button 
-                                        variant="outlined" 
+                                    <Button
+                                        variant="outlined"
                                         fullWidth
                                         startIcon={<Email />}
                                         onClick={() => window.open(`mailto:${selectedSite.email}`, '_self')}
@@ -531,19 +532,19 @@ const SiteDetails = () => {
                                         Contacter le site
                                     </Button>
                                     {selectedSite.site_web && (
-                                        <Button 
-                                            variant="outlined" 
+                                        <Button
+                                            variant="outlined"
                                             fullWidth
                                             startIcon={<Language />}
                                             onClick={() => window.open(
-                                                selectedSite.site_web.startsWith('http') 
-                                                    ? selectedSite.site_web 
-                                                    : `https://${selectedSite.site_web}`, 
+                                                selectedSite.site_web.startsWith('http')
+                                                    ? selectedSite.site_web
+                                                    : `https://${selectedSite.site_web}`,
                                                 '_blank'
                                             )}
                                         >
                                             Visiter le site web
-            </Button>
+                                        </Button>
                                     )}
                                 </Stack>
                             </CardContent>
@@ -560,7 +561,7 @@ const SiteDetails = () => {
                                         <ListItemIcon>
                                             <DirectionsCar color="primary" />
                                         </ListItemIcon>
-                                        <ListItemText 
+                                        <ListItemText
                                             primary={`${getVehicleCount(selectedSite.id)}`}
                                             secondary="Véhicules rattachés"
                                         />
@@ -570,7 +571,7 @@ const SiteDetails = () => {
                                             <ListItemIcon>
                                                 <Group color="primary" />
                                             </ListItemIcon>
-                                            <ListItemText 
+                                            <ListItemText
                                                 primary={entreprise.effectif}
                                                 secondary="Employés de l'entreprise"
                                             />

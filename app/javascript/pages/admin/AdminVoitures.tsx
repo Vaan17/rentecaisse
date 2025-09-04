@@ -14,6 +14,7 @@ import VoitureAPI from '../../redux/data/voiture/VoitureAPI'
 import { useDispatch } from 'react-redux'
 import { removeCar } from '../../redux/data/voiture/voitureReducer'
 import useUser from '../../hook/useUser'
+import { isMobile } from 'react-device-detect'
 
 const SButton = styled(Button)`
     min-width: fit-content !important;
@@ -90,7 +91,7 @@ const AdminVoitures = () => {
     return (
         <>
             <Flex fullWidth directionColumn gap="1em">
-                <Flex fullWidth spaceBetween>
+                <Flex fullWidth directionColumn={isMobile} spaceBetween gap={isMobile ? "1em" : "0"}>
                     <CustomFilter options={filterOptions} filterCallback={
                         (filterBy, searchValue) => { setFilterProperties({ filterBy, searchValue }) }
                     } />

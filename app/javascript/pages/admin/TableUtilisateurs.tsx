@@ -13,6 +13,7 @@ import UserAPI from '../../redux/data/user/UserAPI';
 import { removeUser } from '../../redux/data/user/userReducer';
 import useSites from '../../hook/useSites';
 import AdminUtilisateurModal from '../../modals/AdminUtilisateurModal';
+import { isMobile } from 'react-device-detect';
 
 const SButton = styled(Button)`
     min-width: fit-content !important;
@@ -74,7 +75,7 @@ const TableUtilisateur = () => {
     return (
         <>
             <Flex fullWidth directionColumn gap="1em">
-                <Flex fullWidth spaceBetween>
+                <Flex fullWidth directionColumn={isMobile} spaceBetween gap={isMobile ? "1em" : "0"}>
                     <CustomFilter options={filterOptions} filterCallback={
                         (filterBy, searchValue) => { setFilterProperties({ filterBy, searchValue }) }
                     } />

@@ -170,7 +170,7 @@ const TableEmprunts = () => {
                                         <TableCell padding='none'>{users[emprunt.utilisateur_demande_id]?.nom + " " + users[emprunt.utilisateur_demande_id]?.prenom}</TableCell>
                                         <TableCell padding='none'>{cars[emprunt.voiture_id]?.name}</TableCell>
                                         <TableCell padding='none'>{emprunt.localisation_id}</TableCell>
-                                        <TableCell padding='none'>
+                                        {/* <TableCell padding='none'>
                                             <Tooltip title="Modifier" arrow>
                                                 <IconButton
                                                     onClick={() => {
@@ -182,7 +182,7 @@ const TableEmprunts = () => {
                                                     <EditIcon />
                                                 </IconButton>
                                             </Tooltip>
-                                        </TableCell>
+                                        </TableCell> */}
                                         <TableCell padding='none' >
                                             <Tooltip title="Annuler" arrow>
                                                 <IconButton
