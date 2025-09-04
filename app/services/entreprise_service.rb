@@ -10,19 +10,21 @@ class EntrepriseService
   end
 
   def self.verify_enterprise_code(enterprise_id, code)
+    # Gestion du cas où l'entreprise n'existe pas
     entreprise = Entreprise.find_by(id: enterprise_id)
-    return { success: false, message: "Entreprise non trouvée" } unless entreprise
+    return { success: false, message: "Entreprise non trouvée. Veuillez contacter votre administrateur." } unless entreprise
     
+    # Validation du code entreprise
     if entreprise.code_entreprise == code
       { success: true }
     else
-      { success: false, message: "Code entreprise invalide" }
+      { success: false, message: "Le code saisi n'est pas correct. Veuillez vérifier et réessayer." }
     end
   end
 
   def self.get_entreprise_with_sites(enterprise_id)
     entreprise = Entreprise.find_by(id: enterprise_id)
-    return { success: false, message: "Entreprise non trouvée" } unless entreprise
+    return { success: false, message: "Entreprise non trouvée. Veuillez contacter votre administrateur." } unless entreprise
 
     sites = SiteService.get_sites_by_enterprise(enterprise_id)
     

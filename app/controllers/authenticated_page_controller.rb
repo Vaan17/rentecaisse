@@ -80,18 +80,43 @@ class AuthenticatedPageController < ApplicationController
   end
 
   def get_entreprises
-    entreprises = EntrepriseService.get_all_entreprises
-    render json: { success: true, entreprises: entreprises }
+    begin
+      entreprises = EntrepriseService.get_all_entreprises
+      render json: { success: true, entreprises: entreprises }
+    rescue StandardError => e
+      Rails.logger.error "Erreur lors du chargement des entreprises: #{e.message}"
+      render json: { 
+        success: false, 
+        message: "Erreur lors du chargement des entreprises. Veuillez réessayer." 
+      }, status: :internal_server_error
+    end
   end
 
   def get_sites
     enterprise_id = params[:enterprise_id]
-    result = EntrepriseService.get_entreprise_with_sites(enterprise_id)
     
-    if result[:success]
-      render json: result
-    else
-      render json: { success: false, message: result[:message] }, status: :not_found
+    begin
+      unless enterprise_id.present?
+        render json: { 
+          success: false, 
+          message: "ID d'entreprise manquant." 
+        }, status: :unprocessable_entity
+        return
+      end
+
+      result = EntrepriseService.get_entreprise_with_sites(enterprise_id)
+      
+      if result[:success]
+        render json: result
+      else
+        render json: { success: false, message: result[:message] }, status: :not_found
+      end
+    rescue StandardError => e
+      Rails.logger.error "Erreur lors du chargement des sites: #{e.message}"
+      render json: { 
+        success: false, 
+        message: "Erreur lors du chargement des sites. Veuillez réessayer." 
+      }, status: :internal_server_error
     end
   end
 
@@ -100,21 +125,46 @@ class AuthenticatedPageController < ApplicationController
     site_id = params[:site_id]
     code = params[:code]
 
-    verification = EntrepriseService.verify_enterprise_code(enterprise_id, code)
-    
-    if verification[:success]
-      @current_user.update(
-        entreprise_id: enterprise_id,
-        site_id: site_id,
-        confirmation_entreprise: false
-      )
+    begin
+      # Validation des paramètres
+      unless enterprise_id.present? && code.present?
+        render json: { 
+          success: false, 
+          message: "Paramètres manquants. Veuillez remplir tous les champs requis." 
+        }, status: :unprocessable_entity
+        return
+      end
+
+      # Vérification du code entreprise
+      verification = EntrepriseService.verify_enterprise_code(enterprise_id, code)
+      
+      if verification[:success]
+        # Mise à jour de l'utilisateur avec gestion d'erreur
+        if @current_user.update(
+          entreprise_id: enterprise_id,
+          site_id: site_id,
+          confirmation_entreprise: false
+        )
+          render json: { 
+            success: true, 
+            redirect_to: '/statut-affectation',
+            message: "Affectation réussie, en attente de validation" 
+          }
+        else
+          render json: { 
+            success: false, 
+            message: "Erreur lors de la sauvegarde de l'affectation. Veuillez réessayer." 
+          }, status: :unprocessable_entity
+        end
+      else
+        render json: { success: false, message: verification[:message] }, status: :unprocessable_entity
+      end
+    rescue StandardError => e
+      Rails.logger.error "Erreur lors de l'affectation d'entreprise: #{e.message}"
       render json: { 
-        success: true, 
-        redirect_to: '/statut-affectation',
-        message: "Affectation réussie, en attente de validation" 
-      }
-    else
-      render json: { success: false, message: verification[:message] }, status: :unprocessable_entity
+        success: false, 
+        message: "Une erreur inattendue s'est produite. Veuillez réessayer dans quelques instants." 
+      }, status: :internal_server_error
     end
   end
 

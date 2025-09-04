@@ -228,6 +228,38 @@ const AffectationEntrepriseSite = () => {
   const [codeError, setCodeError] = useState('');
   const [isEnterpriseVerified, setIsEnterpriseVerified] = useState(false);
 
+  // Fonction utilitaire pour gérer les erreurs de manière cohérente
+  const getErrorMessage = (error: any, defaultMessage: string): string => {
+    // Si l'erreur vient du serveur avec un message spécifique
+    if (error.response?.data?.message) {
+      return error.response.data.message;
+    }
+    
+    // Gestion des erreurs réseau
+    if (error.code === 'NETWORK_ERROR' || !error.response) {
+      return "Erreur de connexion. Veuillez vérifier votre connexion internet et réessayer.";
+    }
+    
+    // Gestion des erreurs HTTP spécifiques
+    if (error.response?.status) {
+      switch (error.response.status) {
+        case 422:
+          return error.response.data?.message || "Les données saisies ne sont pas valides.";
+        case 404:
+          return "Ressource non trouvée. Veuillez contacter votre administrateur.";
+        case 500:
+          return "Erreur serveur. Veuillez réessayer dans quelques instants.";
+        case 401:
+          return "Session expirée. Veuillez vous reconnecter.";
+        default:
+          return defaultMessage;
+      }
+    }
+    
+    // Message par défaut
+    return defaultMessage;
+  };
+
   useEffect(() => {
     fetchEntreprises();
   }, []);
@@ -250,11 +282,16 @@ const AffectationEntrepriseSite = () => {
 
         if (data.success) {
           setEntreprises(data.entreprises);
+        } else {
+          // Gestion du cas où success est false mais status 200
+          const errorMessage = data.message || "Impossible de charger la liste des entreprises.";
+          toast.error(errorMessage);
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur lors du chargement des entreprises:', error);
-      toast.error('Erreur lors du chargement des entreprises');
+      const errorMessage = getErrorMessage(error, "Impossible de charger la liste des entreprises. Veuillez réessayer.");
+      toast.error(errorMessage);
     }
   };
 
@@ -268,11 +305,16 @@ const AffectationEntrepriseSite = () => {
 
         if (data.success) {
           setSites(data.entreprise.sites);
+        } else {
+          // Gestion du cas où success est false mais status 200
+          const errorMessage = data.message || "Impossible de charger la liste des sites pour cette entreprise.";
+          toast.error(errorMessage);
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur lors du chargement des sites:', error);
-      toast.error('Erreur lors du chargement des sites');
+      const errorMessage = getErrorMessage(error, "Impossible de charger la liste des sites. Veuillez réessayer.");
+      toast.error(errorMessage);
     }
   };
 
@@ -315,14 +357,17 @@ const AffectationEntrepriseSite = () => {
       if (data.success) {
         setIsEnterpriseVerified(true);
         await fetchSites(selectedEntreprise.id);
-        toast.success('Code entreprise validé');
+        toast.success('Code entreprise validé avec succès');
       } else {
-        setCodeError(data.message || 'Code incorrect');
-        toast.error(data.message || 'Code incorrect');
+        // Utilisation du message du serveur ou fallback amélioré
+        const errorMessage = data.message || 'Le code saisi n\'est pas correct. Veuillez vérifier et réessayer.';
+        setCodeError(errorMessage);
+        toast.error(errorMessage);
       }
     } catch (error: any) {
       console.error('Erreur lors de la vérification:', error);
-      const errorMessage = error.message || 'Erreur lors de la vérification';
+      // Utilisation de la fonction utilitaire pour une gestion d'erreur cohérente
+      const errorMessage = getErrorMessage(error, 'Erreur lors de la vérification du code. Veuillez réessayer.');
       setCodeError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -346,15 +391,18 @@ const AffectationEntrepriseSite = () => {
 
       const data = response.data;
       if (data.success) {
-        toast.success('Affectation réussie');
+        toast.success('Affectation réalisée avec succès');
         navigate(data.redirect_to);
       } else {
-        setCodeError(data.message || 'Une erreur est survenue');
-        toast.error(data.message || 'Une erreur est survenue');
+        // Utilisation du message du serveur ou fallback amélioré
+        const errorMessage = data.message || 'Une erreur est survenue lors de l\'affectation. Veuillez réessayer.';
+        setCodeError(errorMessage);
+        toast.error(errorMessage);
       }
     } catch (error: any) {
       console.error('Erreur lors de l\'affectation:', error);
-      const errorMessage = error.message || 'Erreur lors de l\'affectation';
+      // Utilisation de la fonction utilitaire pour une gestion d'erreur cohérente
+      const errorMessage = getErrorMessage(error, 'Erreur lors de l\'affectation. Veuillez réessayer.');
       setCodeError(errorMessage);
       toast.error(errorMessage);
     } finally {
