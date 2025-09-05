@@ -267,3 +267,55 @@ export const StatusChip = styled(Chip)<{
     }
   }
 `;
+
+// Chips de statut spécialement pour les clés
+export const KeyStatusChip = styled(Chip)<{ 
+  keyStatus: 'disponible' | 'attribuée' | 'perdue' | 'en_maintenance' | 'réservée' | 'default'
+}>`
+  && {
+    background-color: ${({ keyStatus }) => {
+      switch (keyStatus) {
+        case 'disponible': return '#d1f2eb'; // Green light
+        case 'attribuée': return '#fef9e7'; // Yellow light
+        case 'perdue': return '#fadbd8'; // Red light
+        case 'en_maintenance': return '#e8f4fd'; // Blue light
+        case 'réservée': return '#f4e4ff'; // Purple light
+        default: return '#f8f9fa'; // Gray light
+      }
+    }};
+    color: ${({ keyStatus }) => {
+      switch (keyStatus) {
+        case 'disponible': return '#0e6b47'; // Green dark
+        case 'attribuée': return '#b7791f'; // Yellow dark
+        case 'perdue': return '#a93226'; // Red dark
+        case 'en_maintenance': return '#1b4f72'; // Blue dark
+        case 'réservée': return '#6c3483'; // Purple dark
+        default: return '#495057'; // Gray dark
+      }
+    }};
+    border: 1px solid ${({ keyStatus }) => {
+      switch (keyStatus) {
+        case 'disponible': return '#a9dfbf'; // Green border
+        case 'attribuée': return '#f7dc6f'; // Yellow border
+        case 'perdue': return '#f1948a'; // Red border
+        case 'en_maintenance': return '#aed6f1'; // Blue border
+        case 'réservée': return '#d2b4de'; // Purple border
+        default: return '#dee2e6'; // Gray border
+      }
+    }};
+    font-weight: 500;
+    font-size: 0.75rem;
+    height: 28px;
+    
+    .MuiChip-label {
+      padding: 0 12px;
+      font-weight: 500;
+    }
+    
+    .MuiSvgIcon-root {
+      font-size: 16px;
+      margin-left: -4px;
+      margin-right: 4px;
+    }
+  }
+`;
