@@ -64,7 +64,8 @@ const LastConnectionBubble = styled(Card)`
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   display: inline-flex;
   align-items: center;
-  padding: 4px 8px;
+  padding: 6px 12px;
+  min-height: 32px;
   
   &:hover {
     transform: translateY(-1px);
@@ -80,7 +81,8 @@ const SmallBubbleCard = styled(Card)`
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   display: inline-flex;
   align-items: center;
-  padding: 4px 8px;
+  padding: 6px 12px;
+  min-height: 32px;
   
   &:hover {
     transform: translateY(-1px);
@@ -92,7 +94,7 @@ const SmallBubbleContent = styled(Box)`
   color: white !important;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   
   & .MuiTypography-root {
     color: white !important;
@@ -206,27 +208,28 @@ const Home = () => {
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mt: 3 }}>
               <SmallBubbleCard>
                 <SmallBubbleContent>
-                  <AccessTime sx={{ fontSize: '0.8rem' }} />
-                  <Box>
-                    <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.65rem', display: 'block', lineHeight: 1.2 }}>
-                      {formattedDate}
-                    </Typography>
-                    <Typography variant="caption" sx={{ fontSize: '0.6rem', opacity: 0.9, display: 'block', lineHeight: 1 }}>
-                      {formattedTime}
-                    </Typography>
-                  </Box>
+                  <AccessTime sx={{ fontSize: '0.9rem' }} />
+                  <Typography variant="caption" sx={{ 
+                    fontWeight: 600, 
+                    fontSize: '0.75rem', 
+                    lineHeight: 1.2,
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {formattedDate} | {formattedTime}
+                  </Typography>
                 </SmallBubbleContent>
               </SmallBubbleCard>
               
               {user.derniere_connexion && (
                 <LastConnectionBubble>
                   <SmallBubbleContent>
-                    <AccessTime sx={{ fontSize: '0.8rem' }} />
+                    <AccessTime sx={{ fontSize: '0.9rem' }} />
                     <Typography variant="caption" sx={{ 
                       color: 'white', 
                       fontWeight: 600, 
-                      fontSize: '0.65rem',
-                      lineHeight: 1.2
+                      fontSize: '0.75rem',
+                      lineHeight: 1.2,
+                      whiteSpace: 'nowrap'
                     }}>
                       Dernière connexion: {formatLastConnection(user.derniere_connexion)}
                     </Typography>
