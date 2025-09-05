@@ -12,6 +12,23 @@ dayjs.extend(isSameOrAfter);
 // Utilitaires pour les calculs du tableau de bord
 
 /**
+ * Vérifie si un utilisateur est impliqué dans un emprunt (conducteur ou passager)
+ */
+const isUserInvolvedInEmprunt = (emprunt: IEmprunt, userId: number): boolean => {
+  // Vérifier si l'utilisateur est le conducteur
+  if (emprunt.utilisateur_demande_id === userId) {
+    return true;
+  }
+  
+  // Vérifier si l'utilisateur est passager en utilisant le nouveau champ 'passagers'
+  if (emprunt.passagers && Array.isArray(emprunt.passagers)) {
+    return emprunt.passagers.some(passager => passager.id === userId);
+  }
+  
+  return false;
+};
+
+/**
  * Calcule le nombre total d'emprunts d'un utilisateur (conducteur + passager)
  */
 export const calculateTotalEmprunts = (
@@ -22,8 +39,7 @@ export const calculateTotalEmprunts = (
   if (!userId || !emprunts) return 0;
   
   return Object.values(emprunts).filter(emprunt => 
-    emprunt.utilisateur_demande_id === userId || 
-    (emprunt.liste_passager_id && emprunt.liste_passager_id.includes(userId.toString()))
+    isUserInvolvedInEmprunt(emprunt, userId)
   ).length;
 };
 
@@ -39,8 +55,7 @@ export const calculateEmpruntsThisMonth = (
   
   const currentMonth = dayjs().format('YYYY-MM');
   return Object.values(emprunts).filter(emprunt => {
-    const isUserInvolved = emprunt.utilisateur_demande_id === userId || 
-      (emprunt.liste_passager_id && emprunt.liste_passager_id.includes(userId.toString()));
+    const isUserInvolved = isUserInvolvedInEmprunt(emprunt, userId);
     const isThisMonth = dayjs(emprunt.date_debut).format('YYYY-MM') === currentMonth;
     return isUserInvolved && isThisMonth;
   }).length;
@@ -60,8 +75,7 @@ export const calculateEmpruntsThisWeek = (
   const endOfWeek = dayjs().endOf('week');
   
   return Object.values(emprunts).filter(emprunt => {
-    const isUserInvolved = emprunt.utilisateur_demande_id === userId || 
-      (emprunt.liste_passager_id && emprunt.liste_passager_id.includes(userId.toString()));
+    const isUserInvolved = isUserInvolvedInEmprunt(emprunt, userId);
     const empruntDate = dayjs(emprunt.date_debut);
     const isThisWeek = empruntDate.isSameOrAfter(startOfWeek, 'day') && empruntDate.isSameOrBefore(endOfWeek, 'day');
     return isUserInvolved && isThisWeek;
@@ -79,8 +93,7 @@ export const calculateValidatedPercentage = (
   if (!userId || !emprunts) return { validated: 0, draft: 0, percentage: 0 };
   
   const userEmprunts = Object.values(emprunts).filter(emprunt => 
-    emprunt.utilisateur_demande_id === userId || 
-    (emprunt.liste_passager_id && emprunt.liste_passager_id.includes(userId.toString()))
+    isUserInvolvedInEmprunt(emprunt, userId)
   );
   
   const validated = userEmprunts.filter(e => e.statut_emprunt === 'validé').length;
@@ -106,8 +119,7 @@ export const getUpcomingEmprunts = (
   
   return Object.values(emprunts)
     .filter(emprunt => {
-      const isUserInvolved = emprunt.utilisateur_demande_id === userId || 
-        (emprunt.liste_passager_id && emprunt.liste_passager_id.includes(userId.toString()));
+      const isUserInvolved = isUserInvolvedInEmprunt(emprunt, userId);
       const empruntDate = dayjs(emprunt.date_debut);
       // Inclure les emprunts à partir de maintenant (même jour) jusqu'à 7 jours
       const isUpcoming = empruntDate.isSameOrAfter(now) && empruntDate.isSameOrBefore(nextWeek, 'day');
@@ -128,8 +140,7 @@ export const getMostUsedCar = (
   if (!userId || !emprunts || !voitures) return { car: null, count: 0 };
   
   const userEmprunts = Object.values(emprunts).filter(emprunt => 
-    emprunt.utilisateur_demande_id === userId || 
-    (emprunt.liste_passager_id && emprunt.liste_passager_id.includes(userId.toString()))
+    isUserInvolvedInEmprunt(emprunt, userId)
   );
   
   if (userEmprunts.length === 0) return { car: null, count: 0 };
@@ -180,8 +191,7 @@ export const generateYearHeatmapData = (
   const startOfYear = dayjs().startOf('year');
   const endOfYear = dayjs().endOf('year');
   const userEmprunts = Object.values(emprunts).filter(emprunt => 
-    emprunt.utilisateur_demande_id === userId || 
-    (emprunt.liste_passager_id && emprunt.liste_passager_id.includes(userId.toString()))
+    isUserInvolvedInEmprunt(emprunt, userId)
   );
   
   // Créer un objet avec toutes les dates de l'année
