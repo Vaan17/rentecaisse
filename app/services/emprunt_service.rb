@@ -67,9 +67,12 @@ class EmpruntService
       nouveaux_passager_ids.each do |passager_id|
         ListePassagerUtilisateurService.create_relation(emprunt.liste_passager.id, passager_id)
       end
+      Rails.logger.info "✅ UPDATE_PASSAGERS - Passagers finaux: #{ListePassagerService.passager_ids(emprunt.liste_passager)}"
+    else
+      # Garder la liste mais la vider (supprimer seulement les relations)
+      Rails.logger.info "🗑️ UPDATE_PASSAGERS - Aucun passager, la liste #{emprunt.liste_passager.id} reste vide"
+      Rails.logger.info "✅ UPDATE_PASSAGERS - Liste vidée, emprunt sans passagers"
     end
-    
-    Rails.logger.info "✅ UPDATE_PASSAGERS - Passagers finaux: #{ListePassagerService.passager_ids(emprunt.liste_passager)}"
   end
   
   # Nettoie la liste de passagers après suppression d'un emprunt
