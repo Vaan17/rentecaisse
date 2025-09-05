@@ -26,7 +26,27 @@ class EmpruntsController < ApplicationController
     # Récupère les emprunts de l'utilisateur connecté (en tant que conducteur ou passager)
     def fetch_emprunts_utilisateur
         emprunts = EmpruntService.emprunts_pour_utilisateur(@current_user.id)
-        emprunts_formattees = emprunts.map(&:to_format)
+        emprunts_formattees = emprunts.map do |emprunt|
+            # Utiliser to_format comme base
+            emprunt_data = emprunt.to_format
+            
+            # Ajouter les informations des passagers si présentes
+            if emprunt.liste_passager.present?
+                passagers_info = emprunt.liste_passager.utilisateurs.map do |passager|
+                    {
+                        id: passager.id,
+                        nom: passager.nom,
+                        prenom: passager.prenom,
+                        email: passager.email
+                    }
+                end
+                emprunt_data[:passagers] = passagers_info
+            else
+                emprunt_data[:passagers] = []
+            end
+            
+            emprunt_data
+        end
         
         render json: emprunts_formattees
     end
