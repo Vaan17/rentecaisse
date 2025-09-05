@@ -218,3 +218,52 @@ export const EmptyStateDescription = styled(Typography)`
   color: ${modernTheme.colors.text.secondary} !important;
   max-width: 400px;
 `;
+
+// Chips de statut pour les emprunts
+export const StatusChip = styled(Chip)<{ 
+  statusType: 'brouillon' | 'en_attente_validation' | 'validé' | 'en_cours' | 'terminé' | 'completed' | 'default' 
+}>`
+  && {
+    background-color: ${({ statusType }) => {
+      switch (statusType) {
+        case 'brouillon': return '#fff3cd'; // Amber light
+        case 'en_attente_validation': return '#f8f9fa'; // Gray light
+        case 'validé': return '#d1e7dd'; // Green light
+        case 'en_cours': return '#f8d7da'; // Red light
+        case 'terminé': 
+        case 'completed': return '#cff4fc'; // Blue light
+        default: return '#e9ecef'; // Gray default
+      }
+    }};
+    color: ${({ statusType }) => {
+      switch (statusType) {
+        case 'brouillon': return '#664d03'; // Amber dark
+        case 'en_attente_validation': return '#495057'; // Gray dark
+        case 'validé': return '#0f5132'; // Green dark
+        case 'en_cours': return '#721c24'; // Red dark
+        case 'terminé':
+        case 'completed': return '#055160'; // Blue dark
+        default: return '#495057'; // Gray default
+      }
+    }};
+    border: 1px solid ${({ statusType }) => {
+      switch (statusType) {
+        case 'brouillon': return '#ffecb5'; // Amber border
+        case 'en_attente_validation': return '#dee2e6'; // Gray border
+        case 'validé': return '#badbcc'; // Green border
+        case 'en_cours': return '#f5c2c7'; // Red border
+        case 'terminé':
+        case 'completed': return '#b6effb'; // Blue border
+        default: return '#dee2e6'; // Gray default
+      }
+    }};
+    font-weight: 500;
+    font-size: 0.75rem;
+    height: 28px;
+    
+    .MuiChip-label {
+      padding: 0 12px;
+      font-weight: 500;
+    }
+  }
+`;

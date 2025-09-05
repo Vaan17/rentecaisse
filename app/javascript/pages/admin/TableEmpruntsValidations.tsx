@@ -1,57 +1,59 @@
 import React, { useMemo, useState } from 'react'
-import { Flex } from '../../components/style/flex'
-import CustomFilter from '../../components/CustomFilter'
-import { Alert, Box, Chip, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Tooltip } from '@mui/material'
+import { Alert, Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Toolbar, Tooltip, Grid, Card, CardContent } from '@mui/material'
 import { useDispatch } from 'react-redux'
 import useEmprunts, { IEmprunt } from '../../hook/useEmprunts';
 import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
-import styled from 'styled-components';
-import EditIcon from '@mui/icons-material/Edit';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import useCars from '../../hook/useCars';
 import useUsers from '../../hook/useUsers';
-import ReservationModal from '../emprunts/components/ReservationModal'
-import LocalizationProvider from '../emprunts/providers/LocalizationProvider'
 import ConfirmationModal from '../../utils/components/ConfirmationModal'
 import EmpruntAPI from '../../redux/data/emprunt/EmpruntAPI'
 import { addEmprunt, removeEmprunt } from '../../redux/data/emprunt/empruntReducer'
 import { isMobile } from 'react-device-detect'
-
-const SChip = styled(Chip) <{ $color: string }>`
-    background-color: ${({ $color }) => $color} !important;
-`
+import ModernFilter from '../../components/design-system/ModernFilter';
+import { 
+  StatusChip,
+  ActionButton,
+  ActionsContainer,
+  EmptyState,
+  EmptyStateIcon,
+  EmptyStateTitle,
+  EmptyStateDescription
+} from '../../components/design-system/StyledComponents';
+import { modernTheme } from '../../components/design-system/theme';
+import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 
 const empruntsInfos = {
     "brouillon": {
         label: 'Brouillon',
-        color: 'rgba(255, 152, 0, 0.7)',
+        statusType: 'brouillon' as const,
     },
     "en_attente_validation": {
         label: 'En attente de validation',
-        color: 'rgba(158, 158, 158, 0.7)',
+        statusType: 'en_attente_validation' as const,
     },
     "validé": {
         label: 'Validé',
-        color: 'rgba(76, 175, 80, 0.7)',
+        statusType: 'validé' as const,
     },
     "en_cours": {
         label: 'En cours',
-        color: 'rgba(244, 67, 54, 0.7)',
+        statusType: 'en_cours' as const,
     },
     "Terminé": {
         label: 'Terminé',
-        color: 'rgba(33, 150, 243, 0.7)',
+        statusType: 'terminé' as const,
     },
     "completed": {
         label: 'Complété',
-        color: 'rgba(33, 150, 243, 0.7)',
+        statusType: 'completed' as const,
     },
     // Statut par défaut pour les cas non prévus
     "default": {
         label: 'Statut inconnu',
-        color: 'rgba(128, 128, 128, 0.7)',
+        statusType: 'default' as const,
     }
 }
 
@@ -67,13 +69,18 @@ const TableEmpruntsValidations = () => {
     const users = useUsers()
 
     const [selectedEmprunt, setSelectedEmprunt] = useState<IEmprunt | undefined>(undefined)
-    const [filterProperties, setFilterProperties] = useState({ filterBy: undefined, searchValue: "" })
-    const [isOpen, setIsOpen] = useState(false)
+    const [filterProperties, setFilterProperties] = useState<{ filterBy: string | undefined, searchValue: string }>({ filterBy: undefined, searchValue: "" })
     const [isOpenConfirmModal, setIsOpenConfirmModal] = useState(false)
     const [page, setPage] = useState(0)
     const [rowsPerPage, setRowsPerPage] = useState(10)
 
-    const filterOptions = []
+    const filterOptions = [
+        { value: 'statut_emprunt', label: 'Statut' },
+        { value: 'nom_emprunt', label: 'Nom' },
+        { value: 'utilisateur_demande_id', label: 'Propriétaire' },
+        { value: 'voiture_id', label: 'Véhicule' },
+        { value: 'localisation_id', label: 'Destination' },
+    ]
 
     const headCells = [
         { id: 'statut_emprunt', label: 'Statut' },
@@ -93,13 +100,21 @@ const TableEmpruntsValidations = () => {
         .filter(emprunt => {
             if (!filterProperties.filterBy || !filterProperties.searchValue) return true
 
-            if (filterProperties.filterBy === 'site') {
-                // Handle site filtering if needed
-                return true
-            }
+            const searchValue = filterProperties.searchValue.toLowerCase()
 
-            const empruntValue = emprunt[filterProperties.filterBy as keyof IEmprunt]
-            return empruntValue?.toString()?.toLowerCase().includes(filterProperties.searchValue.toLowerCase())
+            switch (filterProperties.filterBy) {
+                case 'statut_emprunt':
+                    return getEmpruntInfo(emprunt.statut_emprunt).label.toLowerCase().includes(searchValue)
+                case 'utilisateur_demande_id':
+                    const user = users[emprunt.utilisateur_demande_id]
+                    return user ? `${user.nom} ${user.prenom}`.toLowerCase().includes(searchValue) : false
+                case 'voiture_id':
+                    const car = cars[emprunt.voiture_id]
+                    return car ? car.name.toLowerCase().includes(searchValue) : false
+                default:
+                    const empruntValue = emprunt[filterProperties.filterBy as keyof IEmprunt]
+                    return empruntValue?.toString()?.toLowerCase().includes(searchValue)
+            }
         })
 
     const visibleRows = useMemo(() => {
@@ -123,121 +138,174 @@ const TableEmpruntsValidations = () => {
     }
 
     return (
-        <>
-            <Flex fullWidth directionColumn gap="1em">
-                <CustomFilter options={filterOptions} filterCallback={
-                    (filterBy, searchValue) => { setFilterProperties({ filterBy, searchValue }) }
-                } />
+        <Box sx={{ width: '100%' }}>
+            <Paper sx={{
+                border: `1px solid ${modernTheme.colors.border.light}`,
+                boxShadow: modernTheme.shadows.sm,
+                borderRadius: modernTheme.borderRadius.lg,
+                overflow: 'hidden'
+            }}>
+                <Toolbar sx={{
+                    padding: `${modernTheme.spacing.lg} ${modernTheme.spacing.xl}`,
+                    background: modernTheme.colors.background.primary,
+                    borderBottom: `1px solid ${modernTheme.colors.border.light}`,
+                    minHeight: 'auto'
+                }}>
+                    <Grid container spacing={3} alignItems="center">
+                        <Grid item xs={12}>
+                            <ModernFilter 
+                                options={filterOptions} 
+                                filterCallback={(filterBy, searchValue) => setFilterProperties({ filterBy, searchValue })}
+                                placeholder="Rechercher une validation..."
+                            />
+                        </Grid>
+                    </Grid>
+                </Toolbar>
                 {isMobile && (
-                    <>
-                        <Flex directionColumn gap="1em">
-                            {filteredEmprunts.map((emprunt, index) => (
-                                <Box
-                                    key={emprunt.id}
-                                    sx={{
-                                        width: '100%',
-                                        backgroundColor: '#f4f4f4',
-                                        borderRadius: '8px',
-                                        padding: '1em',
-                                        border: '1px solid #e0e0e0'
-                                    }}
-                                >
-                                    <Flex directionColumn gap="0.5em">
-                                        <Flex spaceBetween alignItemsCenter>
-                                            <SChip
-                                                label={getEmpruntInfo(emprunt.statut_emprunt).label}
-                                                $color={getEmpruntInfo(emprunt.statut_emprunt).color}
-                                                size="small"
-                                            />
-                                            <Flex gap="0.5em">
-                                                <Tooltip title="Valider" arrow>
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => {
-                                                            setSelectedEmprunt(emprunt)
-                                                            handleAccept(emprunt.id)
-                                                        }}
-                                                    >
-                                                        <CheckCircleIcon />
-                                                    </IconButton>
-                                                </Tooltip>
-                                                <Tooltip title="Refuser" arrow>
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => {
-                                                            setSelectedEmprunt(emprunt)
-                                                            setIsOpenConfirmModal(true)
-                                                        }}
-                                                    >
-                                                        <CancelIcon />
-                                                    </IconButton>
-                                                </Tooltip>
-                                            </Flex>
-                                        </Flex>
-
-                                        <Box sx={{ fontSize: '1.1em', fontWeight: 'bold' }}>
-                                            {emprunt.nom_emprunt}
-                                        </Box>
-
-                                        <Box sx={{ color: 'text.secondary', fontSize: '0.9em' }}>
-                                            <strong>Début:</strong> {dayjs(emprunt.date_debut).locale('fr').format('DD MMMM YYYY à HH:mm')}
-                                        </Box>
-
-                                        <Box sx={{ color: 'text.secondary', fontSize: '0.9em' }}>
-                                            <strong>Fin:</strong> {dayjs(emprunt.date_fin).locale('fr').format('DD MMMM YYYY à HH:mm')}
-                                        </Box>
-
-                                        {users[emprunt.utilisateur_demande_id] && (
-                                            <Box sx={{ fontSize: '0.9em' }}>
-                                                <strong>Propriétaire:</strong> {users[emprunt.utilisateur_demande_id]?.nom} {users[emprunt.utilisateur_demande_id]?.prenom}
+                    <Box sx={{ padding: modernTheme.spacing.lg }}>
+                        <Grid container spacing={2}>
+                            {filteredEmprunts.map((emprunt) => (
+                                <Grid item xs={12} key={emprunt.id}>
+                                    <Card sx={{
+                                        border: `1px solid ${modernTheme.colors.border.light}`,
+                                        borderRadius: modernTheme.borderRadius.md,
+                                        '&:hover': {
+                                            boxShadow: modernTheme.shadows.md,
+                                        }
+                                    }}>
+                                        <CardContent sx={{ padding: modernTheme.spacing.lg }}>
+                                            <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
+                                                <StatusChip
+                                                    label={getEmpruntInfo(emprunt.statut_emprunt).label}
+                                                    statusType={getEmpruntInfo(emprunt.statut_emprunt).statusType}
+                                                    size="small"
+                                                />
+                                                <ActionsContainer>
+                                                    <Tooltip title="Valider" arrow>
+                                                        <ActionButton
+                                                            actionType="accept"
+                                                            size="small"
+                                                            onClick={() => {
+                                                                setSelectedEmprunt(emprunt)
+                                                                handleAccept(emprunt.id)
+                                                            }}
+                                                        >
+                                                            <CheckCircleIcon />
+                                                        </ActionButton>
+                                                    </Tooltip>
+                                                    <Tooltip title="Refuser" arrow>
+                                                        <ActionButton
+                                                            actionType="reject"
+                                                            size="small"
+                                                            onClick={() => {
+                                                                setSelectedEmprunt(emprunt)
+                                                                setIsOpenConfirmModal(true)
+                                                            }}
+                                                        >
+                                                            <CancelIcon />
+                                                        </ActionButton>
+                                                    </Tooltip>
+                                                </ActionsContainer>
                                             </Box>
-                                        )}
 
-                                        {cars[emprunt.voiture_id] && (
-                                            <Box sx={{ fontSize: '0.9em' }}>
-                                                <strong>Véhicule:</strong> {cars[emprunt.voiture_id]?.name}
+                                            <Box sx={{ 
+                                                fontSize: modernTheme.typography.h4.fontSize, 
+                                                fontWeight: modernTheme.typography.h4.fontWeight,
+                                                color: modernTheme.colors.text.primary,
+                                                mb: 1
+                                            }}>
+                                                {emprunt.nom_emprunt}
                                             </Box>
-                                        )}
 
-                                        {emprunt.localisation_id && (
-                                            <Box sx={{ fontSize: '0.9em' }}>
-                                                <strong>Destination:</strong> {emprunt.localisation_id}
+                                            <Box sx={{ 
+                                                color: modernTheme.colors.text.secondary, 
+                                                fontSize: modernTheme.typography.caption.fontSize,
+                                                mb: 0.5
+                                            }}>
+                                                <strong>Début:</strong> {dayjs(emprunt.date_debut).locale('fr').format('DD MMMM YYYY à HH:mm')}
                                             </Box>
-                                        )}
-                                    </Flex>
-                                </Box>
+
+                                            <Box sx={{ 
+                                                color: modernTheme.colors.text.secondary, 
+                                                fontSize: modernTheme.typography.caption.fontSize,
+                                                mb: 0.5
+                                            }}>
+                                                <strong>Fin:</strong> {dayjs(emprunt.date_fin).locale('fr').format('DD MMMM YYYY à HH:mm')}
+                                            </Box>
+
+                                            {users[emprunt.utilisateur_demande_id] && (
+                                                <Box sx={{ 
+                                                    fontSize: modernTheme.typography.caption.fontSize,
+                                                    mb: 0.5
+                                                }}>
+                                                    <strong>Propriétaire:</strong> {users[emprunt.utilisateur_demande_id]?.nom} {users[emprunt.utilisateur_demande_id]?.prenom}
+                                                </Box>
+                                            )}
+
+                                            {cars[emprunt.voiture_id] && (
+                                                <Box sx={{ 
+                                                    fontSize: modernTheme.typography.caption.fontSize,
+                                                    mb: 0.5
+                                                }}>
+                                                    <strong>Véhicule:</strong> {cars[emprunt.voiture_id]?.name}
+                                                </Box>
+                                            )}
+
+                                            {emprunt.localisation_id && (
+                                                <Box sx={{ 
+                                                    fontSize: modernTheme.typography.caption.fontSize 
+                                                }}>
+                                                    <strong>Destination:</strong> {emprunt.localisation_id}
+                                                </Box>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                </Grid>
                             ))}
 
                             {filteredEmprunts.length === 0 && (
-                                <Box sx={{ textAlign: 'center', padding: '2em' }}>
-                                    <Alert severity={
-                                        filterProperties.filterBy && filterProperties.searchValue
-                                            ? "warning"
-                                            : "info"
-                                    }>
-                                        {filterProperties.filterBy && filterProperties.searchValue
-                                            ? "Aucun résultat ne correspond à votre recherche"
-                                            : "Aucun emprunt en attente de validation"}
-                                    </Alert>
-                                </Box>
+                                <Grid item xs={12}>
+                                    <EmptyState>
+                                        <EmptyStateIcon>
+                                            <HourglassEmptyIcon />
+                                        </EmptyStateIcon>
+                                        <EmptyStateTitle>
+                                            {filterProperties.filterBy && filterProperties.searchValue
+                                                ? "Aucun résultat trouvé"
+                                                : "Aucune validation en attente"}
+                                        </EmptyStateTitle>
+                                        <EmptyStateDescription>
+                                            {filterProperties.filterBy && filterProperties.searchValue
+                                                ? "Aucun résultat ne correspond à votre recherche"
+                                                : "Aucun emprunt en attente de validation pour le moment"}
+                                        </EmptyStateDescription>
+                                    </EmptyState>
+                                </Grid>
                             )}
-                        </Flex>
-                    </>
+                        </Grid>
+                    </Box>
                 )}
                 {!isMobile && (
                     <>
                         <TableContainer>
-                            <Table
-                                sx={{ minWidth: 750 }}
-                                aria-labelledby="tableTitle"
-                            >
+                            <Table sx={{ minWidth: 750 }}>
                                 <TableHead>
-                                    <TableRow>
+                                    <TableRow sx={{ 
+                                        backgroundColor: modernTheme.colors.background.tertiary,
+                                        '& .MuiTableCell-head': {
+                                            fontWeight: 600,
+                                            color: modernTheme.colors.text.primary,
+                                            fontSize: modernTheme.typography.caption.fontSize,
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.05em',
+                                            padding: `${modernTheme.spacing.md} ${modernTheme.spacing.lg}`,
+                                            borderBottom: `1px solid ${modernTheme.colors.border.light}`,
+                                        }
+                                    }}>
                                         {headCells.map((headCell) => (
                                             <TableCell
                                                 key={headCell.id}
                                                 width={headCell.colWidth ? `${headCell.colWidth}px` : 'auto'}
-                                                padding='none'
                                             >
                                                 {headCell.label}
                                             </TableCell>
@@ -245,122 +313,141 @@ const TableEmpruntsValidations = () => {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {visibleRows.map((emprunt, index) => {
-                                        return (
-                                            <TableRow
-                                                key={emprunt.id}
-                                                hover
-                                                onClick={(event) => null}
-                                                tabIndex={-1}
-                                                sx={{ cursor: 'pointer' }}
-                                            >
-                                                <TableCell padding='none'>
-                                                    <SChip
-                                                        label={getEmpruntInfo(emprunt.statut_emprunt).label}
-                                                        $color={getEmpruntInfo(emprunt.statut_emprunt).color}
-                                                    />
-                                                </TableCell>
-                                                <TableCell padding='none'>{emprunt.nom_emprunt}</TableCell>
-                                                <TableCell padding='none'>{dayjs(emprunt.date_debut).locale('fr').format('DD MMMM YYYY à HH:mm')}</TableCell>
-                                                <TableCell padding='none'>{dayjs(emprunt.date_fin).locale('fr').format('DD MMMM YYYY à HH:mm')}</TableCell>
-                                                <TableCell padding='none'>{users[emprunt.utilisateur_demande_id]?.nom + " " + users[emprunt.utilisateur_demande_id]?.prenom}</TableCell>
-                                                <TableCell padding='none'>{cars[emprunt.voiture_id]?.name}</TableCell>
-                                                <TableCell padding='none'>{emprunt.localisation_id}</TableCell>
-                                                <TableCell padding='none'>
+                                    {visibleRows.map((emprunt) => (
+                                        <TableRow
+                                            key={emprunt.id}
+                                            hover
+                                            sx={{ 
+                                                cursor: 'pointer',
+                                                '&:hover': {
+                                                    backgroundColor: modernTheme.colors.background.hover,
+                                                },
+                                                '& .MuiTableCell-root': {
+                                                    padding: `${modernTheme.spacing.md} ${modernTheme.spacing.lg}`,
+                                                    borderBottom: `1px solid ${modernTheme.colors.border.light}`,
+                                                }
+                                            }}
+                                        >
+                                            <TableCell>
+                                                <StatusChip
+                                                    label={getEmpruntInfo(emprunt.statut_emprunt).label}
+                                                    statusType={getEmpruntInfo(emprunt.statut_emprunt).statusType}
+                                                    size="small"
+                                                />
+                                            </TableCell>
+                                            <TableCell sx={{ fontWeight: 500 }}>
+                                                {emprunt.nom_emprunt}
+                                            </TableCell>
+                                            <TableCell sx={{ color: modernTheme.colors.text.secondary }}>
+                                                {dayjs(emprunt.date_debut).locale('fr').format('DD MMMM YYYY à HH:mm')}
+                                            </TableCell>
+                                            <TableCell sx={{ color: modernTheme.colors.text.secondary }}>
+                                                {dayjs(emprunt.date_fin).locale('fr').format('DD MMMM YYYY à HH:mm')}
+                                            </TableCell>
+                                            <TableCell>
+                                                {users[emprunt.utilisateur_demande_id]?.nom} {users[emprunt.utilisateur_demande_id]?.prenom}
+                                            </TableCell>
+                                            <TableCell>
+                                                {cars[emprunt.voiture_id]?.name}
+                                            </TableCell>
+                                            <TableCell>
+                                                {emprunt.localisation_id}
+                                            </TableCell>
+                                            <TableCell>
+                                                <ActionsContainer>
                                                     <Tooltip title="Valider" arrow>
-                                                        <IconButton onClick={() => {
-                                                            setSelectedEmprunt(emprunt)
-                                                            handleAccept(emprunt.id)
-                                                        }}>
+                                                        <ActionButton
+                                                            actionType="accept"
+                                                            onClick={() => {
+                                                                setSelectedEmprunt(emprunt)
+                                                                handleAccept(emprunt.id)
+                                                            }}
+                                                        >
                                                             <CheckCircleIcon />
-                                                        </IconButton>
+                                                        </ActionButton>
                                                     </Tooltip>
-                                                </TableCell>
-                                                {/* <TableCell padding='none'>
-                                            <Tooltip title="Modifier" arrow>
-                                                <IconButton onClick={() => {
-                                                    setSelectedEmprunt(emprunt)
-                                                    setIsOpen(true)
-                                                }}>
-                                                    <EditIcon />
-                                                </IconButton>
-                                            </Tooltip>
-                                        </TableCell> */}
-                                                <TableCell padding='none' >
                                                     <Tooltip title="Refuser" arrow>
-                                                        <IconButton onClick={() => {
-                                                            setSelectedEmprunt(emprunt)
-                                                            setIsOpenConfirmModal(true)
-                                                        }}>
+                                                        <ActionButton
+                                                            actionType="reject"
+                                                            onClick={() => {
+                                                                setSelectedEmprunt(emprunt)
+                                                                setIsOpenConfirmModal(true)
+                                                            }}
+                                                        >
                                                             <CancelIcon />
-                                                        </IconButton>
+                                                        </ActionButton>
                                                     </Tooltip>
-                                                </TableCell>
-                                            </TableRow>
-                                        );
-                                    })}
+                                                </ActionsContainer>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
                                     {filteredEmprunts.length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={headCells.length + 1} align="center">
-                                                <Alert severity={
-                                                    filterProperties.filterBy && filterProperties.searchValue
-                                                        ? "warning"
-                                                        : "info"
-                                                }>
-                                                    {filterProperties.filterBy && filterProperties.searchValue
-                                                        ? "Aucun résultat ne correspond à votre recherche"
-                                                        : "Aucun emprunt en attente de validation"}
-                                                </Alert>
+                                            <TableCell colSpan={headCells.length} align="center" sx={{ padding: modernTheme.spacing['2xl'] }}>
+                                                <EmptyState>
+                                                    <EmptyStateIcon>
+                                                        <HourglassEmptyIcon />
+                                                    </EmptyStateIcon>
+                                                    <EmptyStateTitle>
+                                                        {filterProperties.filterBy && filterProperties.searchValue
+                                                            ? "Aucun résultat trouvé"
+                                                            : "Aucune validation en attente"}
+                                                    </EmptyStateTitle>
+                                                    <EmptyStateDescription>
+                                                        {filterProperties.filterBy && filterProperties.searchValue
+                                                            ? "Aucun résultat ne correspond à votre recherche"
+                                                            : "Aucun emprunt en attente de validation pour le moment"}
+                                                    </EmptyStateDescription>
+                                                </EmptyState>
                                             </TableCell>
                                         </TableRow>
                                     )}
                                 </TableBody>
                             </Table>
                         </TableContainer>
-                        <TablePagination
-                            rowsPerPageOptions={[5, 10, 25, 50]}
-                            component="div"
-                            count={filteredEmprunts.length}
-                            rowsPerPage={rowsPerPage}
-                            onRowsPerPageChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                                setRowsPerPage(parseInt(event.target.value, 10))
-                                setPage(0)
-                            }}
-                            page={page}
-                            onPageChange={(event: unknown, newPage: number) => {
-                                setPage(newPage)
-                            }}
-                        />
+                        <Box sx={{
+                            borderTop: `1px solid ${modernTheme.colors.border.light}`,
+                            backgroundColor: modernTheme.colors.background.tertiary,
+                        }}>
+                            <TablePagination
+                                rowsPerPageOptions={[5, 10, 25, 50]}
+                                component="div"
+                                count={filteredEmprunts.length}
+                                rowsPerPage={rowsPerPage}
+                                onRowsPerPageChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                                    setRowsPerPage(parseInt(event.target.value, 10))
+                                    setPage(0)
+                                }}
+                                page={page}
+                                onPageChange={(event: unknown, newPage: number) => {
+                                    setPage(newPage)
+                                }}
+                                sx={{
+                                    '& .MuiTablePagination-toolbar': {
+                                        padding: modernTheme.spacing.lg,
+                                    },
+                                    '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                                        color: modernTheme.colors.text.secondary,
+                                        fontSize: modernTheme.typography.caption.fontSize,
+                                    }
+                                }}
+                            />
+                        </Box>
                     </>
                 )}
-                {/* <LocalizationProvider>
-                    <ReservationModal
-                        open={isOpen}
-                        onClose={() => setIsOpen(false)}
-                        car={cars[selectedEmprunt?.voiture_id]}
-                        startTime={new Date(selectedEmprunt?.date_debut)}
-                        endTime={new Date(selectedEmprunt?.date_fin)}
-                        onSave={() => null}
-                        userId={selectedEmprunt?.utilisateur_demande_id}
-                        location={selectedEmprunt?.localisation_id}
-                        passenge={selectedEmprunt?.liste_passager_id}
-                        existingReservation={selectedEmprunt}
-                        onRefreshLocations={() => null}
-                        isAdminEdition
-                    />
-                </LocalizationProvider> */}
-                <ConfirmationModal
-                    isOpen={isOpenConfirmModal}
-                    message="Êtes-vous sur de vouloir refuser la demande d'emprunt de cet utilisateur ?"
-                    onConfirm={() => handleReject()}
-                    onClose={() => {
-                        setIsOpenConfirmModal(false)
-                        setSelectedEmprunt(undefined)
-                    }}
-                    onConfirmName="Confirmer"
-                />
-            </Flex>
-        </>
+            </Paper>
+            
+            <ConfirmationModal
+                isOpen={isOpenConfirmModal}
+                message="Êtes-vous sur de vouloir refuser la demande d'emprunt de cet utilisateur ?"
+                onConfirm={() => handleReject()}
+                onClose={() => {
+                    setIsOpenConfirmModal(false)
+                    setSelectedEmprunt(undefined)
+                }}
+                onConfirmName="Confirmer"
+            />
+        </Box>
     )
 }
 
