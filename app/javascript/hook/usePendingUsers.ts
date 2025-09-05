@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getPendingUsersCount } from '../services/userService';
 import useUser from './useUser';
+import useAuthHandler from './useAuthHandler';
 
 interface UsePendingUsersResult {
   pendingUsersCount: number;

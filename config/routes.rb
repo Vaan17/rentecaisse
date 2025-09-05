@@ -50,6 +50,7 @@ Rails.application.routes.draw do
   get "/api/voitures/site/:user_id" => "voitures#fetch_voitures_site"
   post "/api/voitures/:id/photo" => "voitures#update_photo"
   delete "/api/voitures/:id/photo" => "voitures#delete_photo"
+  get "/api/voitures/:id/image" => "voitures#get_image"
 
   # Routes pour les clés
   get "/api/cles" => "cles#fetch_all"

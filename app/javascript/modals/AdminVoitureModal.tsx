@@ -18,6 +18,7 @@ import { addCar } from '../redux/data/voiture/voitureReducer';
 import type { IVoiture } from '../pages/voitures/Voitures';
 import axiosSecured from '../services/apiService';
 import { toast } from 'react-toastify';
+import logger from '../utils/logger';
 import { isMobile } from 'react-device-detect';
 
 const ModalContent = styled(Flex)`
@@ -237,6 +238,7 @@ const AdminVoitureModal = ({
 
     useEffect(() => {
         if (isOpen) {
+            logger.info('AdminVoitureModal opened', { selectedCarId: selectedCar?.id })
             if (selectedCar) {
                 methods.reset(selectedCar)
                 // Charger l'image de la voiture si elle existe
@@ -274,6 +276,7 @@ const AdminVoitureModal = ({
             const res = await axiosSecured.get("/api/sites")
             setSites(res.data)
         }
+        logger.debug('Fetching sites for AdminVoitureModal')
         fetchSites()
     }, [])
 
@@ -286,13 +289,16 @@ const AdminVoitureModal = ({
 
     const fetchVoitureImage = async (voitureId: number) => {
         try {
+            logger.debug('Fetching voiture image', { voitureId })
             const response = await axiosSecured.get("/api/voitures")
             const voiture = response.data.find((v: any) => v.id === voitureId)
             if (voiture && voiture.image && !voiture.image.includes('placeholder')) {
+                logger.info('Voiture image found', { voitureId, image: voiture.image })
                 setVoitureImage(voiture.image)
             }
         } catch (error) {
             console.error('Erreur lors du chargement de l\'image:', error)
+            logger.error('Erreur lors du chargement de l\'image', { error: (error as any)?.message })
         }
     }
 
@@ -325,15 +331,18 @@ const AdminVoitureModal = ({
             return
         }
 
+        logger.info('Image selected for upload', { name: file.name, size: file.size, type: file.type })
         const validationResult = validateImage(file)
         if (!validationResult.isValid) {
             setUploadError(validationResult.error || "Erreur de validation du fichier")
+            logger.warn('Image validation failed', { error: validationResult.error })
             return
         }
 
         // Créer une preview locale
         const reader = new FileReader()
         reader.onloadend = () => {
+            logger.debug('Local preview ready')
             setVoitureImage(reader.result as string)
         }
         reader.readAsDataURL(file)
@@ -345,6 +354,7 @@ const AdminVoitureModal = ({
             formData.append('photo', file)
 
             try {
+                logger.info('Uploading voiture photo', { voitureId: selectedCar.id })
                 const response = await axiosSecured.post(`/api/voitures/${selectedCar.id}/photo`, formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data'
@@ -353,24 +363,28 @@ const AdminVoitureModal = ({
 
                 if (response.data.success) {
                     toast.success(response.data.message)
-                    // Rafraîchir les données de la voiture dans le store
-                    const updatedVoitures = await VoitureAPI.fetchAll()
-                    const updatedVoiture = updatedVoitures.find(v => v.id === selectedCar.id)
-                    if (updatedVoiture) {
-                        dispatch(addCar(updatedVoiture))
+                    logger.info('Photo upload success', { voitureId: selectedCar.id })
+                    // Utiliser directement les données retournées par l'API pour éviter les race conditions
+                    if (response.data.voiture) {
+                        logger.debug('Dispatch addCar after photo upload', { voitureId: response.data.voiture.id })
+                        dispatch(addCar(response.data.voiture))
                     }
                 } else {
                     setUploadError(response.data.message || 'Erreur lors de l\'upload')
+                    logger.warn('Photo upload failed (API response)', { message: response.data.message })
                 }
             } catch (error) {
                 console.error('Erreur lors de l\'upload:', error)
                 setUploadError('Erreur lors de l\'upload de l\'image')
+                logger.error('Photo upload error', { message: (error as any)?.message })
             } finally {
                 setIsUploading(false)
+                logger.debug('Upload finished')
             }
         } else {
             // Si c'est une nouvelle voiture, on garde le fichier pour l'upload après création
             (fileInputRef.current as any).fileToUpload = file
+            logger.debug('Deferred image upload until car creation')
         }
     }
 
@@ -379,13 +393,13 @@ const AdminVoitureModal = ({
         if (selectedCar && selectedCar.lien_image_voiture) {
             try {
                 setIsUploading(true)
-                await VoitureAPI.deletePhoto(selectedCar.id)
+                logger.info('Deleting voiture image', { voitureId: selectedCar.id })
+                const result = await VoitureAPI.deletePhoto(selectedCar.id)
 
-                // Rafraîchir les données de la voiture dans le store
-                const updatedVoitures = await VoitureAPI.fetchAll()
-                const updatedVoiture = updatedVoitures.find(v => v.id === selectedCar.id)
-                if (updatedVoiture) {
-                    dispatch(addCar(updatedVoiture))
+                // Utiliser directement les données retournées par l'API
+                if (result && result.voiture) {
+                    logger.debug('Dispatch addCar after photo delete', { voitureId: result.voiture.id })
+                    dispatch(addCar(result.voiture))
                 }
 
                 // Nettoyer l'interface utilisateur
@@ -398,8 +412,10 @@ const AdminVoitureModal = ({
             } catch (error) {
                 console.error('Erreur lors de la suppression de l\'image:', error)
                 setUploadError('Erreur lors de la suppression de l\'image')
+                logger.error('Delete image error', { message: (error as any)?.message })
             } finally {
                 setIsUploading(false)
+                logger.debug('Delete finished')
             }
         } else {
             // Si c'est une nouvelle voiture ou pas d'image, juste nettoyer l'interface
@@ -409,10 +425,12 @@ const AdminVoitureModal = ({
                 fileInputRef.current.value = ''
                     ; (fileInputRef.current as any).fileToUpload = null
             }
+            logger.debug('Cleared local image state (no server image to delete)')
         }
     }
 
     const handleClose = () => {
+        logger.info('AdminVoitureModal closed')
         setVoitureImage(null)
         setUploadError(null)
         onClose()
@@ -420,9 +438,11 @@ const AdminVoitureModal = ({
 
     const onSubmit = async (values) => {
         const { key, ...formValues } = values
+        logger.info('Submitting AdminVoitureModal', { selectedCarId: selectedCar?.id, formValues })
 
         if (!selectedCar) {
             const voiture = await VoitureAPI.createVoiture(formValues)
+            logger.info('Car created', { voitureId: voiture?.id })
             dispatch(addCar(voiture))
 
             // Upload de l'image après création si un fichier a été sélectionné
@@ -432,6 +452,7 @@ const AdminVoitureModal = ({
                 formData.append('photo', fileToUpload)
 
                 try {
+                    logger.info('Uploading photo after car creation', { voitureId: voiture.id })
                     const response = await axiosSecured.post(`/api/voitures/${voiture.id}/photo`, formData, {
                         headers: {
                             'Content-Type': 'multipart/form-data'
@@ -440,20 +461,21 @@ const AdminVoitureModal = ({
 
                     if (response.data.success) {
                         toast.success('Voiture créée et image uploadée avec succès')
-                        // Rafraîchir les données de la voiture dans le store
-                        const updatedVoitures = await VoitureAPI.fetchAll()
-                        const updatedVoiture = updatedVoitures.find(v => v.id === voiture.id)
-                        if (updatedVoiture) {
-                            dispatch(addCar(updatedVoiture))
+                        // Utiliser directement les données retournées par l'API
+                        if (response.data.voiture) {
+                            logger.debug('Dispatch addCar after post-create upload', { voitureId: response.data.voiture.id })
+                            dispatch(addCar(response.data.voiture))
                         }
                     }
                 } catch (error) {
                     console.error('Erreur lors de l\'upload:', error)
                     toast.error('Voiture créée mais erreur lors de l\'upload de l\'image')
+                    logger.error('Post-create upload error', { message: (error as any)?.message })
                 }
             }
         } else {
             const voiture = await VoitureAPI.editVoiture(formValues)
+            logger.info('Car updated via edit', { voitureId: voiture?.id })
             dispatch(addCar(voiture))
         }
 

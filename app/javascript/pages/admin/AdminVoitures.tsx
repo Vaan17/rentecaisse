@@ -37,6 +37,7 @@ import {
   EmptyStateDescription
 } from '../../components/design-system/StyledComponents'
 import styled from 'styled-components'
+import logger from '../../utils/logger'
 import { modernTheme } from '../../components/design-system/theme'
 
 const AddButton = styled(Button)`
@@ -257,6 +258,7 @@ const AdminVoitures = () => {
                         variant="contained" 
                         startIcon={<AddIcon />}
                         onClick={() => {
+                            logger.info('Open AdminVoitureModal for create')
                             setSelectedCar(undefined)
                             setIsOpen(true)
                         }}
@@ -280,7 +282,7 @@ const AdminVoitures = () => {
                                     <MobileCarCard key={car.immatriculation}>
                                         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
                                             <CarAvatar
-                                                src={car.lien_image_voiture || car.image}
+                                                src={car.image}
                                                 alt={`${car.marque} ${car.modele}`}
                                             >
                                                 <DirectionsCarIcon />
@@ -301,6 +303,7 @@ const AdminVoitures = () => {
                                                             <ActionButton
                                                                 actionType="edit"
                                                                 onClick={() => {
+                                                                    logger.info('Open AdminVoitureModal for edit', { voitureId: car.id })
                                                                     setSelectedCar(car)
                                                                     setIsOpen(true)
                                                                 }}
@@ -312,6 +315,7 @@ const AdminVoitures = () => {
                                                             <ActionButton
                                                                 actionType="delete"
                                                                 onClick={() => {
+                                                                    logger.info('Open delete confirmation', { voitureId: car.id })
                                                                     setSelectedCar(car)
                                                                     setIsOpenConfirmModal(true)
                                                                 }}
@@ -461,7 +465,7 @@ const AdminVoitures = () => {
                                                         >
                                                             <TableCell>
                                                                 <CarAvatar
-                                                                    src={car.lien_image_voiture || car.image}
+                                                                    src={car.image}
                                                                     alt={`${car.marque} ${car.modele}`}
                                                                     sx={{ width: 50, height: 50 }}
                                                                 >
@@ -509,6 +513,7 @@ const AdminVoitures = () => {
                                                                         <ActionButton
                                                                             actionType="edit"
                                                                             onClick={() => {
+                                                                                logger.info('Open AdminVoitureModal for edit', { voitureId: car.id })
                                                                                 setSelectedCar(car)
                                                                                 setIsOpen(true)
                                                                             }}
@@ -520,6 +525,7 @@ const AdminVoitures = () => {
                                                                         <ActionButton
                                                                             actionType="delete"
                                                                             onClick={() => {
+                                                                                logger.info('Open delete confirmation', { voitureId: car.id })
                                                                                 setSelectedCar(car)
                                                                                 setIsOpenConfirmModal(true)
                                                                             }}
@@ -566,6 +572,7 @@ const AdminVoitures = () => {
                 isOpen={isOpen}
                 selectedCar={selectedCar}
                 onClose={() => {
+                    logger.info('Close AdminVoitureModal')
                     setIsOpen(false)
                     setSelectedCar(undefined)
                 }}
@@ -573,8 +580,12 @@ const AdminVoitures = () => {
             <ConfirmationModal
                 isOpen={isOpenConfirmModal}
                 message="Êtes-vous sûr de vouloir supprimer cette voiture ?"
-                onConfirm={() => handleDelete()}
+                onConfirm={() => {
+                    logger.info('Confirmed delete', { voitureId: selectedCar?.id })
+                    handleDelete()
+                }}
                 onClose={() => {
+                    logger.info('Close delete confirmation')
                     setIsOpenConfirmModal(false)
                     setSelectedCar(undefined)
                 }}

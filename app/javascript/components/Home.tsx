@@ -20,6 +20,8 @@ import useUser from '../hook/useUser';
 import useCars from '../hook/useCars';
 import UpcomingEmprunts from './dashboard/UpcomingEmprunts';
 import HeatmapCalendar from './HeatmapCalendar';
+import { useDispatch } from 'react-redux';
+import { getVoitures } from '../redux/data/voiture/voitureResources';
 
 import {
   calculateTotalEmprunts,
@@ -161,11 +163,28 @@ const CarImageContainer = styled(Box)`
   }
 `;
 
+const CarPlaceholder = styled(Box)`
+  width: 80px;
+  height: 60px;
+  border-radius: 12px;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+`;
+
 
 const Home = () => {
+  const dispatch = useDispatch();
   const emprunts = useEmprunts();
   const user = useUser();
   const voitures = useCars();
+
+  // Force refresh car data on component mount
+  React.useEffect(() => {
+    dispatch(getVoitures() as any);
+  }, [dispatch]);
 
   // Calculs des KPIs
   const totalEmprunts = calculateTotalEmprunts(emprunts, user.id);
@@ -175,6 +194,13 @@ const Home = () => {
   const upcomingEmprunts = getUpcomingEmprunts(emprunts, user.id);
   const mostUsedCarData = getMostUsedCar(emprunts, voitures, user.id);
   const heatmapData = generateYearHeatmapData(emprunts, user.id);
+
+  // Debug: log pour vérifier les données de la voiture la plus utilisée
+  console.log('Debug Home - mostUsedCarData:', mostUsedCarData);
+  if (mostUsedCarData.car) {
+    console.log('Debug Home - car image:', mostUsedCarData.car.image);
+    console.log('Debug Home - car lien_image_voiture:', mostUsedCarData.car.lien_image_voiture);
+  }
 
   const dashboardData = {
     totalEmprunts,
@@ -422,18 +448,17 @@ const Home = () => {
                       Immatriculation: {dashboardData.mostUsedCar.car.immatriculation}
                     </Typography>
                   </Box>
-                  {dashboardData.mostUsedCar.car.image && (
+                  {dashboardData.mostUsedCar.car.image ? (
                     <CarImageContainer>
                       <img 
                         src={dashboardData.mostUsedCar.car.image} 
                         alt={`${dashboardData.mostUsedCar.car.marque} ${dashboardData.mostUsedCar.car.modele}`}
-                        onError={(e) => {
-                          // Fallback vers une image par défaut si l'image ne charge pas
-                          const target = e.target as HTMLImageElement;
-                          target.src = '/images/car-placeholder.png';
-                        }}
                       />
                     </CarImageContainer>
+                  ) : (
+                    <CarPlaceholder>
+                      <DirectionsCar sx={{ color: '#ccc', fontSize: '2rem' }} />
+                    </CarPlaceholder>
                   )}
                 </Box>
               </BubbleCardContent>

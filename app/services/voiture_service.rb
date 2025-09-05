@@ -96,9 +96,13 @@ class VoitureService
   
   # Met à jour la photo d'une voiture
   def self.update_voiture_photo(voiture, photo)
+    Rails.logger.info "[VOITURE_SERVICE#update_voiture_photo] voiture_id=#{voiture.id} filename=#{photo.original_filename} size=#{photo.size} content_type=#{photo.content_type}"
     # Validation de l'image
     validation_result = validate_image(photo)
-    return validation_result unless validation_result[:success]
+    unless validation_result[:success]
+      Rails.logger.warn "[VOITURE_SERVICE#update_voiture_photo] validation_failed message=#{validation_result[:message]}"
+      return validation_result
+    end
 
     begin
       # Créer le dossier pour la voiture s'il n'existe pas
@@ -119,31 +123,34 @@ class VoitureService
 
       # Mettre à jour le champ lien_image_voiture
       if voiture.update(lien_image_voiture: filename)
+        Rails.logger.info "[VOITURE_SERVICE#update_voiture_photo] updated lien_image_voiture=#{filename}"
         { success: true, message: "Photo mise à jour avec succès" }
       else
         # Si la mise à jour échoue, supprimer le fichier
         File.delete(filepath) if File.exist?(filepath)
+        Rails.logger.error "[VOITURE_SERVICE#update_voiture_photo] DB update failed"
         { success: false, message: "Erreur lors de la mise à jour de la base de données" }
       end
     rescue Errno::ENOENT => e
-      Rails.logger.error "Erreur de fichier: #{e.message}"
+      Rails.logger.error "[VOITURE_SERVICE#update_voiture_photo] file_error #{e.message}"
       { success: false, message: "Erreur lors de la création du dossier" }
     rescue Errno::EACCES => e
-      Rails.logger.error "Erreur de permissions: #{e.message}"
+      Rails.logger.error "[VOITURE_SERVICE#update_voiture_photo] permissions_error #{e.message}"
       { success: false, message: "Erreur de permissions sur le dossier de stockage" }
     rescue StandardError => e
-      Rails.logger.error "Erreur lors de l'upload: #{e.message}"
+      Rails.logger.error "[VOITURE_SERVICE#update_voiture_photo] upload_error #{e.message}"
       { success: false, message: "Erreur lors de l'upload de l'image" }
     end
   end
 
   # Suppression de l'image de la voiture
   def self.delete_voiture_photo(voiture)
-    Rails.logger.info "Début de la suppression de photo pour la voiture #{voiture.id}"
+    Rails.logger.info "[VOITURE_SERVICE#delete_voiture_photo] start voiture_id=#{voiture.id}"
 
     begin
       # Vérifier si la voiture a bien une image
       unless voiture.lien_image_voiture.present?
+        Rails.logger.warn "[VOITURE_SERVICE#delete_voiture_photo] no_image_link"
         return { success: false, message: "Aucune image à supprimer" }
       end
 
@@ -153,26 +160,26 @@ class VoitureService
       # Supprimer le fichier physique s'il existe
       if File.exist?(image_path)
         File.delete(image_path)
-        Rails.logger.info "Fichier image supprimé: #{image_path}"
+        Rails.logger.info "[VOITURE_SERVICE#delete_voiture_photo] file_deleted path=#{image_path}"
       else
-        Rails.logger.warn "Fichier image non trouvé: #{image_path}"
+        Rails.logger.warn "[VOITURE_SERVICE#delete_voiture_photo] file_not_found path=#{image_path}"
       end
 
       # Mettre à jour la base de données pour supprimer le lien
       voiture.update!(lien_image_voiture: nil)
-      Rails.logger.info "Lien image supprimé de la base de données pour la voiture #{voiture.id}"
+      Rails.logger.info "[VOITURE_SERVICE#delete_voiture_photo] db_cleared voiture_id=#{voiture.id}"
 
       # Vérifier si le dossier est vide et le supprimer si c'est le cas
       storage_path = Rails.root.join('storage', 'vehicules', "vehicules_#{voiture.id}")
       if Dir.exist?(storage_path) && Dir.empty?(storage_path)
         Dir.delete(storage_path)
-        Rails.logger.info "Dossier vide supprimé: #{storage_path}"
+        Rails.logger.info "[VOITURE_SERVICE#delete_voiture_photo] folder_deleted path=#{storage_path}"
       end
 
       { success: true, message: "Image supprimée avec succès" }
 
     rescue StandardError => e
-      Rails.logger.error "Erreur lors de la suppression de l'image: #{e.message}"
+      Rails.logger.error "[VOITURE_SERVICE#delete_voiture_photo] error #{e.message}"
       Rails.logger.error e.backtrace.join("\n")
       { success: false, message: "Erreur lors de la suppression de l'image" }
     end
