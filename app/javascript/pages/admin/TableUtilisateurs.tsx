@@ -1,10 +1,8 @@
-import React, { useMemo, useState } from 'react'
-import { Flex } from '../../components/style/flex'
-import CustomFilter from '../../components/CustomFilter'
-import { Alert, Box, Button, Chip, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Tabs, Tooltip } from '@mui/material'
+import React, { useMemo, useState, useCallback } from 'react'
+import { Alert, Avatar, Box, Button, Card, CardContent, CardHeader, Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Toolbar, Tooltip, Typography } from '@mui/material'
 import EditIcon from '@mui/icons-material/Edit';
 import BlockIcon from '@mui/icons-material/Block';
-import styled from 'styled-components'
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import ConfirmationModal from '../../utils/components/ConfirmationModal'
 import { useDispatch } from 'react-redux'
 import type { IUser } from '../../hook/useUser'
@@ -14,11 +12,18 @@ import { removeUser } from '../../redux/data/user/userReducer';
 import useSites from '../../hook/useSites';
 import AdminUtilisateurModal from '../../modals/AdminUtilisateurModal';
 import { isMobile } from 'react-device-detect';
-
-const SButton = styled(Button)`
-    min-width: fit-content !important;
-    padding: .5em 1em !important;
-`
+import ModernFilter from '../../components/design-system/ModernFilter';
+import UserAvatar from '../../components/UserAvatar';
+import { 
+  RoleChip, 
+  ActionButton, 
+  ActionsContainer,
+  EmptyState,
+  EmptyStateIcon,
+  EmptyStateTitle,
+  EmptyStateDescription
+} from '../../components/design-system/StyledComponents';
+import { modernTheme } from '../../components/design-system/theme';
 
 const TableUtilisateur = () => {
     const dispatch = useDispatch()
@@ -43,14 +48,14 @@ const TableUtilisateur = () => {
     type FilterBy = 'nom' | 'prenom' | 'email' | 'categorie_permis' | 'site'
 
     const headCells = [
-        { id: 'role', label: '' },
+        { id: 'avatar', label: '' },
+        { id: 'role', label: 'Rôle' },
         { id: 'nom', label: 'Nom' },
         { id: 'prenom', label: 'Prénom' },
         { id: 'email', label: 'Mail' },
-        { id: 'categorie_permis', label: 'Catégorie du permis' },
-        { id: 'site', label: 'Site rattaché' },
-        { id: 'edit', label: '', colWidth: 50 },
-        { id: 'delete', label: '', colWidth: 50 },
+        { id: 'categorie_permis', label: 'Permis' },
+        { id: 'site', label: 'Site' },
+        { id: 'actions', label: 'Actions', colWidth: 120, align: 'right' as const },
     ]
 
     const filteredUsers = Object.values(users)
@@ -69,175 +74,118 @@ const TableUtilisateur = () => {
     const handleKick = async () => {
         if (!selectedUser) return
 
-        const res = await UserAPI.kickUser(selectedUser.id)
-        dispatch(removeUser(res))
-
-        setIsOpenConfirmModal(false)
-        setSelectedUser(undefined)
+        try {
+            const res = await UserAPI.kickUser(selectedUser.id)
+            dispatch(removeUser(res))
+            setIsOpenConfirmModal(false)
+            setSelectedUser(undefined)
+        } catch (error) {
+            console.error('Erreur lors de l\'exclusion de l\'utilisateur:', error)
+            // L'erreur sera affichée par le composant mais on ne déconnecte pas l'utilisateur
+            setIsOpenConfirmModal(false)
+            setSelectedUser(undefined)
+        }
     }
 
     const visibleRows = useMemo(() => {
         return filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
     }, [filteredUsers, page, rowsPerPage]);
 
+    const handleFilterCallback = useCallback((filterBy: string | undefined, searchValue: string) => {
+        setFilterProperties({ filterBy: filterBy as FilterBy | undefined, searchValue });
+    }, []);
+
     return (
-        <>
-            <Flex fullWidth directionColumn gap="1em">
-                <Flex fullWidth directionColumn={isMobile} spaceBetween gap={isMobile ? "1em" : "0"}>
-                    <CustomFilter options={filterOptions} filterCallback={
-                        (filterBy, searchValue) => { setFilterProperties({ filterBy, searchValue }) }
-                    } />
-                    <SButton variant="contained" onClick={() => setIsOpen(true)}>
-                        Inviter un membre
-                    </SButton>
-                </Flex>
-                {isMobile && (
-                    <>
-                        <Flex directionColumn gap="1em">
-                            {filteredUsers.map((user, index) => (
-                                <Box
-                                    key={user.id}
-                                    sx={{
-                                        width: '100%',
-                                        backgroundColor: '#f4f4f4',
-                                        borderRadius: '8px',
-                                        padding: '1em',
-                                        border: '1px solid #e0e0e0'
-                                    }}
-                                >
-                                    <Flex directionColumn gap="0.5em">
-                                        <Flex spaceBetween alignItemsCenter>
-                                            <Chip
-                                                label={user.admin_entreprise ? "Entreprise" : user.derniere_connexion ? "Membre" : "Invité"}
-                                                color={user.admin_entreprise ? "warning" : user.derniere_connexion ? "primary" : "secondary"}
-                                                size="small"
-                                            />
-                                            <Flex gap="0.5em">
-                                                <Tooltip title="Modifier" arrow>
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => {
-                                                            setSelectedUser(user)
-                                                            setIsOpen(true)
-                                                        }}
-                                                    >
-                                                        <EditIcon />
-                                                    </IconButton>
-                                                </Tooltip>
-                                                <Tooltip title="Exclure" arrow>
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => {
-                                                            setSelectedUser(user)
-                                                            setIsOpenConfirmModal(true)
-                                                        }}
-                                                        disabled={user.admin_entreprise}
-                                                    >
-                                                        <BlockIcon />
-                                                    </IconButton>
-                                                </Tooltip>
-                                            </Flex>
-                                        </Flex>
-
-                                        <Box sx={{ fontSize: '1.1em', fontWeight: 'bold' }}>
-                                            {user.prenom} {user.nom}
-                                        </Box>
-
-                                        <Box sx={{ color: 'text.secondary', fontSize: '0.9em' }}>
-                                            {user.email}
-                                        </Box>
-
-                                        {user.categorie_permis && (
-                                            <Box sx={{ fontSize: '0.9em' }}>
-                                                <strong>Permis:</strong> {user.categorie_permis}
-                                            </Box>
-                                        )}
-
-                                        {sites[user.site_id]?.nom_site && (
-                                            <Box sx={{ fontSize: '0.9em' }}>
-                                                <strong>Site:</strong> {sites[user.site_id]?.nom_site}
-                                            </Box>
-                                        )}
-                                    </Flex>
-                                </Box>
-                            ))}
-
-                            {filteredUsers.length === 0 && (
-                                <Box sx={{ textAlign: 'center', padding: '2em' }}>
-                                    <Alert severity={
-                                        filterProperties.filterBy && filterProperties.searchValue
-                                            ? "warning"
-                                            : "info"
-                                    }>
-                                        {filterProperties.filterBy && filterProperties.searchValue
-                                            ? "Aucun résultat ne correspond à votre recherche"
-                                            : "Aucun membre enregistré"}
-                                    </Alert>
-                                </Box>
-                            )}
-                        </Flex>
-                    </>
-                )}
-                {!isMobile && (
-                    <>
-                        <TableContainer>
-                            <Table
-                                sx={{ minWidth: 750 }}
-                                aria-labelledby="tableTitle"
+        <Box sx={{ width: '100%' }}>
+            <Paper sx={{
+                border: `1px solid ${modernTheme.colors.border.light}`,
+                boxShadow: modernTheme.shadows.sm,
+                borderRadius: modernTheme.borderRadius.lg,
+                overflow: 'hidden'
+            }}>
+                <Toolbar sx={{
+                    padding: `${modernTheme.spacing.lg} ${modernTheme.spacing.xl}`,
+                    background: modernTheme.colors.background.primary,
+                    borderBottom: `1px solid ${modernTheme.colors.border.light}`,
+                    minHeight: 'auto'
+                }}>
+                    <Grid container spacing={3} alignItems="center">
+                        <Grid item xs={12} md={8}>
+                            <ModernFilter 
+                                options={filterOptions} 
+                                filterCallback={handleFilterCallback}
+                                placeholder="Rechercher un membre..."
+                            />
+                        </Grid>
+                        <Grid item xs={12} md={4} sx={{ display: 'flex', justifyContent: { xs: 'center', md: 'flex-end' } }}>
+                            <Button 
+                                variant="contained"
+                                onClick={() => setIsOpen(true)}
+                                startIcon={<PersonAddIcon />}
+                                sx={{
+                                    background: modernTheme.colors.primary[500],
+                                    color: 'white',
+                                    fontWeight: 500,
+                                    padding: `${modernTheme.spacing.sm} ${modernTheme.spacing.lg}`,
+                                    borderRadius: modernTheme.borderRadius.md,
+                                    textTransform: 'none',
+                                    '&:hover': {
+                                        background: modernTheme.colors.primary[600],
+                                        transform: 'translateY(-1px)',
+                                        boxShadow: modernTheme.shadows.md
+                                    }
+                                }}
                             >
-                                <TableHead>
-                                    <TableRow>
-                                        {headCells.map((headCell) => (
-                                            <TableCell
-                                                key={headCell.id}
-                                                width={headCell.colWidth ? `${headCell.colWidth}px` : 'auto'}
-                                                padding='none'
-                                            >
-                                                {headCell.label}
-                                            </TableCell>
-                                        ))}
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {visibleRows.map((user, index) => {
-                                        const labelId = `enhanced-table-checkbox-${index}`;
+                                Inviter un membre
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </Toolbar>
 
-                                        return (
-                                            <TableRow
-                                                key={user.id}
-                                                hover
-                                                onClick={(event) => null}
-                                                tabIndex={-1}
-                                                sx={{ cursor: 'pointer' }}
-                                            >
-                                                <TableCell
-                                                    id={labelId}
-                                                    scope="row"
-                                                    padding="none"
-                                                >
-                                                    <Chip
-                                                        label={user.admin_entreprise ? "Entreprise" : user.derniere_connexion ? "Membre" : "Invité"}
-                                                        color={user.admin_entreprise ? "warning" : user.derniere_connexion ? "primary" : "secondary"}
-                                                    />
-                                                </TableCell>
-                                                <TableCell padding='none'>{user.nom}</TableCell>
-                                                <TableCell padding='none'>{user.prenom}</TableCell>
-                                                <TableCell padding='none'>{user.email}</TableCell>
-                                                <TableCell padding='none'>{user.categorie_permis}</TableCell>
-                                                <TableCell padding='none'>{sites[user.site_id]?.nom_site}</TableCell>
-                                                <TableCell padding='none'>
+                {isMobile ? (
+                    <Box sx={{ p: modernTheme.spacing.lg }}>
+                        <Grid container spacing={2}>
+                            {visibleRows.map((user) => (
+                                <Grid item xs={12} key={user.id}>
+                                    <Card sx={{
+                                        border: `1px solid ${modernTheme.colors.border.light}`,
+                                        borderRadius: modernTheme.borderRadius.lg,
+                                        boxShadow: modernTheme.shadows.sm,
+                                        transition: 'all 0.2s ease-in-out',
+                                        '&:hover': {
+                                            boxShadow: modernTheme.shadows.md,
+                                            transform: 'translateY(-2px)'
+                                        }
+                                    }}>
+                                        <CardHeader
+                                            avatar={
+                                                <UserAvatar 
+                                                    userId={user.id}
+                                                    userName={`${user.prenom || ''} ${user.nom || ''}`}
+                                                    size="large"
+                                                    sx={{ 
+                                                        border: `2px solid ${modernTheme.colors.border.light}`
+                                                    }}
+                                                />
+                                            }
+                                            action={
+                                                <ActionsContainer>
                                                     <Tooltip title="Modifier" arrow>
-                                                        <IconButton onClick={() => {
-                                                            setSelectedUser(user)
-                                                            setIsOpen(true)
-                                                        }}>
+                                                        <ActionButton
+                                                            actionType="edit"
+                                                            size="small"
+                                                            onClick={() => {
+                                                                setSelectedUser(user)
+                                                                setIsOpen(true)
+                                                            }}
+                                                        >
                                                             <EditIcon />
-                                                        </IconButton>
+                                                        </ActionButton>
                                                     </Tooltip>
-                                                </TableCell>
-                                                <TableCell padding='none' >
                                                     <Tooltip title="Exclure" arrow>
-                                                        <IconButton
+                                                        <ActionButton
+                                                            actionType="delete"
+                                                            size="small"
                                                             onClick={() => {
                                                                 setSelectedUser(user)
                                                                 setIsOpenConfirmModal(true)
@@ -245,66 +193,234 @@ const TableUtilisateur = () => {
                                                             disabled={user.admin_entreprise}
                                                         >
                                                             <BlockIcon />
-                                                        </IconButton>
+                                                        </ActionButton>
                                                     </Tooltip>
-                                                </TableCell>
-                                            </TableRow>
-                                        );
-                                    })}
-                                    {filteredUsers.length === 0 && (
-                                        <TableRow>
-                                            <TableCell colSpan={headCells.length + 1} align="center">
-                                                <Alert severity={
-                                                    filterProperties.filterBy && filterProperties.searchValue
-                                                        ? "warning"
-                                                        : "info"
-                                                }>
-                                                    {filterProperties.filterBy && filterProperties.searchValue
-                                                        ? "Aucun résultat ne correspond à votre recherche"
-                                                        : "Aucun membre enregistré"}
-                                                </Alert>
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                        <TablePagination
-                            rowsPerPageOptions={[5, 10, 25, 50]}
-                            component="div"
-                            count={filteredUsers.length}
-                            rowsPerPage={rowsPerPage}
-                            onRowsPerPageChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                                setRowsPerPage(parseInt(event.target.value, 10))
-                                setPage(0)
-                            }}
-                            page={page}
-                            onPageChange={(event: unknown, newPage: number) => {
-                                setPage(newPage)
-                            }}
-                        />
-                    </>
+                                                </ActionsContainer>
+                                            }
+                                            title={
+                                                <Typography variant="h6" sx={{ fontWeight: 600, color: modernTheme.colors.text.primary }}>
+                                                    {`${user.prenom} ${user.nom}`}
+                                                </Typography>
+                                            }
+                                            subheader={
+                                                <Typography variant="body2" sx={{ color: modernTheme.colors.text.secondary }}>
+                                                    {user.email}
+                                                </Typography>
+                                            }
+                                            sx={{ pb: 1 }}
+                                        />
+                                        <CardContent sx={{ pt: 0 }}>
+                                            <Box sx={{ mb: 2 }}>
+                                                <RoleChip 
+                                                    role={user.admin_entreprise ? "admin" : user.derniere_connexion ? "member" : "invited"}
+                                                    label={user.admin_entreprise ? "Administrateur" : user.derniere_connexion ? "Membre" : "Invité"}
+                                                    size="small"
+                                                />
+                                            </Box>
+                                            {user.categorie_permis && (
+                                                <Typography variant="body2" sx={{ color: modernTheme.colors.text.secondary, mb: 1 }}>
+                                                    <strong>Permis:</strong> {user.categorie_permis}
+                                                </Typography>
+                                            )}
+                                            {sites[user.site_id]?.nom_site && (
+                                                <Typography variant="body2" sx={{ color: modernTheme.colors.text.secondary }}>
+                                                    <strong>Site:</strong> {sites[user.site_id]?.nom_site}
+                                                </Typography>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                </Grid>
+                            ))}
+                        </Grid>
+                    </Box>
+                ) : (
+                    <TableContainer sx={{
+                        '& .MuiTableHead-root': {
+                            background: modernTheme.colors.background.tertiary,
+                            '& .MuiTableCell-root': {
+                                fontWeight: 600,
+                                color: modernTheme.colors.text.primary,
+                                borderBottom: `2px solid ${modernTheme.colors.border.medium}`,
+                                padding: `${modernTheme.spacing.md} ${modernTheme.spacing.lg}`
+                            }
+                        },
+                        '& .MuiTableBody-root': {
+                            '& .MuiTableRow-root': {
+                                transition: 'all 0.2s ease-in-out',
+                                '&:hover': {
+                                    background: modernTheme.colors.background.hover,
+                                    transform: 'scale(1.01)',
+                                    boxShadow: modernTheme.shadows.sm
+                                },
+                                '& .MuiTableCell-root': {
+                                    padding: `${modernTheme.spacing.md} ${modernTheme.spacing.lg}`,
+                                    borderBottom: `1px solid ${modernTheme.colors.border.light}`
+                                }
+                            }
+                        }
+                    }}>
+                        <Table sx={{ minWidth: 750 }} aria-labelledby="tableTitle">
+                            <TableHead>
+                                <TableRow>
+                                    {headCells.map((headCell) => (
+                                        <TableCell
+                                            key={headCell.id}
+                                            align={headCell.align || 'left'}
+                                            padding='normal'
+                                        >
+                                            {headCell.label}
+                                        </TableCell>
+                                    ))}
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {visibleRows.map((user) => (
+                                    <TableRow
+                                        hover
+                                        tabIndex={-1}
+                                        key={user.id}
+                                    >
+                                        <TableCell>
+                                            <UserAvatar 
+                                                userId={user.id}
+                                                userName={`${user.prenom || ''} ${user.nom || ''}`}
+                                                sx={{ 
+                                                    border: `2px solid ${modernTheme.colors.border.light}`
+                                                }}
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <RoleChip
+                                                role={user.admin_entreprise ? "admin" : user.derniere_connexion ? "member" : "invited"}
+                                                label={user.admin_entreprise ? "Admin" : user.derniere_connexion ? "Membre" : "Invité"}
+                                                size="small"
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Typography variant="body1" sx={{ fontWeight: 500, color: modernTheme.colors.text.primary }}>
+                                                {user.nom}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Typography variant="body1" sx={{ fontWeight: 500, color: modernTheme.colors.text.primary }}>
+                                                {user.prenom}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Typography variant="body2" sx={{ color: modernTheme.colors.text.secondary }}>
+                                                {user.email}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Typography variant="body2" sx={{ color: modernTheme.colors.text.secondary }}>
+                                                {user.categorie_permis || '-'}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Typography variant="body2" sx={{ color: modernTheme.colors.text.secondary }}>
+                                                {sites[user.site_id]?.nom_site || '-'}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell align="right">
+                                            <ActionsContainer>
+                                                <Tooltip title="Modifier" arrow>
+                                                    <ActionButton 
+                                                        actionType="edit"
+                                                        onClick={() => {
+                                                            setSelectedUser(user)
+                                                            setIsOpen(true)
+                                                        }}
+                                                    >
+                                                        <EditIcon />
+                                                    </ActionButton>
+                                                </Tooltip>
+                                                <Tooltip title="Exclure" arrow>
+                                                    <ActionButton
+                                                        actionType="delete"
+                                                        onClick={() => {
+                                                            setSelectedUser(user)
+                                                            setIsOpenConfirmModal(true)
+                                                        }}
+                                                        disabled={user.admin_entreprise}
+                                                    >
+                                                        <BlockIcon />
+                                                    </ActionButton>
+                                                </Tooltip>
+                                            </ActionsContainer>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
                 )}
-                <AdminUtilisateurModal
-                    isOpen={isOpen}
-                    selectedUser={selectedUser}
-                    onClose={() => {
-                        setIsOpen(false)
-                        setSelectedUser(undefined)
-                    }}
-                />
-                <ConfirmationModal
-                    isOpen={isOpenConfirmModal}
-                    message="Êtes-vous sûr de vouloir exclure ce membre ? (Vous pourrez le réinviter plus tard)"
-                    onConfirm={() => handleKick()}
-                    onClose={() => {
-                        setIsOpenConfirmModal(false)
-                        setSelectedUser(undefined)
-                    }}
-                    onConfirmName="Confirmer"
-                />
-            </Flex>
-        </>
+
+                {filteredUsers.length === 0 && (
+                    <EmptyState>
+                        <EmptyStateIcon>👥</EmptyStateIcon>
+                        <EmptyStateTitle>
+                            {filterProperties.filterBy && filterProperties.searchValue
+                                ? "Aucun résultat trouvé"
+                                : "Aucun membre enregistré"}
+                        </EmptyStateTitle>
+                        <EmptyStateDescription>
+                            {filterProperties.filterBy && filterProperties.searchValue
+                                ? "Aucun membre ne correspond à vos critères de recherche. Essayez de modifier vos filtres."
+                                : "Commencez par inviter des membres à rejoindre votre organisation."}
+                        </EmptyStateDescription>
+                    </EmptyState>
+                )}
+
+                <Box sx={{ 
+                    borderTop: `1px solid ${modernTheme.colors.border.light}`,
+                    background: modernTheme.colors.background.tertiary
+                }}>
+                    <TablePagination
+                        rowsPerPageOptions={[5, 10, 25, 50]}
+                        component="div"
+                        count={filteredUsers.length}
+                        rowsPerPage={rowsPerPage}
+                        page={page}
+                        onPageChange={(event: unknown, newPage: number) => {
+                            setPage(newPage)
+                        }}
+                        onRowsPerPageChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                            setRowsPerPage(parseInt(event.target.value, 10))
+                            setPage(0)
+                        }}
+                        labelRowsPerPage="Lignes par page :"
+                        sx={{
+                            '& .MuiTablePagination-toolbar': {
+                                padding: modernTheme.spacing.lg
+                            },
+                            '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                                color: modernTheme.colors.text.secondary,
+                                fontWeight: 500
+                            }
+                        }}
+                    />
+                </Box>
+            </Paper>
+            
+            <AdminUtilisateurModal
+                isOpen={isOpen}
+                selectedUser={selectedUser}
+                onClose={() => {
+                    setIsOpen(false)
+                    setSelectedUser(undefined)
+                }}
+            />
+            <ConfirmationModal
+                isOpen={isOpenConfirmModal}
+                message="Êtes-vous sûr de vouloir exclure ce membre ? (Vous pourrez le réinviter plus tard)"
+                onConfirm={() => handleKick()}
+                onClose={() => {
+                    setIsOpenConfirmModal(false)
+                    setSelectedUser(undefined)
+                }}
+                onConfirmName="Confirmer"
+            />
+        </Box>
     )
 }
 

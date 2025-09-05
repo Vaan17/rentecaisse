@@ -36,9 +36,17 @@ axiosSecured.interceptors.response.use(
 	},
 	(error) => {
 		// Redirection vers la page de login en cas d'erreur 401 (non autorisé)
+		// Mais seulement si ce n'est pas une erreur d'opération sur les utilisateurs
 		if (error.response && error.response.status === 401) {
-			localStorage.removeItem("token");
-			window.location.href = "/login";
+			const url = error.config?.url || '';
+			const isUserOperation = url.includes('/users/') || url.includes('/api/users');
+			
+			// Si c'est une opération sur les utilisateurs, on ne déconnecte pas automatiquement
+			// L'erreur sera gérée par le composant qui fait l'appel
+			if (!isUserOperation) {
+				localStorage.removeItem("token");
+				window.location.href = "/login";
+			}
 		}
 		return Promise.reject(error);
 	},
