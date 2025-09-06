@@ -14,7 +14,7 @@ dayjs.extend(isSameOrAfter);
 /**
  * Vérifie si un utilisateur est impliqué dans un emprunt (conducteur ou passager)
  */
-const isUserInvolvedInEmprunt = (emprunt: IEmprunt, userId: number): boolean => {
+export const isUserInvolvedInEmprunt = (emprunt: IEmprunt, userId: number): boolean => {
   // Vérifier si l'utilisateur est le conducteur
   if (emprunt.utilisateur_demande_id === userId) {
     return true;

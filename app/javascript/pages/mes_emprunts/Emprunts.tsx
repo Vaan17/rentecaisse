@@ -41,6 +41,8 @@ import useUser from "../../hook/useUser"
 import useCars from "../../hook/useCars"
 import dayjs from "dayjs"
 import 'dayjs/locale/fr'
+// Importer la fonction utilitaire pour vérifier l'implication de l'utilisateur
+import { isUserInvolvedInEmprunt } from "../../utils/dashboardUtils"
 
 dayjs.locale('fr')
 
@@ -60,8 +62,9 @@ const Emprunts = () => {
     const ITEMS_PER_PAGE = 15
 
     // on trie du plus ancien au plus récent
+    // ✅ CORRECTION : Utiliser la même logique que la page d'accueil pour vérifier l'implication de l'utilisateur
     const myOrderedEmprunts = Object.values(emprunts)
-        .filter(emprunt => emprunt.utilisateur_demande_id === user.id)
+        .filter(emprunt => isUserInvolvedInEmprunt(emprunt, user.id))
         .sort((a, b) => dayjs(a.date_debut).diff(dayjs(b.date_debut)))
 
     const { myPassedEmprunts, myNextEmprunts, myNextEmprunt } = useMemo(() => {
