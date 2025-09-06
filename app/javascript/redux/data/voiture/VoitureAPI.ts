@@ -26,8 +26,28 @@ const createVoiture = async (voitureData) => {
 		logger.info('VoitureAPI.createVoiture: success', { voitureId: res.data?.id })
 		return res.data;
 	} catch (error) {
-		toast.error("Erreur lors de la création de la voiture.");
-		logger.error('VoitureAPI.createVoiture: error', { message: (error as any)?.message })
+		logger.error('VoitureAPI.createVoiture: error', { 
+			message: (error as any)?.message,
+			status: (error as any)?.response?.status,
+			data: (error as any)?.response?.data,
+			config: {
+				url: (error as any)?.config?.url,
+				method: (error as any)?.config?.method,
+				data: (error as any)?.config?.data
+			}
+		})
+		
+		// Afficher un message d'erreur plus précis
+		if ((error as any)?.response?.data?.error) {
+			toast.error(`Erreur : ${(error as any).response.data.error}`);
+		} else if ((error as any)?.response?.status === 422) {
+			toast.error("Données invalides. Vérifiez les champs du formulaire.");
+		} else {
+			toast.error("Erreur lors de la création de la voiture.");
+		}
+		
+		// Retourner null au lieu d'undefined pour éviter l'erreur
+		return null;
 	}
 };
 
@@ -69,7 +89,7 @@ const deletePhoto = async (voitureId) => {
 		if (res.data.success) {
 			toast.success(res.data.message);
 			logger.info('VoitureAPI.deletePhoto: success', { voitureId })
-			return res.data; // Retourne l'objet complet avec la voiture mise à jour
+			return res.data; // Retourne l'objet avec success et message seulement (aligné sur les sites)
 		} else {
 			toast.error(res.data.message || "Erreur lors de la suppression de l'image.");
 			logger.warn('VoitureAPI.deletePhoto: api failure', { message: res.data.message })

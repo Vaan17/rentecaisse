@@ -364,10 +364,12 @@ const AdminVoitureModal = ({
                 if (response.data.success) {
                     toast.success(response.data.message)
                     logger.info('Photo upload success', { voitureId: selectedCar.id })
-                    // Utiliser directement les données retournées par l'API pour éviter les race conditions
-                    if (response.data.voiture) {
-                        logger.debug('Dispatch addCar after photo upload', { voitureId: response.data.voiture.id })
-                        dispatch(addCar(response.data.voiture))
+                    // Rafraîchir les données de la voiture dans le store (aligné sur les sites)
+                    const updatedCars = await VoitureAPI.fetchAll()
+                    const updatedCar = updatedCars.find(v => v.id === selectedCar.id)
+                    if (updatedCar) {
+                        logger.debug('Dispatch addCar after photo upload refresh', { voitureId: updatedCar.id })
+                        dispatch(addCar(updatedCar))
                     }
                 } else {
                     setUploadError(response.data.message || 'Erreur lors de l\'upload')
@@ -394,12 +396,14 @@ const AdminVoitureModal = ({
             try {
                 setIsUploading(true)
                 logger.info('Deleting voiture image', { voitureId: selectedCar.id })
-                const result = await VoitureAPI.deletePhoto(selectedCar.id)
+                await VoitureAPI.deletePhoto(selectedCar.id)
 
-                // Utiliser directement les données retournées par l'API
-                if (result && result.voiture) {
-                    logger.debug('Dispatch addCar after photo delete', { voitureId: result.voiture.id })
-                    dispatch(addCar(result.voiture))
+                // Rafraîchir les données de la voiture dans le store (aligné sur les sites)
+                const updatedCars = await VoitureAPI.fetchAll()
+                const updatedCar = updatedCars.find(v => v.id === selectedCar.id)
+                if (updatedCar) {
+                    logger.debug('Dispatch addCar after photo delete refresh', { voitureId: updatedCar.id })
+                    dispatch(addCar(updatedCar))
                 }
 
                 // Nettoyer l'interface utilisateur
@@ -437,12 +441,19 @@ const AdminVoitureModal = ({
     }
 
     const onSubmit = async (values) => {
-        const { key, ...formValues } = values
-        logger.info('Submitting AdminVoitureModal', { selectedCarId: selectedCar?.id, formValues })
+        // Exclure lien_image_voiture des données du formulaire pour éviter d'écraser l'image uploadée
+        const { key, lien_image_voiture, ...formValues } = values
+        logger.info('Submitting AdminVoitureModal', { selectedCarId: selectedCar?.id, formValues, excludedFields: { lien_image_voiture } })
 
         if (!selectedCar) {
             const voiture = await VoitureAPI.createVoiture(formValues)
             logger.info('Car created', { voitureId: voiture?.id })
+            
+            if (!voiture) {
+                logger.error('Car creation failed, voiture is null')
+                return // Arrêter l'exécution si la création échoue
+            }
+            
             dispatch(addCar(voiture))
 
             // Upload de l'image après création si un fichier a été sélectionné
@@ -461,10 +472,12 @@ const AdminVoitureModal = ({
 
                     if (response.data.success) {
                         toast.success('Voiture créée et image uploadée avec succès')
-                        // Utiliser directement les données retournées par l'API
-                        if (response.data.voiture) {
-                            logger.debug('Dispatch addCar after post-create upload', { voitureId: response.data.voiture.id })
-                            dispatch(addCar(response.data.voiture))
+                        // Rafraîchir les données de la voiture dans le store (aligné sur les sites)
+                        const updatedCars = await VoitureAPI.fetchAll()
+                        const updatedCar = updatedCars.find(v => v.id === voiture.id)
+                        if (updatedCar) {
+                            logger.debug('Dispatch addCar after post-create upload refresh', { voitureId: updatedCar.id })
+                            dispatch(addCar(updatedCar))
                         }
                     }
                 } catch (error) {

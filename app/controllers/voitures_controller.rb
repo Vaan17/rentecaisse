@@ -17,12 +17,10 @@ class VoituresController < ApplicationController
       voiture_data[:transmission] = voiture.type_boite
       voiture_data[:licensePlate] = voiture.immatriculation
       
-      # Récupérer l'URL de l'image de la voiture si disponible
+      # Récupérer l'image de la voiture encodée en base64 (aligné sur les sites)
       if voiture.lien_image_voiture.present?
-        # Ajouter un cache-buster pour forcer le rafraîchissement côté client
-        voiture_data[:image] = "#{request.base_url}/api/voitures/#{voiture.id}/image?t=#{Time.now.to_i}"
+        voiture_data[:image] = VoitureService.get_voiture_image(voiture)
       else
-        # Image placeholder par défaut si aucune image n'est associée
         voiture_data[:image] = nil # Le front-end gérera l'affichage d'un placeholder
       end
       
@@ -67,9 +65,9 @@ class VoituresController < ApplicationController
         statut_voiture: voiture.statut_voiture
       }
       
-      # Récupérer l'URL de l'image de la voiture si disponible
+      # Récupérer l'image de la voiture encodée en base64 (aligné sur les sites)
       if voiture.lien_image_voiture.present?
-        voiture_data[:image] = "#{request.base_url}/api/voitures/#{voiture.id}/image?t=#{Time.now.to_i}"
+        voiture_data[:image] = VoitureService.get_voiture_image(voiture)
       end
       
       voiture_data
@@ -120,10 +118,10 @@ class VoituresController < ApplicationController
     updatedCar = Voiture.find(voiture_id)
     Rails.logger.info "[VOITURES#update] updated voiture_id=#{updatedCar.id} has_image=#{updatedCar.lien_image_voiture.present?}"
 
-    # Construire la réponse enrichie avec l'URL d'image (comme fetch_all)
+    # Construire la réponse enrichie avec l'image base64 (aligné sur les sites)
     voiture_data = updatedCar.to_format
     if updatedCar.lien_image_voiture.present?
-      voiture_data[:image] = "#{request.base_url}/api/voitures/#{updatedCar.id}/image?t=#{Time.now.to_i}"
+      voiture_data[:image] = VoitureService.get_voiture_image(updatedCar)
     else
       voiture_data[:image] = nil
     end
@@ -185,29 +183,10 @@ class VoituresController < ApplicationController
     result = VoitureService.update_voiture_photo(voiture, params[:photo])
     
     if result[:success]
-      # Recharger la voiture depuis la base pour avoir les données fraîches
-      voiture.reload
-      voiture_data = voiture.to_format
-      
-      # Ajouter l'URL de l'image si elle existe
-      if voiture.lien_image_voiture.present?
-        voiture_data[:image] = "#{request.base_url}/api/voitures/#{voiture.id}/image?t=#{Time.now.to_i}"
-      else
-        voiture_data[:image] = nil
-      end
-      
-      # Ajouter les propriétés compatibles avec le front-end emprunts
-      voiture_data[:name] = "#{voiture.marque} #{voiture.modele}"
-      voiture_data[:seats] = voiture.nombre_places
-      voiture_data[:doors] = voiture.nombre_portes
-      voiture_data[:transmission] = voiture.type_boite
-      voiture_data[:licensePlate] = voiture.immatriculation
-      
       Rails.logger.info "[VOITURES#update_photo] success voiture_id=#{voiture.id}"
       render json: { 
         success: true, 
-        message: result[:message],
-        voiture: voiture_data
+        message: result[:message]
       }
     else
       Rails.logger.warn "[VOITURES#update_photo] failure voiture_id=#{voiture.id} message=#{result[:message]}"
@@ -241,25 +220,10 @@ class VoituresController < ApplicationController
     result = VoitureService.delete_voiture_photo(voiture)
     
     if result[:success]
-      # Recharger la voiture depuis la base pour avoir les données fraîches
-      voiture.reload
-      voiture_data = voiture.to_format
-      
-      # L'image a été supprimée, donc pas d'URL d'image
-      voiture_data[:image] = nil
-      
-      # Ajouter les propriétés compatibles avec le front-end emprunts
-      voiture_data[:name] = "#{voiture.marque} #{voiture.modele}"
-      voiture_data[:seats] = voiture.nombre_places
-      voiture_data[:doors] = voiture.nombre_portes
-      voiture_data[:transmission] = voiture.type_boite
-      voiture_data[:licensePlate] = voiture.immatriculation
-      
       Rails.logger.info "[VOITURES#delete_photo] success voiture_id=#{voiture.id}"
       render json: { 
         success: true, 
-        message: result[:message],
-        voiture: voiture_data
+        message: result[:message]
       }
     else
       Rails.logger.warn "[VOITURES#delete_photo] failure voiture_id=#{voiture.id} message=#{result[:message]}"

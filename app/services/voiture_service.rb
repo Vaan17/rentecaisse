@@ -25,8 +25,43 @@ class VoitureService
     Cle.where(voiture_id: voiture_id)
   end
   
-  # Récupère l'image d'une voiture
-  def self.get_voiture_image(voiture_id)
+  # Récupération de l'image de la voiture en base64 (aligné sur SiteService)
+  def self.get_voiture_image(voiture)
+    return nil if voiture.lien_image_voiture.blank?
+
+    image_path = Rails.root.join('storage', 'vehicules', "vehicules_#{voiture.id}", voiture.lien_image_voiture)
+    
+    if File.exist?(image_path)
+      begin
+        image_data = File.read(image_path)
+        extension = File.extname(voiture.lien_image_voiture).downcase.gsub('.', '')
+        
+        # Détermination du type MIME
+        mime_type = case extension
+                   when 'jpg', 'jpeg'
+                     'image/jpeg'
+                   when 'png'
+                     'image/png'
+                   when 'gif'
+                     'image/gif'
+                   else
+                     'image/jpeg'
+                   end
+
+        base64_image = Base64.strict_encode64(image_data)
+        "data:#{mime_type};base64,#{base64_image}"
+      rescue StandardError => e
+        Rails.logger.error "Erreur lors de la lecture de l'image de la voiture #{voiture.id}: #{e.message}"
+        nil
+      end
+    else
+      Rails.logger.warn "Image non trouvée pour la voiture #{voiture.id}: #{image_path}"
+      nil
+    end
+  end
+
+  # Récupère l'image d'une voiture (ancienne méthode, conservée pour rétrocompatibilité)
+  def self.get_voiture_image_legacy(voiture_id)
     voiture_folder = Rails.root.join('storage', 'vehicules', "vehicules_#{voiture_id}")
     
     # Vérifier si le dossier existe
