@@ -99,7 +99,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
         console.log('  - endTime reçu:', existingReservation.endTime);
         console.log('  - startTime (Date):', new Date(existingReservation.startTime));
         console.log('  - endTime (Date):', new Date(existingReservation.endTime));
-        
+
         // Si on modifie un emprunt existant, pré-remplir les champs
         setNomEmprunt(existingReservation.nom_emprunt || '');
         setDescription(existingReservation.description || '');
@@ -136,13 +136,13 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
   // Valider les dates
   const validateDates = (startDate: dayjs.Dayjs | null, endDate: dayjs.Dayjs | null) => {
     const now = dayjs();
-    
+
     // Vérifier que la date de début n'est pas dans le passé (sauf pour les modifications d'emprunts existants)
     if (startDate && !existingReservation && startDate.isBefore(now)) {
       setError('Impossible de réserver dans le passé');
       return false;
     }
-    
+
     if (startDate && endDate) {
       if (endDate.isBefore(startDate) || endDate.isSame(startDate)) {
         setError('L\'heure de fin doit être postérieure à l\'heure de début');
@@ -250,7 +250,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
 
       // 🔍 LOGS FRONTEND - Succès de l'envoi
       console.log('✅ FRONTEND - Emprunt créé/modifié avec succès');
-      
+
       // Notifier le composant parent
       onSave({
         carId: car.id,
@@ -550,16 +550,7 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
               Supprimer
             </Button>
           )}
-          {canSubmitForValidation && (
-            <Button
-              onClick={handleSubmitForValidation}
-              variant="contained"
-              color="success"
-            >
-              Valider
-            </Button>
-          )}
-          {!isReadOnly && canEdit && existingReservation ? (
+          {!isReadOnly && canEdit && existingReservation && (
             <Button
               onClick={handleSubmit}
               variant="contained"
@@ -568,16 +559,27 @@ const ReservationModal: React.FC<ReservationModalProps> = ({
             >
               Mettre à jour
             </Button>
-          ) : !isReadOnly && !existingReservation ? (
+          )}
+          {!isReadOnly && !existingReservation && (
             <Button
               onClick={handleSubmit}
               variant="contained"
               color="primary"
               disabled={!!error || !start || !end || !car || !nomEmprunt || !description}
             >
-              Valider
+              Enregistrer en brouillon
             </Button>
-          ) : null}
+          )}
+          {canSubmitForValidation && (
+            <Button
+              onClick={handleSubmitForValidation}
+              variant="contained"
+              color="success"
+              disabled={!!error || !start || !end || !car || !nomEmprunt || !description}
+            >
+              Réserver
+            </Button>
+          )}
         </DialogActions>
       </Dialog>
 
