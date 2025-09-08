@@ -1,10 +1,10 @@
 import React from 'react';
-import { 
-  Card, 
-  CardContent, 
-  Typography, 
-  Box, 
-  Chip, 
+import {
+  Card,
+  CardContent,
+  Typography,
+  Box,
+  Chip,
   Avatar,
   List,
   ListItem,
@@ -12,11 +12,11 @@ import {
   ListItemText,
   Divider
 } from '@mui/material';
-import { 
-  DirectionsCar, 
-  Schedule, 
+import {
+  DirectionsCar,
+  Schedule,
   Person,
-  CalendarToday 
+  CalendarToday
 } from '@mui/icons-material';
 import styled from 'styled-components';
 import dayjs from 'dayjs';
@@ -120,7 +120,7 @@ const DateChip = styled(Chip)`
   }
 `;
 
-const StatusChip = styled(Chip)<{ $status: string }>`
+const StatusChip = styled(Chip) <{ $status: string }>`
   background: ${props => {
     switch (props.$status) {
       case 'validé': return 'rgba(139, 195, 74, 0.8)'; // Vert-jaune
@@ -159,9 +159,9 @@ const UpcomingEmprunts: React.FC<UpcomingEmpruntsProps> = ({ emprunts, voitures 
   const formatDate = (dateString: string) => {
     const date = dayjs(dateString);
     const now = dayjs();
-    
+
     if (date.isSame(now, 'day')) {
-      return `Aujourd&apos;hui à ${date.format('HH:mm')}`;
+      return `Aujourd'hui à ${date.format('HH:mm')}`;
     } else if (date.isSame(now.add(1, 'day'), 'day')) {
       return `Demain à ${date.format('HH:mm')}`;
     } else {
@@ -199,13 +199,13 @@ const UpcomingEmprunts: React.FC<UpcomingEmpruntsProps> = ({ emprunts, voitures 
               </CountBadge>
             </Box>
           )}
-          
+
           <ScrollableList>
             <List sx={{ padding: 0 }}>
               {emprunts.map((emprunt, index) => {
                 const voiture = voitures[emprunt.voiture_id];
                 const passengers = getPassengerNames(emprunt);
-                
+
                 return (
                   <EmpruntItem key={emprunt.id} disablePadding>
                     <ListItemAvatar>
@@ -213,7 +213,7 @@ const UpcomingEmprunts: React.FC<UpcomingEmpruntsProps> = ({ emprunts, voitures 
                         <DirectionsCar />
                       </EmpruntAvatar>
                     </ListItemAvatar>
-                    
+
                     <ListItemText
                       primary={
                         <EmpruntDetails>
@@ -224,12 +224,12 @@ const UpcomingEmprunts: React.FC<UpcomingEmpruntsProps> = ({ emprunts, voitures 
                             {voiture ? `${voiture.marque} ${voiture.modele}` : 'Voiture inconnue'}
                           </EmpruntSubtitle>
                           <Box display="flex" gap={1} alignItems="center" mt={1}>
-                            <DateChip 
+                            <DateChip
                               icon={<Schedule />}
                               label={formatDate(emprunt.date_debut)}
                               size="small"
                             />
-                            <StatusChip 
+                            <StatusChip
                               $status={emprunt.statut_emprunt}
                               label={getStatusLabel(emprunt.statut_emprunt)}
                               size="small"

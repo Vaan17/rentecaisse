@@ -532,7 +532,7 @@ const RegisterPage = () => {
                     required
                   />
                   <label htmlFor="terms">
-                    En cochant cette case, j'atteste avoir lu et accepté les <a href="/cgu">CGU</a>, <a href="/cgv">CGV</a> et <a href="/mentions-legales">mentions légales</a>.
+                    En cochant cette case, j&apos;atteste avoir lu et accepté les <a href="/cgu">CGU</a> et <a href="/cgv">CGV</a>. {/*  et <a href="/mentions-legales">mentions légales</a>. */}
                   </label>
                 </CheckboxGroup>
                 <Button type="submit" disabled={!acceptTerms}>

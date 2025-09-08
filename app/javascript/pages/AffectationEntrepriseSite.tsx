@@ -234,12 +234,12 @@ const AffectationEntrepriseSite = () => {
     if (error.response?.data?.message) {
       return error.response.data.message;
     }
-    
+
     // Gestion des erreurs réseau
     if (error.code === 'NETWORK_ERROR' || !error.response) {
       return "Erreur de connexion. Veuillez vérifier votre connexion internet et réessayer.";
     }
-    
+
     // Gestion des erreurs HTTP spécifiques
     if (error.response?.status) {
       switch (error.response.status) {
@@ -255,7 +255,7 @@ const AffectationEntrepriseSite = () => {
           return defaultMessage;
       }
     }
-    
+
     // Message par défaut
     return defaultMessage;
   };
@@ -421,8 +421,8 @@ const AffectationEntrepriseSite = () => {
           <Title>Sélectionnez votre entreprise et site</Title>
           <Description>
             {!isEnterpriseVerified
-              ? "Pour commencer, veuillez sélectionner votre entreprise et saisir le code d&apos;accès correspondant."
-              : "Maintenant, veuillez sélectionner votre site d&apos;affectation."}
+              ? "Pour commencer, veuillez sélectionner votre entreprise et saisir le code d'accès correspondant."
+              : "Maintenant, veuillez sélectionner votre site d'affectation."}
           </Description>
           <Form onSubmit={!isEnterpriseVerified ? verifyEnterpriseCode : handleSubmit}>
             <FormGroup>

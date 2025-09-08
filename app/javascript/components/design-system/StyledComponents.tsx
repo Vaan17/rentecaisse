@@ -113,17 +113,17 @@ export const CardContent = styled(Box)`
 `;
 
 // Chip moderne pour les rôles
-export const RoleChip = styled(Chip)<{ role: 'admin' | 'member' | 'invited' | 'pending' }>`
+export const RoleChip = styled(Chip) <{ role: 'admin' | 'member' | 'invited' | 'pending' }>`
   && {
     background-color: ${({ role }) => {
-      switch (role) {
-        case 'admin': return modernTheme.colors.roles.admin;
-        case 'member': return modernTheme.colors.roles.member;
-        case 'invited': return modernTheme.colors.roles.invited;
-        case 'pending': return modernTheme.colors.roles.pending;
-        default: return modernTheme.colors.roles.member;
-      }
-    }};
+    switch (role) {
+      case 'admin': return modernTheme.colors.roles.admin;
+      case 'member': return modernTheme.colors.roles.member;
+      case 'invited': return modernTheme.colors.roles.invited;
+      case 'pending': return modernTheme.colors.roles.pending;
+      default: return modernTheme.colors.roles.member;
+    }
+  }};
     color: white;
     font-weight: 500;
     font-size: 0.75rem;
@@ -136,7 +136,7 @@ export const RoleChip = styled(Chip)<{ role: 'admin' | 'member' | 'invited' | 'p
 `;
 
 // Bouton d'action moderne
-export const ActionButton = styled(IconButton)<{ actionType?: 'edit' | 'delete' | 'accept' | 'reject' }>`
+export const ActionButton = styled(IconButton) <{ actionType?: 'edit' | 'delete' | 'accept' | 'reject' }>`
   && {
     width: 40px;
     height: 40px;
@@ -162,7 +162,7 @@ export const ActionsContainer = styled(Box)`
 `;
 
 // Badge moderne pour les notifications
-export const NotificationBadge = styled(Box)<{ count: number }>`
+export const NotificationBadge = styled(Box) <{ count: number }>`
   background: ${modernTheme.colors.primary[500]};
   color: white;
   border-radius: 12px;
@@ -220,43 +220,43 @@ export const EmptyStateDescription = styled(Typography)`
 `;
 
 // Chips de statut pour les emprunts
-export const StatusChip = styled(Chip)<{ 
-  statusType: 'brouillon' | 'en_attente_validation' | 'validé' | 'en_cours' | 'terminé' | 'completed' | 'default' 
+export const StatusChip = styled(Chip) <{
+  statusType: 'brouillon' | 'en_attente_validation' | 'validé' | 'en_cours' | 'terminé' | 'completed' | 'default'
 }>`
   && {
     background-color: ${({ statusType }) => {
-      switch (statusType) {
-        case 'brouillon': return '#fff3cd'; // Amber light
-        case 'en_attente_validation': return '#f8f9fa'; // Gray light
-        case 'validé': return '#d1e7dd'; // Green light
-        case 'en_cours': return '#f8d7da'; // Red light
-        case 'terminé': 
-        case 'completed': return '#cff4fc'; // Blue light
-        default: return '#e9ecef'; // Gray default
-      }
-    }};
+    switch (statusType) {
+      case 'brouillon': return '#fff3cd'; // Amber light
+      case 'en_attente_validation': return '#f8f9fa'; // Gray light
+      case 'validé': return '#d1e7dd'; // Green light
+      case 'en_cours': return '#f8d7da'; // Red light
+      case 'terminé':
+      case 'completed': return '#cff4fc'; // Blue light
+      default: return '#e9ecef'; // Gray default
+    }
+  }};
     color: ${({ statusType }) => {
-      switch (statusType) {
-        case 'brouillon': return '#664d03'; // Amber dark
-        case 'en_attente_validation': return '#495057'; // Gray dark
-        case 'validé': return '#0f5132'; // Green dark
-        case 'en_cours': return '#721c24'; // Red dark
-        case 'terminé':
-        case 'completed': return '#055160'; // Blue dark
-        default: return '#495057'; // Gray default
-      }
-    }};
+    switch (statusType) {
+      case 'brouillon': return '#664d03'; // Amber dark
+      case 'en_attente_validation': return '#495057'; // Gray dark
+      case 'validé': return '#0f5132'; // Green dark
+      case 'en_cours': return '#721c24'; // Red dark
+      case 'terminé':
+      case 'completed': return '#055160'; // Blue dark
+      default: return '#495057'; // Gray default
+    }
+  }};
     border: 1px solid ${({ statusType }) => {
-      switch (statusType) {
-        case 'brouillon': return '#ffecb5'; // Amber border
-        case 'en_attente_validation': return '#dee2e6'; // Gray border
-        case 'validé': return '#badbcc'; // Green border
-        case 'en_cours': return '#f5c2c7'; // Red border
-        case 'terminé':
-        case 'completed': return '#b6effb'; // Blue border
-        default: return '#dee2e6'; // Gray default
-      }
-    }};
+    switch (statusType) {
+      case 'brouillon': return '#ffecb5'; // Amber border
+      case 'en_attente_validation': return '#dee2e6'; // Gray border
+      case 'validé': return '#badbcc'; // Green border
+      case 'en_cours': return '#f5c2c7'; // Red border
+      case 'terminé':
+      case 'completed': return '#b6effb'; // Blue border
+      default: return '#dee2e6'; // Gray default
+    }
+  }};
     font-weight: 500;
     font-size: 0.75rem;
     height: 28px;
@@ -269,53 +269,50 @@ export const StatusChip = styled(Chip)<{
 `;
 
 // Chips de statut spécialement pour les clés
-export const KeyStatusChip = styled(Chip)<{ 
+export const KeyStatusChip = styled(Chip) <{
   keyStatus: 'disponible' | 'attribuée' | 'perdue' | 'en_maintenance' | 'réservée' | 'default'
 }>`
   && {
     background-color: ${({ keyStatus }) => {
-      switch (keyStatus) {
-        case 'disponible': return '#d1f2eb'; // Green light
-        case 'attribuée': return '#fef9e7'; // Yellow light
-        case 'perdue': return '#fadbd8'; // Red light
-        case 'en_maintenance': return '#e8f4fd'; // Blue light
-        case 'réservée': return '#f4e4ff'; // Purple light
-        default: return '#f8f9fa'; // Gray light
-      }
-    }};
+    switch (keyStatus) {
+      case 'disponible': return '#d1f2eb'; // Green light
+      case 'attribuée': return '#fef9e7'; // Yellow light
+      case 'perdue': return '#fadbd8'; // Red light
+      case 'en_maintenance': return '#e8f4fd'; // Blue light
+      case 'réservée': return '#f4e4ff'; // Purple light
+      default: return '#f8f9fa'; // Gray light
+    }
+  }};
     color: ${({ keyStatus }) => {
-      switch (keyStatus) {
-        case 'disponible': return '#0e6b47'; // Green dark
-        case 'attribuée': return '#b7791f'; // Yellow dark
-        case 'perdue': return '#a93226'; // Red dark
-        case 'en_maintenance': return '#1b4f72'; // Blue dark
-        case 'réservée': return '#6c3483'; // Purple dark
-        default: return '#495057'; // Gray dark
-      }
-    }};
+    switch (keyStatus) {
+      case 'disponible': return '#0e6b47'; // Green dark
+      case 'attribuée': return '#b7791f'; // Yellow dark
+      case 'perdue': return '#a93226'; // Red dark
+      case 'en_maintenance': return '#1b4f72'; // Blue dark
+      case 'réservée': return '#6c3483'; // Purple dark
+      default: return '#495057'; // Gray dark
+    }
+  }};
     border: 1px solid ${({ keyStatus }) => {
-      switch (keyStatus) {
-        case 'disponible': return '#a9dfbf'; // Green border
-        case 'attribuée': return '#f7dc6f'; // Yellow border
-        case 'perdue': return '#f1948a'; // Red border
-        case 'en_maintenance': return '#aed6f1'; // Blue border
-        case 'réservée': return '#d2b4de'; // Purple border
-        default: return '#dee2e6'; // Gray border
-      }
-    }};
+    switch (keyStatus) {
+      case 'disponible': return '#a9dfbf'; // Green border
+      case 'attribuée': return '#f7dc6f'; // Yellow border
+      case 'perdue': return '#f1948a'; // Red border
+      case 'en_maintenance': return '#aed6f1'; // Blue border
+      case 'réservée': return '#d2b4de'; // Purple border
+      default: return '#dee2e6'; // Gray border
+    }
+  }};
     font-weight: 500;
     font-size: 0.75rem;
     height: 28px;
     
     .MuiChip-label {
-      padding: 0 12px;
       font-weight: 500;
     }
     
     .MuiSvgIcon-root {
       font-size: 16px;
-      margin-left: -4px;
-      margin-right: 4px;
     }
   }
 `;
