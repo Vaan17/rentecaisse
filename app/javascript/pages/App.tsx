@@ -39,6 +39,7 @@ import AdminCles from "./admin/AdminCles.tsx"
 import ReservationVoiturePage from './emprunts/ReservationVoiturePage'
 import AdminEmprunts from "./admin/AdminEmprunts.tsx"
 import Emprunts from "./mes_emprunts/Emprunts.tsx"
+import AdminRoutes from "./AdminRoutes.tsx"
 
 const AppContainer = styled.div`
 	width: 100vw;
@@ -114,6 +115,8 @@ const App = () => {
 												{/* Temporaires */}
 												<Route path="/sandbox" element={<Sandbox />} />
 												<Route path="/colors" element={<ColorsPage />} />
+												{/* Routes admin rentecaisse */}
+												<Route path="/rentecaisse/*" element={<AdminRoutes />} />
 												{/* Routes globales */}
 												<Route path="/home" element={<Home />} />
 												<Route path="/profile" element={<Profile />} />
@@ -123,7 +126,7 @@ const App = () => {
 												<Route path="/voitures/:id" element={<VoitureDetails />} />
 												<Route path="/emprunts" element={<ReservationVoiturePage />} />
 												<Route path="/emprunts_historique" element={<Emprunts />} />
-												{/* Routes admin */}
+												{/* Routes admin entreprise */}
 												<Route path="/admin/utilisateurs" element={<AdminUtilisateurs />} />
 												<Route path="/admin/voitures" element={<AdminVoitures />} />
 												<Route path="/admin/sites" element={<AdminSites />} />

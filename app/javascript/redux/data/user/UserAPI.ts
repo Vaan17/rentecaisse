@@ -60,10 +60,42 @@ const kickUser = async (userId) => {
 	}
 };
 
+// ========== ADMIN ==========
+
+const getAdminUsers = async () => {
+	try {
+		const res = await axiosSecured.get("/api/utilisateurs/fetchAdmin");
+		return res.data;
+	} catch (error) {
+		toast.error("Erreur lors de la récupération de tous les utilisateurs.");
+	}
+};
+
+const forceEmailValidation = async (userId) => {
+	try {
+		const res = await axiosSecured.put(`/api/utilisateurs/forceEmailValidation/${userId}`);
+		return res.data;
+	} catch (error) {
+		toast.error("Erreur lors de la validation de l'email.");
+	}
+};
+
+const deleteUser = async (userId) => {
+	try {
+		const res = await axiosSecured.delete(`/api/utilisateurs/${userId}`);
+		return res.data;
+	} catch (error) {
+		toast.error("Erreur lors de la suppression de l'utilisateur.");
+	}
+};
+
 export default {
 	fetchAll,
 	inviteUser,
 	acceptUser,
 	editUser,
 	kickUser,
+	getAdminUsers,
+	forceEmailValidation,
+	deleteUser,
 };

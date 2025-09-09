@@ -102,4 +102,10 @@ Rails.application.routes.draw do
   post "/api/user/request_deletion" => "authenticated_page#request_account_deletion"
   post "/api/user/cancel_deletion" => "authenticated_page#cancel_deletion_request"
   get "/api/user/deletion_details" => "authenticated_page#get_deletion_details"
+
+  # ==================== ADMIN RENTECAISSE ====================
+
+  get "/api/utilisateurs/fetchAdmin" => "admin_utilisateurs#fetch_all"
+  put "/api/utilisateurs/forceEmailValidation/:id" => "admin_utilisateurs#force_email_validation"
+  delete "/api/utilisateurs/:id" => "admin_utilisateurs#delete"
 end

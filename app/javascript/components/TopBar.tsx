@@ -9,6 +9,8 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LogoutIcon from '@mui/icons-material/Logout';
 import DescriptionIcon from '@mui/icons-material/Description';
 import axiosSecured from '../services/apiService';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import useUser from '../hook/useUser';
 
 const TopBarContainer = styled(Flex)`
 	max-width: 100%;
@@ -68,21 +70,14 @@ const ItemSubtitle = styled.div`
 	color: var(--secondary500);
 `
 
-interface UserInfo {
-	id: number;
-	prenom: string;
-	nom: string;
-	email: string;
-}
-
 const TopBar = () => {
 	const [userImageUrl, setUserImageUrl] = useState<string | null>(null);
 	const [imageError, setImageError] = useState(false);
-	const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 	const navigate = useNavigate();
 
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const isOpen = Boolean(anchorEl);
+	const userInfo = useUser()
 
 	const handleClick = (e) => {
 		setAnchorEl(e.currentTarget);
@@ -92,29 +87,10 @@ const TopBar = () => {
 	};
 
 	useEffect(() => {
-		fetchUserInfo();
-	}, []);
-
-	useEffect(() => {
 		if (userInfo) {
 			fetchUserImage();
 		}
 	}, [userInfo]);
-
-	const fetchUserInfo = async () => {
-		try {
-			const response = await axiosSecured.get("/api/authenticated-page");
-			if (response.status === 200) {
-				const data = response.data;
-				if (data.success && data.user) {
-					setUserInfo(data.user);
-					localStorage.setItem('user', JSON.stringify(data.user));
-				}
-			}
-		} catch (error) {
-			console.error("Erreur lors du chargement des informations utilisateur:", error);
-		}
-	};
 
 	const fetchUserImage = async () => {
 		try {
@@ -142,6 +118,15 @@ const TopBar = () => {
 			setImageError(true);
 		}
 	};
+
+	const adminOptions = [
+		{
+			icon: <AdminPanelSettingsIcon />,
+			title: "Admin",
+			subtitle: "Administration de Rentecaisse",
+			path: "/rentecaisse/home",
+		}
+	]
 
 	const mainOptions = [
 		{
@@ -193,11 +178,11 @@ const TopBar = () => {
 							alt="Img Profil"
 							sx={{ width: 32, height: 32 }}
 						>
-							{userInfo ? `${userInfo.prenom[0]}${userInfo.nom[0]}` : ''}
+							{userInfo ? `${userInfo?.prenom?.[0]}${userInfo?.nom?.[0]}` : ''}
 						</Avatar>
 						{isDesktop && (
 							<UserName>
-								{userInfo ? `${userInfo.prenom} ${userInfo.nom}` : ''}
+								{userInfo ? `${userInfo?.prenom} ${userInfo?.nom}` : ''}
 							</UserName>
 						)}
 					</UserSection>
@@ -215,6 +200,20 @@ const TopBar = () => {
 						}}
 					>
 						<FlexContainer directionColumn gap="8px" padding="1em">
+							{userInfo?.admin_rentecaisse && (
+								<>
+									{adminOptions.map((option) => (
+										<FlexItem key={option.title} fullWidth gap onClick={() => navigate(option.path)}>
+											{option.icon}
+											<Flex fullWidth directionColumn alignItemsStart gap="4px">
+												<ItemTitle>{option.title}</ItemTitle>
+												<ItemSubtitle>{option.subtitle}</ItemSubtitle>
+											</Flex>
+										</FlexItem>
+									))}
+									<Divider />
+								</>
+							)}
 							{mainOptions.map((option) =>
 								<FlexItem
 									key={option.title}

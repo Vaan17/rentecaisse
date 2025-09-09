@@ -37,6 +37,7 @@ class Utilisateur < ApplicationRecord
       telephone:,
       categorie_permis:,
       lien_image_utilisateur:,
+      email_confirme:,
       entreprise_id:,
       site_id:,
       confirmation_entreprise:,

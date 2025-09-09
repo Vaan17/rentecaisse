@@ -15,6 +15,7 @@ export interface IUser {
 	telephone: string;
 	categorie_permis: string;
 	lien_image_utilisateur: string;
+	email_confirme: boolean;
 	entreprise_id: number;
 	site_id: number;
 	confirmation_entreprise: boolean;
