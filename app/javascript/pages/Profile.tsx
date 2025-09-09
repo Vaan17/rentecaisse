@@ -5,11 +5,13 @@ import { toast } from 'react-toastify';
 import axiosSecured from '../services/apiService';
 import { Flex } from '../components/style/flex';
 import { isMobile } from 'react-device-detect';
+import { Card, CardContent } from '@mui/material';
+import _ from 'lodash';
 
 const ProfileContainer = styled.div`
   max-width: 1200px;
   margin: ${isMobile ? '0 auto' : '40px auto'};
-  padding: 0 20px;
+  padding: ${isMobile ? '0' : '0 20px'};
 `;
 
 const ProfileHeader = styled.div`
@@ -87,7 +89,7 @@ const ProfileInfo = styled.div`
 
 const ProfileName = styled.h1`
   margin: 0;
-  font-size: 32px;
+  font-size: ${isMobile ? '20px' : '32px'};
   color: #272727;
 `;
 
@@ -120,43 +122,33 @@ const ProfileRole = styled.p`
   font-size: 18px;
 `;
 
-const ProfileSection = styled.div`
-  background: #FFF8E7;
+const ProfileSection = styled(Card)`
+  padding: 16px;
+  background-color: #FFF8E7 !important;
   border-radius: 12px;
-  padding: 30px;
-  margin-bottom: 30px;
+  margin-bottom: 16px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
 const SectionWithImage = styled(ProfileSection)`
-  display: grid;
-  grid-template-columns: 300px 1fr;
-  gap: 2rem;
-  align-items: start;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
+  display: ${isMobile ? 'block' : 'flex'};
+  align-items: center;
+  gap: 32px;
 `;
 
-const RectangularImageContainer = styled.div`
-  width: 300px;
-  height: 200px;
+const RectangularImageContainer = styled.div<{ $hasImage: boolean }>`
+  width: ${isMobile ? '100%' : '300px'};
+  min-height: ${isMobile ? '100px' : '200px'};
+  height: max-content;
   position: relative;
   border-radius: 8px;
   overflow: hidden;
-  background-color: #f0f0f0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: ${props => props.$hasImage ? '#f0f0f0' : null};
   transition: box-shadow 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  }
+  display: flex;
+  align-items: center;
 
   @media (max-width: 768px) {
-    width: 100%;
-    max-width: 300px;
     margin: 0 auto;
   }
 `;
@@ -167,7 +159,6 @@ const ImagePlaceholder = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f0f0f0;
   color: #666;
   font-size: 3rem;
   text-align: center;
@@ -209,13 +200,13 @@ const ImageErrorMessage = styled.div`
 const SectionTitle = styled.h2`
   margin: 0 0 20px 0;
   color: #272727;
-  font-size: 24px;
+  font-size: ${isMobile ? '20px' : '24px'};
 `;
 
 const InfoGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
+  gap: 16px;
 `;
 
 const InfoItem = styled.div`
@@ -1141,105 +1132,109 @@ const Profile: React.FC = () => {
       </ProfileHeader>
 
       <ProfileSection>
-        <SectionTitle>Informations personnelles</SectionTitle>
-        <InfoGrid>
-          <EditableInfoItem
-            label="Email"
-            value={userData.personal_info.email}
-            name="email"
-            type="email"
-            isEditing={editingFields.email}
-            onEdit={() => handleFieldEdit('email')}
-            onSave={handleFieldSave}
-            onCancel={() => handleFieldCancel('email')}
-          />
-          <EditableInfoItem
-            label="Téléphone"
-            value={userData.personal_info.telephone}
-            name="telephone"
-            isEditing={editingFields.telephone}
-            onEdit={() => handleFieldEdit('telephone')}
-            onSave={handleFieldSave}
-            onCancel={() => handleFieldCancel('telephone')}
-          />
-          <EditableInfoItem
-            label="Date de naissance"
-            value={userData.personal_info.date_naissance}
-            name="date_naissance"
-            type="date"
-            isEditing={editingFields.date_naissance}
-            onEdit={() => handleFieldEdit('date_naissance')}
-            onSave={handleFieldSave}
-            onCancel={() => handleFieldCancel('date_naissance')}
-          />
-          <EditableInfoItem
-            label="Genre"
-            value={userData.personal_info.genre}
-            name="genre"
-            isEditing={editingFields.genre}
-            onEdit={() => handleFieldEdit('genre')}
-            onSave={handleFieldSave}
-            onCancel={() => handleFieldCancel('genre')}
-            options={[
-              { value: 'masculin', label: 'Masculin' },
-              { value: 'feminin', label: 'Féminin' },
-              { value: 'autre', label: 'Autre' }
-            ]}
-          />
-          <EditableInfoItem
-            label="Catégorie de permis"
-            value={userData.personal_info.categorie_permis}
-            name="categorie_permis"
-            isEditing={editingFields.categorie_permis}
-            onEdit={() => handleFieldEdit('categorie_permis')}
-            onSave={handleFieldSave}
-            onCancel={() => handleFieldCancel('categorie_permis')}
-            options={[
-              { value: 'B Manuel', label: 'Permis B Manuel' },
-              { value: 'B Automatique', label: 'Permis B Automatique' }
-            ]}
-          />
-          <EditableInfoItem
-            label="Adresse"
-            value={userData.personal_info.adresse}
-            name="adresse"
-            isEditing={editingFields.adresse}
-            onEdit={() => handleFieldEdit('adresse')}
-            onSave={handleFieldSave}
-            onCancel={() => handleFieldCancel('adresse')}
-          />
-          <EditableInfoItem
-            label="Ville"
-            value={userData.personal_info.ville}
-            name="ville"
-            isEditing={editingFields.ville}
-            onEdit={() => handleFieldEdit('ville')}
-            onSave={handleFieldSave}
-            onCancel={() => handleFieldCancel('ville')}
-          />
-          <EditableInfoItem
-            label="Code postal"
-            value={userData.personal_info.code_postal}
-            name="code_postal"
-            isEditing={editingFields.code_postal}
-            onEdit={() => handleFieldEdit('code_postal')}
-            onSave={handleFieldSave}
-            onCancel={() => handleFieldCancel('code_postal')}
-          />
-          <EditableInfoItem
-            label="Pays"
-            value={userData.personal_info.pays}
-            name="pays"
-            isEditing={editingFields.pays}
-            onEdit={() => handleFieldEdit('pays')}
-            onSave={handleFieldSave}
-            onCancel={() => handleFieldCancel('pays')}
-          />
-        </InfoGrid>
+        <CardContent>
+          <SectionTitle>Informations personnelles</SectionTitle>
+          <InfoGrid>
+            <EditableInfoItem
+              label="Email"
+              value={userData.personal_info.email}
+              name="email"
+              type="email"
+              isEditing={editingFields.email}
+              onEdit={() => handleFieldEdit('email')}
+              onSave={handleFieldSave}
+              onCancel={() => handleFieldCancel('email')}
+            />
+            <EditableInfoItem
+              label="Téléphone"
+              value={userData.personal_info.telephone}
+              name="telephone"
+              isEditing={editingFields.telephone}
+              onEdit={() => handleFieldEdit('telephone')}
+              onSave={handleFieldSave}
+              onCancel={() => handleFieldCancel('telephone')}
+            />
+            <EditableInfoItem
+              label="Date de naissance"
+              value={userData.personal_info.date_naissance}
+              name="date_naissance"
+              type="date"
+              isEditing={editingFields.date_naissance}
+              onEdit={() => handleFieldEdit('date_naissance')}
+              onSave={handleFieldSave}
+              onCancel={() => handleFieldCancel('date_naissance')}
+            />
+            <EditableInfoItem
+              label="Genre"
+              value={userData.personal_info.genre}
+              name="genre"
+              isEditing={editingFields.genre}
+              onEdit={() => handleFieldEdit('genre')}
+              onSave={handleFieldSave}
+              onCancel={() => handleFieldCancel('genre')}
+              options={[
+                { value: 'masculin', label: 'Masculin' },
+                { value: 'feminin', label: 'Féminin' },
+                { value: 'autre', label: 'Autre' }
+              ]}
+            />
+            <EditableInfoItem
+              label="Catégorie de permis"
+              value={userData.personal_info.categorie_permis}
+              name="categorie_permis"
+              isEditing={editingFields.categorie_permis}
+              onEdit={() => handleFieldEdit('categorie_permis')}
+              onSave={handleFieldSave}
+              onCancel={() => handleFieldCancel('categorie_permis')}
+              options={[
+                { value: 'B Manuel', label: 'Permis B Manuel' },
+                { value: 'B Automatique', label: 'Permis B Automatique' }
+              ]}
+            />
+            <EditableInfoItem
+              label="Adresse"
+              value={userData.personal_info.adresse}
+              name="adresse"
+              isEditing={editingFields.adresse}
+              onEdit={() => handleFieldEdit('adresse')}
+              onSave={handleFieldSave}
+              onCancel={() => handleFieldCancel('adresse')}
+            />
+            <EditableInfoItem
+              label="Ville"
+              value={userData.personal_info.ville}
+              name="ville"
+              isEditing={editingFields.ville}
+              onEdit={() => handleFieldEdit('ville')}
+              onSave={handleFieldSave}
+              onCancel={() => handleFieldCancel('ville')}
+            />
+            <EditableInfoItem
+              label="Code postal"
+              value={userData.personal_info.code_postal}
+              name="code_postal"
+              isEditing={editingFields.code_postal}
+              onEdit={() => handleFieldEdit('code_postal')}
+              onSave={handleFieldSave}
+              onCancel={() => handleFieldCancel('code_postal')}
+            />
+            <EditableInfoItem
+              label="Pays"
+              value={userData.personal_info.pays}
+              name="pays"
+              isEditing={editingFields.pays}
+              onEdit={() => handleFieldEdit('pays')}
+              onSave={handleFieldSave}
+              onCancel={() => handleFieldCancel('pays')}
+            />
+          </InfoGrid>
+        </CardContent>
       </ProfileSection>
 
       <SectionWithImage>
-        <RectangularImageContainer>
+        <RectangularImageContainer
+          $hasImage={!entrepriseImage?.includes('data:image/')}
+        >
           {(() => {
             console.log('🖼️ [DEBUG] Rendu image entreprise - entrepriseImageLoading:', entrepriseImageLoading);
             console.log('🖼️ [DEBUG] Rendu image entreprise - entrepriseImageError:', entrepriseImageError);
@@ -1276,7 +1271,7 @@ const Profile: React.FC = () => {
             );
           })()}
         </RectangularImageContainer>
-        <div>
+        <Flex fullWidth directionColumn alignItemsInitial>
           <SectionTitle>Informations entreprise</SectionTitle>
           <InfoGrid>
             <InfoItem>
@@ -1300,11 +1295,13 @@ const Profile: React.FC = () => {
               <InfoValue>{userData.entreprise_info.pays}</InfoValue>
             </InfoItem>
           </InfoGrid>
-        </div>
+        </Flex>
       </SectionWithImage>
 
       <SectionWithImage>
-        <RectangularImageContainer>
+        <RectangularImageContainer
+          $hasImage={!siteImage?.includes('data:image/')}
+        >
           {(() => {
             console.log('🖼️ [DEBUG] Rendu image - siteImageLoading:', siteImageLoading);
             console.log('🖼️ [DEBUG] Rendu image - siteImageError:', siteImageError);
@@ -1341,7 +1338,7 @@ const Profile: React.FC = () => {
             );
           })()}
         </RectangularImageContainer>
-        <div>
+        <Flex fullWidth directionColumn alignItemsInitial>
           <SectionTitle>Informations site</SectionTitle>
           <InfoGrid>
             <InfoItem>
@@ -1365,7 +1362,7 @@ const Profile: React.FC = () => {
               <InfoValue>{userData.site_info.pays}</InfoValue>
             </InfoItem>
           </InfoGrid>
-        </div>
+        </Flex>
       </SectionWithImage>
     </ProfileContainer>
   );
