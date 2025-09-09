@@ -350,7 +350,7 @@ const ReservationVoiturePage: React.FC = () => {
   return (
     <ThemeProvider theme={theme}>
       <LocalizationProvider>
-        <Container maxWidth="xl" sx={{ height: '100%' }}>
+        <Container disableGutters={isMobile} maxWidth="xl" sx={{ height: '100%' }}>
           <Box sx={{ mb: 4 }}>
             <Typography variant={isMobile ? 'h6' : 'h4'} component="h1" gutterBottom>
               Réservation de véhicules

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Typography, Paper, Divider } from '@mui/material';
-import { isMobile } from 'react-device-detect';
+import { isDesktop, isMobile } from 'react-device-detect';
 
 // Définition des statuts et couleurs
 const statuses = [
@@ -127,9 +127,11 @@ const LegendItem: React.FC<{ status: typeof statuses[0] }> = ({ status }) => {
         <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
           {status.label}
         </Typography>
-        <Typography variant="caption" color="text.secondary">
-          {status.description}
-        </Typography>
+        {isDesktop && (
+          <Typography variant="caption" color="text.secondary">
+            {status.description}
+          </Typography>
+        )}
       </Box>
     </Box>
   );

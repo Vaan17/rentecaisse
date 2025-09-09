@@ -5,6 +5,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { format, addHours, startOfDay, endOfDay, differenceInMinutes, differenceInHours, isWithinInterval } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { SchedulerProps, TimeSlot, Reservation, ReservationStatus, SortState, SortableColumn, SortableColumnHeaderProps } from '../types';
+import { isMobile } from 'react-device-detect';
 
 // Fonction pour générer les créneaux horaires
 const generateTimeSlots = (date: Date): TimeSlot[] => {
@@ -69,10 +70,10 @@ const getEffectiveBounds = (
 ) => {
   // La borne de début effective est soit le début de la réservation, soit le début du jour (si la réservation a commencé avant)
   const effectiveStart = reservationStart < dayStart ? dayStart : reservationStart;
-  
+
   // La borne de fin effective est soit la fin de la réservation, soit la fin du jour (si la réservation se termine après)
   const effectiveEnd = reservationEnd > dayEnd ? dayEnd : reservationEnd;
-  
+
   return { effectiveStart, effectiveEnd };
 };
 
@@ -105,11 +106,11 @@ const SortableColumnHeader: React.FC<SortableColumnHeaderProps> = ({ title, sort
 
   return (
     <Tooltip title={getTooltipText()} arrow>
-      <Box 
-        sx={{ 
-          height: 40, 
-          display: 'flex', 
-          alignItems: 'center', 
+      <Box
+        sx={{
+          height: 40,
+          display: 'flex',
+          alignItems: 'center',
           pl: 1,
           cursor: 'pointer',
           userSelect: 'none',
@@ -124,16 +125,16 @@ const SortableColumnHeader: React.FC<SortableColumnHeaderProps> = ({ title, sort
         tabIndex={0}
         role="button"
         aria-sort={
-          !isActive || direction === null 
-            ? 'none' 
-            : direction === 'asc' 
-              ? 'ascending' 
+          !isActive || direction === null
+            ? 'none'
+            : direction === 'asc'
+              ? 'ascending'
               : 'descending'
         }
       >
-        <Typography 
-          variant="subtitle2" 
-          sx={{ 
+        <Typography
+          variant="subtitle2"
+          sx={{
             fontWeight: 'bold',
             color: isActive ? '#FFD700' : 'inherit',
             mr: 1
@@ -141,7 +142,7 @@ const SortableColumnHeader: React.FC<SortableColumnHeaderProps> = ({ title, sort
         >
           {title}
         </Typography>
-        <Box sx={{ 
+        <Box sx={{
           color: '#FFD700',
           display: 'flex',
           alignItems: 'center',
@@ -167,9 +168,9 @@ const organizeReservationsInTracks = (reservations: Reservation[]): ReservationT
   const sortedReservations = [...reservations].sort(
     (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
   );
-  
+
   const tracks: ReservationTrack[] = [];
-  
+
   // Parcourir chaque réservation et l'ajouter à une piste existante ou créer une nouvelle piste
   sortedReservations.forEach(reservation => {
     // Chercher une piste où la réservation peut être placée sans chevauchement
@@ -180,13 +181,13 @@ const organizeReservationsInTracks = (reservations: Reservation[]): ReservationT
         const end1 = new Date(reservation.endTime);
         const start2 = new Date(existingReservation.startTime);
         const end2 = new Date(existingReservation.endTime);
-        
+
         // Deux réservations se chevauchent si la fin de l'une est après le début de l'autre
         // et le début de l'une est avant la fin de l'autre
         return (start1 < end2 && start2 < end1);
       });
     });
-    
+
     if (trackIndex !== -1) {
       // Ajouter à une piste existante
       tracks[trackIndex].reservations.push(reservation);
@@ -198,7 +199,7 @@ const organizeReservationsInTracks = (reservations: Reservation[]): ReservationT
       });
     }
   });
-  
+
   return tracks;
 };
 
@@ -211,37 +212,37 @@ const ReservationBar: React.FC<{
 }> = ({ reservation, dayStart, dayEnd, onClick }) => {
   const startTime = new Date(reservation.startTime);
   const endTime = new Date(reservation.endTime);
-  
+
   // Calculer les bornes effectives pour cette journée
   const { effectiveStart, effectiveEnd } = getEffectiveBounds(startTime, endTime, dayStart, dayEnd);
-  
+
   // Calculer la position et la largeur en pourcentage de la journée
   const dayDurationMinutes = differenceInMinutes(dayEnd, dayStart);
   const startOffsetMinutes = differenceInMinutes(effectiveStart, dayStart);
   const durationMinutes = differenceInMinutes(effectiveEnd, effectiveStart);
-  
+
   const startPercent = (startOffsetMinutes / dayDurationMinutes) * 100;
   const widthPercent = (durationMinutes / dayDurationMinutes) * 100;
-  
+
   // Formater les heures pour l'affichage
   const formatTimeDisplay = (date: Date) => {
     return format(date, 'HH:mm');
   };
-  
+
   // Formater les dates complètes pour l'affichage dans le tooltip
   const formatDateTimeDisplay = (date: Date) => {
     return format(date, 'dd/MM/yyyy à HH:mm', { locale: fr });
   };
-  
+
   // Déterminer si la réservation est assez large pour afficher le texte
   const isWideEnough = widthPercent > 10;
-  
+
   // Handler pour empêcher la propagation du clic
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Empêche que le clic ne se propage à la timeline en arrière-plan
     onClick(reservation);
   };
-  
+
   return (
     <Tooltip
       title={
@@ -249,24 +250,24 @@ const ReservationBar: React.FC<{
           <Typography variant="subtitle2" sx={{ mb: 1 }}>
             {reservation.nom_emprunt || 'Sans nom'}
           </Typography>
-          
+
           {reservation.utilisateur_prenom && reservation.utilisateur_nom && (
             <Typography variant="body2" sx={{ mb: 1 }}>
               Demandeur: {reservation.utilisateur_prenom} {reservation.utilisateur_nom}
             </Typography>
           )}
-          
+
           <Typography variant="body2" sx={{ fontWeight: 'medium', mb: 0.5 }}>
             Date de début: {formatDateTimeDisplay(startTime)}
           </Typography>
-          
+
           <Typography variant="body2" sx={{ fontWeight: 'medium', mb: 1 }}>
             Date de fin: {formatDateTimeDisplay(endTime)}
           </Typography>
-          
+
           {(startTime < dayStart || endTime > dayEnd) && (
-            <Typography variant="caption" sx={{ 
-              fontStyle: 'italic', 
+            <Typography variant="caption" sx={{
+              fontStyle: 'italic',
               color: 'rgba(255, 255, 255, 0.7)',
               display: 'block',
               mb: 1,
@@ -276,7 +277,7 @@ const ReservationBar: React.FC<{
               Portion visible ce jour: {formatTimeDisplay(effectiveStart)} - {formatTimeDisplay(effectiveEnd)}
             </Typography>
           )}
-          
+
           <Typography variant="body2">
             Statut: {getStatusText(reservation.status)}
           </Typography>
@@ -334,54 +335,56 @@ const CarTimeline: React.FC<{
 }> = ({ car, reservations, dayStart, dayEnd, timeSlots, onSlotClick, onReservationClick }) => {
   // Filtrer les réservations pour cette voiture
   const carReservations = reservations.filter(res => res.carId === car.id);
-  
+
   // Organiser les réservations en pistes pour éviter les chevauchements visuels
   const reservationTracks = organizeReservationsInTracks(carReservations);
-  
+
   // Hauteur dynamique basée sur le nombre de pistes
   const trackHeight = 28; // hauteur en pixels pour chaque piste
   const timelineHeight = Math.max(trackHeight, reservationTracks.length * trackHeight);
-  
+
   return (
     <React.Fragment>
       {/* Colonne pour le nom de la voiture */}
-      <Grid item xs={2}>
-        <Box sx={{ 
-          height: timelineHeight, 
-          display: 'flex', 
-          alignItems: 'center', 
-          pl: 1,
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis'
-        }}>
-          {car.name}
-        </Box>
-      </Grid>
-      
+      {!isMobile && (
+        <Grid item xs={2}>
+          <Box sx={{
+            height: timelineHeight,
+            display: 'flex',
+            alignItems: 'center',
+            pl: 1,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          }}>
+            {car.name}
+          </Box>
+        </Grid>
+      )}
+
       {/* Nouvelle colonne pour l'immatriculation */}
-      <Grid item xs={2}>
-        <Box sx={{ 
-          height: timelineHeight, 
-          display: 'flex', 
-          alignItems: 'center', 
+      <Grid item xs={isMobile ? 3 : 2}>
+        <Box sx={{
+          height: timelineHeight,
+          display: 'flex',
+          alignItems: 'center',
           pl: 1,
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           fontWeight: 'medium',
-          fontSize: '0.9rem',
+          fontSize: isMobile ? '0.65rem' : '0.9rem',
           color: 'text.secondary'
         }}>
           {car.licensePlate || ''}
         </Box>
       </Grid>
-      
+
       {/* Colonne pour la timeline */}
-      <Grid item xs={8}>
-        <Box 
-          sx={{ 
-            position: 'relative', 
+      <Grid item xs={isMobile ? 9 : 8}>
+        <Box
+          sx={{
+            position: 'relative',
             height: timelineHeight,
             backgroundColor: 'rgba(0, 0, 0, 0.02)',
             borderRadius: '4px',
@@ -396,14 +399,14 @@ const CarTimeline: React.FC<{
             const dayDurationMs = dayEnd.getTime() - dayStart.getTime();
             const clickTimeMs = dayStart.getTime() + (clickPositionPercent * dayDurationMs);
             const clickTime = new Date(clickTimeMs);
-            
+
             // Trouver le créneau horaire le plus proche
             const nearestSlot = timeSlots.reduce((nearest, slot) => {
               const currentDiff = Math.abs(slot.time.getTime() - clickTimeMs);
               const nearestDiff = Math.abs(nearest.time.getTime() - clickTimeMs);
               return currentDiff < nearestDiff ? slot : nearest;
             }, timeSlots[0]);
-            
+
             onSlotClick(car.id, nearestSlot.time);
           }}
         >
@@ -411,8 +414,8 @@ const CarTimeline: React.FC<{
           {timeSlots.map((slot, index) => {
             const offsetPercent = (index / timeSlots.length) * 100;
             return (
-              <Box 
-                key={`grid-${index}`} 
+              <Box
+                key={`grid-${index}`}
                 sx={{
                   position: 'absolute',
                   left: `${offsetPercent}%`,
@@ -424,10 +427,10 @@ const CarTimeline: React.FC<{
               />
             );
           })}
-          
+
           {/* Réservations organisées par pistes */}
           {reservationTracks.map((track, trackIndex) => (
-            <Box 
+            <Box
               key={`track-${trackIndex}`}
               sx={{
                 position: 'absolute',
@@ -457,11 +460,11 @@ const CarTimeline: React.FC<{
 
 const Scheduler: React.FC<SchedulerProps> = ({ cars, reservations, selectedDate, sortState, onSortChange, onSlotClick, onReservationClick }) => {
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
-  
+
   // Calculer le début et la fin de la journée
   const dayStart = useMemo(() => startOfDay(selectedDate), [selectedDate]);
   const dayEnd = useMemo(() => endOfDay(selectedDate), [selectedDate]);
-  
+
   // Générer les créneaux horaires lorsque la date sélectionnée change
   useEffect(() => {
     setTimeSlots(generateTimeSlots(selectedDate));
@@ -476,12 +479,12 @@ const Scheduler: React.FC<SchedulerProps> = ({ cars, reservations, selectedDate,
     return [...cars].sort((a, b) => {
       const aValue = (a[sortState.column!] || '').toString().toLowerCase();
       const bValue = (b[sortState.column!] || '').toString().toLowerCase();
-      
-      const comparison = aValue.localeCompare(bValue, 'fr', { 
+
+      const comparison = aValue.localeCompare(bValue, 'fr', {
         numeric: true,
         sensitivity: 'base'
       });
-      
+
       return sortState.direction === 'asc' ? comparison : -comparison;
     });
   }, [cars, sortState]);
@@ -489,7 +492,7 @@ const Scheduler: React.FC<SchedulerProps> = ({ cars, reservations, selectedDate,
   // Gestion du cycle de tri des colonnes
   const handleColumnSort = (column: SortableColumn) => {
     let newSortState: SortState;
-    
+
     if (sortState.column !== column) {
       // Nouvelle colonne : commencer par ascendant
       newSortState = { column, direction: 'asc' };
@@ -510,10 +513,10 @@ const Scheduler: React.FC<SchedulerProps> = ({ cars, reservations, selectedDate,
           break;
       }
     }
-    
+
     onSortChange(newSortState);
   };
-  
+
   // S'assurer que onReservationClick est défini
   const handleReservationClick = (reservation: Reservation) => {
     if (onReservationClick) {
@@ -523,45 +526,47 @@ const Scheduler: React.FC<SchedulerProps> = ({ cars, reservations, selectedDate,
 
   return (
     <Paper elevation={2} sx={{ height: '100%', overflowX: 'auto' }}>
-      <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <Typography variant="h6" gutterBottom>
-          Planning du {format(selectedDate, 'EEEE d MMMM yyyy', { locale: fr })}
+      <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', padding: isMobile ? "0" : "8px" }}>
+        <Typography variant="h6" p={1}>
+          Planning du {format(selectedDate, isMobile ? 'dd/MM/yyyy' : 'EEEE d MMMM yyyy', { locale: fr })}
         </Typography>
-        
+
         <Divider sx={{ mb: 2 }} />
-        
+
         <Box sx={{ flex: 1, overflowY: 'auto' }}>
           <Grid container>
             {/* En-têtes des colonnes triables */}
-            <Grid item xs={2}>
+            {!isMobile && (
+              <Grid item xs={2}>
+                <SortableColumnHeader
+                  title="Voiture"
+                  sortKey="name"
+                  currentSort={sortState}
+                  onSort={handleColumnSort}
+                />
+              </Grid>
+            )}
+            <Grid item xs={isMobile ? 3 : 2}>
               <SortableColumnHeader
-                title="Voiture"
-                sortKey="name"
-                currentSort={sortState}
-                onSort={handleColumnSort}
-              />
-            </Grid>
-            <Grid item xs={2}>
-              <SortableColumnHeader
-                title="Immatriculation"
+                title={isMobile ? 'Immat.' : 'Immatriculation'}
                 sortKey="licensePlate"
                 currentSort={sortState}
                 onSort={handleColumnSort}
               />
             </Grid>
-            <Grid item xs={8}>
-              <Box sx={{ 
-                position: 'relative', 
-                height: 40, 
+            <Grid item xs={isMobile ? 9 : 8}>
+              <Box sx={{
+                position: 'relative',
+                height: 40,
                 width: '100%',
                 display: 'flex',
                 alignItems: 'center',
               }}>
                 {/* Afficher les marqueurs d'heures tous les 2 heures pour économiser l'espace */}
-                {timeSlots.filter((_, index) => index % 2 === 0).map((slot, index) => {
+                {timeSlots.filter((_, index) => index % (isMobile ? 6 : 2) === 0).map((slot, index) => {
                   const offsetPercent = (slot.hour / 24) * 100;
                   return (
-                    <Box 
+                    <Box
                       key={`hour-${index}`}
                       sx={{
                         position: 'absolute',
@@ -582,7 +587,7 @@ const Scheduler: React.FC<SchedulerProps> = ({ cars, reservations, selectedDate,
                 {timeSlots.map((slot, index) => {
                   const offsetPercent = (slot.hour / 24) * 100;
                   return (
-                    <Box 
+                    <Box
                       key={`tick-${index}`}
                       sx={{
                         position: 'absolute',
@@ -596,7 +601,7 @@ const Scheduler: React.FC<SchedulerProps> = ({ cars, reservations, selectedDate,
                   );
                 })}
                 {/* Ligne horizontale du bas */}
-                <Box 
+                <Box
                   sx={{
                     position: 'absolute',
                     left: 0,
@@ -608,11 +613,11 @@ const Scheduler: React.FC<SchedulerProps> = ({ cars, reservations, selectedDate,
                 />
               </Box>
             </Grid>
-            
+
             <Grid item xs={12}>
               <Divider />
             </Grid>
-            
+
             {/* Lignes pour chaque voiture avec timeline (triées) */}
             {sortedCars.map((car) => (
               <React.Fragment key={car.id}>

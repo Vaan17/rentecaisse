@@ -1,9 +1,9 @@
 import React from 'react';
 import { Container, Grid, Typography, Box, Card, CardContent } from '@mui/material';
-import { 
-  DirectionsCar, 
-  CalendarMonth, 
-  Schedule, 
+import {
+  DirectionsCar,
+  CalendarMonth,
+  Schedule,
   TrendingUp,
   AccessTime
 } from '@mui/icons-material';
@@ -229,15 +229,15 @@ const Home = () => {
             <WelcomeSubtitle>
               Voici un aperçu de votre activité sur Rentecaisse
             </WelcomeSubtitle>
-            
+
             {/* Petites bulles pour la date et dernière connexion */}
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mt: 3 }}>
               <SmallBubbleCard>
                 <SmallBubbleContent>
                   <AccessTime sx={{ fontSize: '0.9rem' }} />
-                  <Typography variant="caption" sx={{ 
-                    fontWeight: 600, 
-                    fontSize: '0.75rem', 
+                  <Typography variant="caption" sx={{
+                    fontWeight: 600,
+                    fontSize: '0.75rem',
                     lineHeight: 1.2,
                     whiteSpace: 'nowrap'
                   }}>
@@ -245,14 +245,14 @@ const Home = () => {
                   </Typography>
                 </SmallBubbleContent>
               </SmallBubbleCard>
-              
+
               {user.derniere_connexion && (
                 <LastConnectionBubble>
                   <SmallBubbleContent>
                     <AccessTime sx={{ fontSize: '0.9rem' }} />
-                    <Typography variant="caption" sx={{ 
-                      color: 'white', 
-                      fontWeight: 600, 
+                    <Typography variant="caption" sx={{
+                      color: 'white',
+                      fontWeight: 600,
                       fontSize: '0.75rem',
                       lineHeight: 1.2,
                       whiteSpace: 'nowrap'
@@ -270,9 +270,9 @@ const Home = () => {
       <Grid container spacing={3}>
         {/* Ligne des KPIs */}
         <Grid item xs={12}>
-          <Typography variant="h5" sx={{ 
-            color: '#FF8F00', 
-            fontWeight: 600, 
+          <Typography variant="h5" sx={{
+            color: '#FF8F00',
+            fontWeight: 600,
             mb: 2,
             display: 'flex',
             alignItems: 'center',
@@ -287,7 +287,7 @@ const Home = () => {
             <BubbleCard>
               <BubbleCardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                  <Box sx={{ 
+                  <Box sx={{
                     background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
                     borderRadius: '12px',
                     p: 1.5,
@@ -317,7 +317,7 @@ const Home = () => {
             <BubbleCard>
               <BubbleCardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                  <Box sx={{ 
+                  <Box sx={{
                     background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
                     borderRadius: '12px',
                     p: 1.5,
@@ -347,7 +347,7 @@ const Home = () => {
             <BubbleCard>
               <BubbleCardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                  <Box sx={{ 
+                  <Box sx={{
                     background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
                     borderRadius: '12px',
                     p: 1.5,
@@ -377,7 +377,7 @@ const Home = () => {
             <BubbleCard>
               <BubbleCardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                  <Box sx={{ 
+                  <Box sx={{
                     background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
                     borderRadius: '12px',
                     p: 1.5,
@@ -397,7 +397,7 @@ const Home = () => {
                     <Typography variant="caption" sx={{ color: '#888', mb: 1, display: 'block' }}>
                       Emprunts validés
                     </Typography>
-                    <Box sx={{ 
+                    <Box sx={{
                       background: 'rgba(255, 193, 7, 0.2)',
                       borderRadius: '10px',
                       height: '6px',
@@ -424,7 +424,7 @@ const Home = () => {
             <BubbleCard>
               <BubbleCardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                  <Box sx={{ 
+                  <Box sx={{
                     background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
                     borderRadius: '12px',
                     p: 1.5,
@@ -450,8 +450,8 @@ const Home = () => {
                   </Box>
                   {dashboardData.mostUsedCar.car.image ? (
                     <CarImageContainer>
-                      <img 
-                        src={dashboardData.mostUsedCar.car.image} 
+                      <img
+                        src={dashboardData.mostUsedCar.car.image}
                         alt={`${dashboardData.mostUsedCar.car.marque} ${dashboardData.mostUsedCar.car.modele}`}
                       />
                     </CarImageContainer>
@@ -471,7 +471,7 @@ const Home = () => {
           <BubbleCard sx={{ height: '100%' }}>
             <BubbleCardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                <Box sx={{ 
+                <Box sx={{
                   background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
                   borderRadius: '12px',
                   p: 1.5,
@@ -485,8 +485,8 @@ const Home = () => {
                   Emprunts à venir
                 </Typography>
               </Box>
-              <UpcomingEmprunts 
-                emprunts={dashboardData.upcomingEmprunts} 
+              <UpcomingEmprunts
+                emprunts={dashboardData.upcomingEmprunts}
                 voitures={voitures}
               />
             </BubbleCardContent>
@@ -497,9 +497,9 @@ const Home = () => {
         <Grid item xs={12}>
           <BubbleCard>
             <BubbleCardContent>
-              <Typography variant="h6" sx={{ 
-                color: '#FF8F00', 
-                fontWeight: 600, 
+              <Typography variant="h6" sx={{
+                color: '#FF8F00',
+                fontWeight: 600,
                 mb: 3,
                 display: 'flex',
                 alignItems: 'center',
