@@ -48,9 +48,7 @@ const SuperAdminUtilisateurs = () => {
         { id: 'delete', label: '', colWidth: 50 },
     ]
 
-    debugger
     const filteredUsers = Object.values(users)
-        .filter(user => user.confirmation_entreprise)
         .filter(user => {
             if (!filterProperties.filterBy || !filterProperties.searchValue) return true
 
@@ -129,8 +127,8 @@ const SuperAdminUtilisateurs = () => {
                                             padding="none"
                                         >
                                             <Chip
-                                                label={user.admin_rentecaisse ? "Admin" : user.admin_entreprise ? "Entreprise" : user.derniere_connexion ? "Membre" : "Invité"}
-                                                color={user.admin_rentecaisse ? "error" : user.admin_entreprise ? "warning" : user.derniere_connexion ? "primary" : "secondary"}
+                                                label={user.admin_rentecaisse ? "Admin" : user.admin_entreprise ? "Entreprise" : user.derniere_connexion ? "Membre" : user.confirmation_entreprise ? "Invité" : "Utilisateur"}
+                                                color={user.admin_rentecaisse ? "error" : user.admin_entreprise ? "warning" : user.derniere_connexion ? "primary" : user.confirmation_entreprise ? "secondary" : "default"}
                                             />
                                         </TableCell>
                                         <TableCell padding='none'>{user.nom}</TableCell>
