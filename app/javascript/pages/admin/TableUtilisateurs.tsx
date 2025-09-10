@@ -14,14 +14,14 @@ import AdminUtilisateurModal from '../../modals/AdminUtilisateurModal';
 import { isMobile } from 'react-device-detect';
 import ModernFilter from '../../components/design-system/ModernFilter';
 import UserAvatar from '../../components/UserAvatar';
-import { 
-  RoleChip, 
-  ActionButton, 
-  ActionsContainer,
-  EmptyState,
-  EmptyStateIcon,
-  EmptyStateTitle,
-  EmptyStateDescription
+import {
+    RoleChip,
+    ActionButton,
+    ActionsContainer,
+    EmptyState,
+    EmptyStateIcon,
+    EmptyStateTitle,
+    EmptyStateDescription
 } from '../../components/design-system/StyledComponents';
 import { modernTheme } from '../../components/design-system/theme';
 
@@ -111,14 +111,14 @@ const TableUtilisateur = () => {
                 }}>
                     <Grid container spacing={3} alignItems="center">
                         <Grid item xs={12} md={8}>
-                            <ModernFilter 
-                                options={filterOptions} 
+                            <ModernFilter
+                                options={filterOptions}
                                 filterCallback={handleFilterCallback}
                                 placeholder="Rechercher un membre..."
                             />
                         </Grid>
                         <Grid item xs={12} md={4} sx={{ display: 'flex', justifyContent: { xs: 'center', md: 'flex-end' } }}>
-                            <Button 
+                            <Button
                                 variant="contained"
                                 onClick={() => setIsOpen(true)}
                                 startIcon={<PersonAddIcon />}
@@ -159,11 +159,11 @@ const TableUtilisateur = () => {
                                     }}>
                                         <CardHeader
                                             avatar={
-                                                <UserAvatar 
+                                                <UserAvatar
                                                     userId={user.id}
                                                     userName={`${user.prenom || ''} ${user.nom || ''}`}
                                                     size="large"
-                                                    sx={{ 
+                                                    sx={{
                                                         border: `2px solid ${modernTheme.colors.border.light}`
                                                     }}
                                                 />
@@ -211,7 +211,7 @@ const TableUtilisateur = () => {
                                         />
                                         <CardContent sx={{ pt: 0 }}>
                                             <Box sx={{ mb: 2 }}>
-                                                <RoleChip 
+                                                <RoleChip
                                                     role={user.admin_entreprise ? "admin" : user.derniere_connexion ? "member" : "invited"}
                                                     label={user.admin_entreprise ? "Administrateur" : user.derniere_connexion ? "Membre" : "Invité"}
                                                     size="small"
@@ -281,18 +281,18 @@ const TableUtilisateur = () => {
                                         key={user.id}
                                     >
                                         <TableCell>
-                                            <UserAvatar 
+                                            <UserAvatar
                                                 userId={user.id}
                                                 userName={`${user.prenom || ''} ${user.nom || ''}`}
-                                                sx={{ 
+                                                sx={{
                                                     border: `2px solid ${modernTheme.colors.border.light}`
                                                 }}
                                             />
                                         </TableCell>
                                         <TableCell>
                                             <RoleChip
-                                                role={user.admin_entreprise ? "admin" : user.derniere_connexion ? "member" : "invited"}
-                                                label={user.admin_entreprise ? "Admin" : user.derniere_connexion ? "Membre" : "Invité"}
+                                                role={user.admin_rentecaisse ? "super-admin" : user.admin_entreprise ? "admin" : user.derniere_connexion ? "member" : "invited"}
+                                                label={user.admin_rentecaisse ? "Super Admin" : user.admin_entreprise ? "Admin" : user.derniere_connexion ? "Membre" : "Invité"}
                                                 size="small"
                                             />
                                         </TableCell>
@@ -324,12 +324,13 @@ const TableUtilisateur = () => {
                                         <TableCell align="right">
                                             <ActionsContainer>
                                                 <Tooltip title="Modifier" arrow>
-                                                    <ActionButton 
+                                                    <ActionButton
                                                         actionType="edit"
                                                         onClick={() => {
                                                             setSelectedUser(user)
                                                             setIsOpen(true)
                                                         }}
+                                                        disabled={user.admin_rentecaisse || user.admin_entreprise}
                                                     >
                                                         <EditIcon />
                                                     </ActionButton>
@@ -341,7 +342,7 @@ const TableUtilisateur = () => {
                                                             setSelectedUser(user)
                                                             setIsOpenConfirmModal(true)
                                                         }}
-                                                        disabled={user.admin_entreprise}
+                                                        disabled={user.admin_rentecaisse || user.admin_entreprise}
                                                     >
                                                         <BlockIcon />
                                                     </ActionButton>
@@ -371,7 +372,7 @@ const TableUtilisateur = () => {
                     </EmptyState>
                 )}
 
-                <Box sx={{ 
+                <Box sx={{
                     borderTop: `1px solid ${modernTheme.colors.border.light}`,
                     background: modernTheme.colors.background.tertiary
                 }}>
@@ -401,7 +402,7 @@ const TableUtilisateur = () => {
                     />
                 </Box>
             </Paper>
-            
+
             <AdminUtilisateurModal
                 isOpen={isOpen}
                 selectedUser={selectedUser}

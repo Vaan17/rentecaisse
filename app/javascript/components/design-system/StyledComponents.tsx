@@ -113,10 +113,11 @@ export const CardContent = styled(Box)`
 `;
 
 // Chip moderne pour les rôles
-export const RoleChip = styled(Chip) <{ role: 'admin' | 'member' | 'invited' | 'pending' }>`
+export const RoleChip = styled(Chip) <{ role: 'super-admin' | 'admin' | 'member' | 'invited' | 'pending' }>`
   && {
     background-color: ${({ role }) => {
     switch (role) {
+      case 'super-admin': return modernTheme.colors.roles.super_admin;
       case 'admin': return modernTheme.colors.roles.admin;
       case 'member': return modernTheme.colors.roles.member;
       case 'invited': return modernTheme.colors.roles.invited;

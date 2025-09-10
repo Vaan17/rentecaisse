@@ -12,6 +12,7 @@ export const modernTheme = {
     },
     // Couleurs sémantiques pour les rôles
     roles: {
+      super_admin:'rgb(146, 15, 15)', // Dark Red
       admin: '#f59e0b', // Amber
       member: '#10b981', // Emerald  
       invited: '#6b7280', // Gray
